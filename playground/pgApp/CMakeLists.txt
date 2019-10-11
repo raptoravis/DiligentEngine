@@ -74,6 +74,8 @@ target_include_directories(${PROJECT_NAME_TMP} PRIVATE
 						${DE_TOP_PATH}/thirdparty/entt/src
 						${DE_TOP_PATH}/thirdparty/fibertaskinglib/include
 						${DE_TOP_PATH}/thirdparty/taskflow
+						${DE_TOP_PATH}/thirdparty/flythrough_camera
+						${DE_TOP_PATH}/thirdparty/arcball_camera
 						)
 
 ######
@@ -146,4 +148,3 @@ source_group("assets\\models\\MetalRoughSpheres" FILES ${METAL_ROUGH_SPHERES_MOD
 source_group("assets\\models\\NormalTangentTest" FILES ${NORMAL_TANGENT_TEST_MODEL})
 source_group("assets\\models\\Sponza" FILES ${Sponza_BOX_MODEL})
 source_group("assets\\models\\VirtualCity" FILES ${VirtualCity_BOX_MODEL})
-

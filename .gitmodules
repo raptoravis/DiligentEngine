@@ -13,3 +13,9 @@
 [submodule "thirdparty/fibertaskinglib"]
 	path = thirdparty/fibertaskinglib
 	url = git@github.com:RichieSams/FiberTaskingLib.git
+[submodule "thirdparty/arcball_camera"]
+	path = thirdparty/arcball_camera
+	url = git@github.com:raptoravis/arcball_camera.git
+[submodule "thirdparty/flythrough_camera"]
+	path = thirdparty/flythrough_camera
+	url = git@github.com:raptoravis/flythrough_camera.git

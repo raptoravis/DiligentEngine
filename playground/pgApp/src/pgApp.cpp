@@ -34,6 +34,14 @@
 #include "imgui.h"
 #include "imGuIZMO.h"
 
+#include "mat2quat.h"
+
+#define FLYTHROUGH_CAMERA_IMPLEMENTATION
+#include "flythrough_camera.h"
+
+//#define ARCBALL_CAMERA_IMPLEMENTATION
+//#include "arcball_camera.h"
+
 namespace Diligent
 {
 
@@ -90,9 +98,7 @@ void pgApp::LoadModel(const char* Path)
 	float Scale = 1.0;
     auto Translate = -float3(m_Model->aabb[3][0], m_Model->aabb[3][1], m_Model->aabb[3][2]);
     Translate += -0.5f * ModelDim;
-    float4x4 InvYAxis = float4x4::Identity();
-    InvYAxis._22 = -1;
-    m_ModelTransform = float4x4::Translation(Translate) * float4x4::Scale(Scale) * InvYAxis;
+    m_ModelTransform = float4x4::Translation(Translate) * float4x4::Scale(Scale);
 
     if (!m_Model->Animations.empty())
     {
@@ -104,13 +110,12 @@ void pgApp::LoadModel(const char* Path)
 
 void pgApp::ResetView()
 {
-    m_CameraYaw   = 0;
-    m_CameraPitch = 20.0f * (PI_F / 180.0f);
+	pos = { 0.0f, 0.0f, 0.0f };
 
-	//m_ModelRotation = Quaternion::RotationFromAxisAngle(float3{ 0.f, 1.0f, 0.0f }, -PI_F / 2.f);
-	m_ModelRotation = Quaternion::RotationFromAxisAngle(float3{ 0.f, 1.0f, 0.0f }, 0);
+	look = { 0.0f, 0.0f, -1.0f };
+	//look = { -1.0f, 0.0f, 0.0f };
 
-    m_CameraRotation = Quaternion::RotationFromAxisAngle(float3{0.75f, 0.0f, 0.75f}, PI_F);
+	m_cameraTransform = float4x4::Identity();
 }
 
 
@@ -131,8 +136,6 @@ void pgApp::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, I
     RendererCI.DSVFmt         = DepthBufferFmt;
     RendererCI.AllowDebugView = true;
     RendererCI.UseIBL         = true;
-
-	//in GLTF, y axis points down and we need to invert it, which will reverse the winding order.
     RendererCI.FrontCCW       = true;
 
     m_GLTFRenderer.reset(new GLTF_PBR_Renderer(m_pDevice, m_pImmediateContext, RendererCI));
@@ -161,6 +164,7 @@ void pgApp::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, I
 void pgApp::UpdateUI()
 {
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
         {
@@ -172,27 +176,43 @@ void pgApp::UpdateUI()
                 LoadModel(GLTFModels[m_SelectedModel].second);
             }
         }
-#ifdef PLATFORM_WIN32
-        if (ImGui::Button("Load model"))
-        {
-            auto FileName = FileSystem::OpenFileDialog("Select GLTF file", "glTF files\0*.gltf;*.glb\0");
-            if (!FileName.empty())
-            {
-                LoadModel(FileName.c_str());
-            }
-        }
-#endif
+//#ifdef PLATFORM_WIN32
+//        if (ImGui::Button("Load model"))
+//        {
+//            auto FileName = FileSystem::OpenFileDialog("Select GLTF file", "glTF files\0*.gltf;*.glb\0");
+//            if (!FileName.empty())
+//            {
+//                LoadModel(FileName.c_str());
+//            }
+//        }
+//#endif
+		ImGui::Separator();
 
-        ImGui::gizmo3D("Model Rotation", m_ModelRotation, ImGui::GetTextLineHeight() * 10);
-        ImGui::SameLine();
-        ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
+		//Quaternion rot = Quaternion(m_cameraTransform);
+        //ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
+		ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
+		ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
 
         if (ImGui::Button("Reset view"))
         {
             ResetView();
         }
 
-        ImGui::SliderFloat("Camera distance", &m_CameraDist, 0.1f, 5.0f);
+		ImGui::Separator();
+
+		float4x4 camTt = m_cameraTransform;
+		//camTt.m10 *= -1.0f;
+		//camTt.m11 *= -1.0f;
+		//camTt.m12 *= -1.0f;
+		//camTt.m20 *= -1.0f;
+		//camTt.m21 *= -1.0f;
+		//camTt.m22 *= -1.0f;
+
+		Quaternion rot = mRot2Quat(camTt);
+		ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
+		ImGui::SameLine();
+		ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
+
 
         ImGui::SetNextTreeNodeOpen(true, ImGuiCond_FirstUseEver);
         if (ImGui::TreeNode("Lighting"))
@@ -368,7 +388,8 @@ void pgApp::Render()
     m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
     m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
     
-    float4x4 CameraView = m_CameraRotation.ToMatrix() * float4x4::Translation(0.f, 0.0f, m_CameraDist);
+	float4x4 CameraView = m_cameraTransform;
+
     float4x4 CameraWorld = CameraView.Inverse();
     float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);
     float NearPlane = 0.1f;
@@ -393,7 +414,7 @@ void pgApp::Render()
         lightAttribs->f4Intensity = m_LightColor * m_LightIntensity;
     }
 
-    m_RenderParams.ModelTransform = m_ModelTransform * m_ModelRotation.ToMatrix();
+	m_RenderParams.ModelTransform = m_ModelTransform;
     m_GLTFRenderer->Render(m_pImmediateContext, *m_Model, m_RenderParams);
 
     if (m_BackgroundMode != BackgroundMode::None)
@@ -419,54 +440,68 @@ void pgApp::Render()
 
 void pgApp::Update(double CurrTime, double ElapsedTime)
 {
+    const auto& mouseState = m_InputController.GetMouseState();
+    float MouseDeltaX = 0;
+    float MouseDeltaY = 0;
+    if (m_LastMouseState.PosX >=0 && m_LastMouseState.PosY >= 0 &&
+        m_LastMouseState.ButtonFlags != MouseState::BUTTON_FLAG_NONE)
     {
-        const auto& mouseState = m_InputController.GetMouseState();
-        float MouseDeltaX = 0;
-        float MouseDeltaY = 0;
-        if (m_LastMouseState.PosX >=0 && m_LastMouseState.PosY >= 0 &&
-            m_LastMouseState.ButtonFlags != MouseState::BUTTON_FLAG_NONE)
-        {
-            MouseDeltaX = mouseState.PosX - m_LastMouseState.PosX;
-            MouseDeltaY = mouseState.PosY - m_LastMouseState.PosY;
-        }
-        m_LastMouseState = mouseState;
-
-        constexpr float RotationSpeed = 0.005f;
-        float fYawDelta   = MouseDeltaX * RotationSpeed;
-        float fPitchDelta = MouseDeltaY * RotationSpeed;
-        if (mouseState.ButtonFlags & MouseState::BUTTON_FLAG_LEFT)
-        {
-            m_CameraYaw   += fYawDelta;
-            m_CameraPitch += fPitchDelta;
-            m_CameraPitch = std::max(m_CameraPitch, -PI_F / 2.f);
-            m_CameraPitch = std::min(m_CameraPitch, +PI_F / 2.f);
-        }
-
-        // Apply extra rotations to adjust the view to match Khronos GLTF viewer
-        m_CameraRotation =
-            Quaternion::RotationFromAxisAngle(float3{1,0,0}, -m_CameraPitch) *
-            Quaternion::RotationFromAxisAngle(float3{0,1,0}, -m_CameraYaw)   *
-            Quaternion::RotationFromAxisAngle(float3{0.75f, 0.0f, 0.75f}, PI_F);
-
-        if (mouseState.ButtonFlags & MouseState::BUTTON_FLAG_RIGHT)
-        {
-            auto CameraView = m_CameraRotation.ToMatrix();
-            auto CameraWorld = CameraView.Transpose();
-
-            float3 CameraRight = float3::MakeVector(CameraWorld[0]);
-            float3 CameraUp    = float3::MakeVector(CameraWorld[1]);
-            m_ModelRotation = 
-                Quaternion::RotationFromAxisAngle(CameraRight, -fPitchDelta) *
-                Quaternion::RotationFromAxisAngle(CameraUp,    -fYawDelta)   *
-                m_ModelRotation;
-        }
-
-        m_CameraDist -= mouseState.WheelDelta * 0.25f;
-        m_CameraDist = clamp(m_CameraDist, 0.1f, 5.f);
+        MouseDeltaX = mouseState.PosX - m_LastMouseState.PosX;
+        MouseDeltaY = mouseState.PosY - m_LastMouseState.PosY;
     }
+    m_LastMouseState = mouseState;
+	
+	{
+		int moveLeft = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveLeft) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			moveLeft = 1;
+		}
+		int moveRight = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveRight) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			moveRight = 1;
+		}
+		int moveForward = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveForward) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			moveForward = 1;
+		}
+		int moveBackward = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveBackward) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			moveBackward = 1;
+		}
+		int jump = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveUp) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			jump = 1;
+		}
+		int crouch = 0;
+		if ((m_InputController.GetKeyState(InputKeys::MoveDown) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			crouch = 1;
+		}
+		int accelerate = 0;
+		if ((m_InputController.GetKeyState(InputKeys::ShiftDown) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+			accelerate = 1;
+		}
 
-    if ((m_InputController.GetKeyState(InputKeys::Reset) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0)
-        ResetView();
+		float delta_time_sec = (float)ElapsedTime;
+		//int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
+		int flag = 0;
+
+		float* view = &m_cameraTransform.m00;
+
+		flythrough_camera_update(
+			&pos.x, &look.x, &up.x, view,
+			delta_time_sec,
+			2.0f * (accelerate ? 5.0f : 1.0f),	//eye_speed
+			0.1f,								//degrees_per_cursor_move
+			80.0f,								//max_pitch_rotation_degrees
+			(int)MouseDeltaX, (int)MouseDeltaY,
+			moveBackward, moveLeft, moveForward, moveRight,
+			jump, crouch, 
+			flag);
+	}
+
+	if ((m_InputController.GetKeyState(InputKeys::Reset) & INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+		ResetView();
+	}
 
     SampleBase::Update(CurrTime, ElapsedTime);
     UpdateUI();

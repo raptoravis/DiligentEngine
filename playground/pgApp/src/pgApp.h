@@ -63,10 +63,8 @@ private:
 
     GLTF_PBR_Renderer::RenderInfo m_RenderParams;
 
-    Quaternion m_CameraRotation = {0,0,0,1};
-    Quaternion m_ModelRotation  = Quaternion::RotationFromAxisAngle(float3{0.f, 1.0f, 0.0f}, -PI_F / 2.f);
     float4x4   m_ModelTransform;
-    float      m_CameraDist      = 0.9f;
+
     float3     m_LightDirection;
     float4     m_LightColor      = float4(1,1,1,1);
     float      m_LightIntensity  = 3.f;
@@ -88,8 +86,12 @@ private:
     RefCntAutoPtr<IBuffer>                m_EnvMapRenderAttribsCB;
 
     MouseState m_LastMouseState;
-    float      m_CameraYaw   = 0;
-    float      m_CameraPitch = 0;
+
+	float4x4   m_cameraTransform;
+	float3 pos;
+	float3 look;
+
+	const float3 up = { 0.0f, 1.0f, 0.0f };
 };
 
 }
