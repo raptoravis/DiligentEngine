@@ -12,15 +12,47 @@
 #include "FileSystem.h"
 #include "imgui.h"
 #include "imGuIZMO.h"
+#include "InputController.h"
 
 class Object
 {
-	//
+public:
+	virtual ~Object() {
+		//
+	}
 };
 
 class Camera : public Object
 {
-	//
+	Diligent::MouseState m_LastMouseState;
+
+	Diligent::float4x4   m_cameraTransform;
+	Diligent::float3 pos;
+	Diligent::float3 look;
+
+	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
+
+public:
+	Camera();
+
+	virtual ~Camera();
+
+	void reset();
+
+	void update(Diligent::InputController* pInputController, float ElapsedTime);
+
+	const Diligent::float3& getPos() const {
+		return pos;
+	}
+
+	const Diligent::float3& getLook() const {
+		return look;
+	}
+
+	const Diligent::float4x4& getTransform() const {
+		return m_cameraTransform;
+	}
+
 };
 
 class RenderEventArgs

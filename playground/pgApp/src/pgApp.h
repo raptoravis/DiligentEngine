@@ -29,69 +29,64 @@
 #include "GLTF_PBR_Renderer.h"
 #include "BasicMath.h"
 
+#include "engine.h"
+
 namespace Diligent
 {
 
-class pgApp final : public SampleBase
-{
-public:
-    ~pgApp();
-    virtual void Initialize(IEngineFactory*   pEngineFactory,
-                            IRenderDevice*    pDevice, 
-                            IDeviceContext**  ppContexts, 
-                            Uint32            NumDeferredCtx, 
-                            ISwapChain*       pSwapChain)override final;
-    virtual void Render()override final;
-    virtual void Update(double CurrTime, double ElapsedTime)override final;
-    virtual const Char* GetSampleName()const override final{return "pgApp";}
+	class pgApp final : public SampleBase
+	{
+	public:
+		~pgApp();
+		virtual void Initialize(IEngineFactory*   pEngineFactory,
+			IRenderDevice*    pDevice,
+			IDeviceContext**  ppContexts,
+			Uint32            NumDeferredCtx,
+			ISwapChain*       pSwapChain)override final;
+		virtual void Render()override final;
+		virtual void Update(double CurrTime, double ElapsedTime)override final;
+		virtual const Char* GetSampleName()const override final { return "pgApp"; }
 
-private:
-    void CreateEnvMapPSO();
-    void CreateEnvMapSRB();
-    void LoadModel(const char* Path);
-    void ResetView();
-    void UpdateUI();
+	private:
+		void CreateEnvMapPSO();
+		void CreateEnvMapSRB();
+		void LoadModel(const char* Path);
+		void ResetView();
+		void UpdateUI();
 
-    enum class BackgroundMode : int
-    {
-        None,
-        EnvironmentMap,
-        Irradiance,
-        PrefilteredEnvMap,
-        NumModes
-    }m_BackgroundMode = BackgroundMode::PrefilteredEnvMap;
+		enum class BackgroundMode : int
+		{
+			None,
+			EnvironmentMap,
+			Irradiance,
+			PrefilteredEnvMap,
+			NumModes
+		}m_BackgroundMode = BackgroundMode::PrefilteredEnvMap;
 
-    GLTF_PBR_Renderer::RenderInfo m_RenderParams;
+		GLTF_PBR_Renderer::RenderInfo m_RenderParams;
 
-    float4x4   m_ModelTransform;
+		float4x4   m_ModelTransform;
 
-    float3     m_LightDirection;
-    float4     m_LightColor      = float4(1,1,1,1);
-    float      m_LightIntensity  = 3.f;
-    float      m_EnvMapMipLevel  = 1.f;
-    int        m_SelectedModel   = 0;
-    static const std::pair<const char*, const char*> GLTFModels[];
+		float3     m_LightDirection;
+		float4     m_LightColor = float4(1, 1, 1, 1);
+		float      m_LightIntensity = 3.f;
+		float      m_EnvMapMipLevel = 1.f;
+		int        m_SelectedModel = 0;
+		static const std::pair<const char*, const char*> GLTFModels[];
 
-    bool               m_PlayAnimation   = false;
-    int                m_AnimationIndex  = 0;
-    std::vector<float> m_AnimationTimers;
+		bool               m_PlayAnimation = false;
+		int                m_AnimationIndex = 0;
+		std::vector<float> m_AnimationTimers;
 
-    std::unique_ptr<GLTF_PBR_Renderer> m_GLTFRenderer;
-    std::unique_ptr<GLTF::Model>       m_Model;
-    RefCntAutoPtr<IBuffer> m_CameraAttribsCB;
-    RefCntAutoPtr<IBuffer> m_LightAttribsCB;
-    RefCntAutoPtr<IPipelineState>         m_EnvMapPSO;
-    RefCntAutoPtr<IShaderResourceBinding> m_EnvMapSRB;
-    RefCntAutoPtr<ITextureView>           m_EnvironmentMapSRV;
-    RefCntAutoPtr<IBuffer>                m_EnvMapRenderAttribsCB;
+		std::unique_ptr<GLTF_PBR_Renderer> m_GLTFRenderer;
+		std::unique_ptr<GLTF::Model>       m_Model;
+		RefCntAutoPtr<IBuffer> m_CameraAttribsCB;
+		RefCntAutoPtr<IBuffer> m_LightAttribsCB;
+		RefCntAutoPtr<IPipelineState>         m_EnvMapPSO;
+		RefCntAutoPtr<IShaderResourceBinding> m_EnvMapSRB;
+		RefCntAutoPtr<ITextureView>           m_EnvironmentMapSRV;
+		RefCntAutoPtr<IBuffer>                m_EnvMapRenderAttribsCB;
 
-    MouseState m_LastMouseState;
-
-	float4x4   m_cameraTransform;
-	float3 pos;
-	float3 look;
-
-	const float3 up = { 0.0f, 1.0f, 0.0f };
-};
-
+		Camera*								  m_pCamera;
+	};
 }
