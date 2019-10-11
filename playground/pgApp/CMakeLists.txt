@@ -16,9 +16,11 @@ file(GLOB DAMAGED_HELMENT_MODEL LIST_DIRECTORIES false assets/models/DamagedHelm
 file(GLOB FLIGHT_HELMENT_MODEL LIST_DIRECTORIES false assets/models/FlightHelmet/*.*)
 file(GLOB METAL_ROUGH_SPHERES_MODEL LIST_DIRECTORIES false assets/models/MetalRoughSpheres/*.*)
 file(GLOB NORMAL_TANGENT_TEST_MODEL LIST_DIRECTORIES false assets/models/NormalTangentTest/*.*)
+file(GLOB Sponza_BOX_MODEL LIST_DIRECTORIES false assets/models/Sponza/*.*)
+file(GLOB VirtualCity_BOX_MODEL LIST_DIRECTORIES false assets/models/VirtualCity/*.*)
 
 set(MODELS ${BOOM_BOX_MODEL} ${CESIUM_MAN_MODEL} ${DAMAGED_HELMENT_MODEL}
-           ${FLIGHT_HELMENT_MODEL} ${METAL_ROUGH_SPHERES_MODEL} ${NORMAL_TANGENT_TEST_MODEL})
+           ${FLIGHT_HELMENT_MODEL} ${METAL_ROUGH_SPHERES_MODEL} ${NORMAL_TANGENT_TEST_MODEL} ${Sponza_BOX_MODEL} ${VirtualCity_BOX_MODEL})
 set(TEXTURES assets/textures/papermill.ktx)
 set(ASSETS
     ${MODELS}
@@ -122,6 +124,17 @@ set_source_files_properties(${NORMAL_TANGENT_TEST_MODEL} PROPERTIES
     MACOSX_PACKAGE_LOCATION "Resources/models/NormalTangentTest"
 )
 
+set_source_files_properties(${Sponza_BOX_MODEL} PROPERTIES
+    VS_DEPLOYMENT_LOCATION "models/Sponza"
+    MACOSX_PACKAGE_LOCATION "Resources/models/Sponza"
+)
+
+set_source_files_properties(${VirtualCity_BOX_MODEL} PROPERTIES
+    VS_DEPLOYMENT_LOCATION "models/VirtualCity"
+    MACOSX_PACKAGE_LOCATION "Resources/models/VirtualCity"
+)
+
+
 source_group("assets" FILES ${ASSETS})
 source_group("assets\\shaders" FILES ${SHADERS})
 source_group("assets\\textures" FILES ${TEXTURES})
@@ -131,4 +144,6 @@ source_group("assets\\models\\DamagedHelmet" FILES ${DAMAGED_HELMENT_MODEL})
 source_group("assets\\models\\FlightHelmet" FILES ${FLIGHT_HELMENT_MODEL})
 source_group("assets\\models\\MetalRoughSpheres" FILES ${METAL_ROUGH_SPHERES_MODEL})
 source_group("assets\\models\\NormalTangentTest" FILES ${NORMAL_TANGENT_TEST_MODEL})
+source_group("assets\\models\\Sponza" FILES ${Sponza_BOX_MODEL})
+source_group("assets\\models\\VirtualCity" FILES ${VirtualCity_BOX_MODEL})
 

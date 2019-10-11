@@ -86,7 +86,8 @@ void pgApp::LoadModel(const char* Path)
 
     // Center and scale model
     float3 ModelDim{m_Model->aabb[0][0], m_Model->aabb[1][1], m_Model->aabb[2][2]};
-    float Scale = (1.0f / std::max(std::max(ModelDim.x, ModelDim.y), ModelDim.z)) * 0.5f;
+	//float Scale = (1.0f / std::max(std::max(ModelDim.x, ModelDim.y), ModelDim.z)) * 0.5f;
+	float Scale = 1.0;
     auto Translate = -float3(m_Model->aabb[3][0], m_Model->aabb[3][1], m_Model->aabb[3][2]);
     Translate += -0.5f * ModelDim;
     float4x4 InvYAxis = float4x4::Identity();
@@ -104,8 +105,11 @@ void pgApp::LoadModel(const char* Path)
 void pgApp::ResetView()
 {
     m_CameraYaw   = 0;
-    m_CameraPitch = 0;
-    m_ModelRotation  = Quaternion::RotationFromAxisAngle(float3{0.f, 1.0f, 0.0f}, -PI_F / 2.f);
+    m_CameraPitch = 20.0f * (PI_F / 180.0f);
+
+	//m_ModelRotation = Quaternion::RotationFromAxisAngle(float3{ 0.f, 1.0f, 0.0f }, -PI_F / 2.f);
+	m_ModelRotation = Quaternion::RotationFromAxisAngle(float3{ 0.f, 1.0f, 0.0f }, 0);
+
     m_CameraRotation = Quaternion::RotationFromAxisAngle(float3{0.75f, 0.0f, 0.75f}, PI_F);
 }
 
@@ -127,7 +131,10 @@ void pgApp::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, I
     RendererCI.DSVFmt         = DepthBufferFmt;
     RendererCI.AllowDebugView = true;
     RendererCI.UseIBL         = true;
+
+	//in GLTF, y axis points down and we need to invert it, which will reverse the winding order.
     RendererCI.FrontCCW       = true;
+
     m_GLTFRenderer.reset(new GLTF_PBR_Renderer(m_pDevice, m_pImmediateContext, RendererCI));
 
     CreateUniformBuffer(m_pDevice, sizeof(CameraAttribs),       "Camera attribs buffer",         &m_CameraAttribsCB);
