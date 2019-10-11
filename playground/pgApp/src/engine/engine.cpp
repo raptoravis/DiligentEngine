@@ -88,3 +88,70 @@ void Camera::update(Diligent::InputController* pInputController, float ElapsedTi
 		reset();
 	}
 }
+
+pgBasePass::pgBasePass()
+	: base()
+{
+}
+
+pgBasePass::~pgBasePass()
+{
+}
+
+
+void pgBasePass::Update(float CurrTime, float ElapsedTime)
+{
+}
+
+void pgBasePass::Render(Camera* pCamera)
+{
+}
+
+
+pgTechnique::pgTechnique()
+{}
+
+pgTechnique::~pgTechnique()
+{}
+
+unsigned int pgTechnique::AddPass(pgPass* pass)
+{
+	// No check for duplicate passes (it may be intended to render the same pass multiple times?)
+	m_Passes.push_back(pass);
+	return static_cast<unsigned int>(m_Passes.size()) - 1;
+}
+
+pgPass* pgTechnique::GetPass(unsigned int ID) const
+{
+	if (ID < m_Passes.size())
+	{
+		return m_Passes[ID];
+	}
+
+	return 0;
+}
+
+void pgTechnique::Update(float CurrTime, float ElapsedTime)
+{
+	for (auto pass : m_Passes)
+	{
+		if (pass->IsEnabled())
+		{
+			pass->Update(CurrTime, ElapsedTime);
+		}
+	}
+}
+
+// Render the scene using the passes that have been configured.
+void pgTechnique::Render(Camera* pCamera)
+{
+	for (auto pass : m_Passes)
+	{
+		if (pass->IsEnabled())
+		{
+			pass->Render(pCamera);
+		}
+	}
+}
+
+

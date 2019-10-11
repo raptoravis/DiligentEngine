@@ -55,39 +55,44 @@ public:
 
 };
 
-class RenderEventArgs
-{
-	const Object& Caller;
-
-public:
-	RenderEventArgs(const Object& caller, float fDeltaTime, 
-		float fTotalTime, uint64_t frameCounter, 
-		Camera* camera = nullptr, Diligent::IPipelineState* pipelineState = nullptr) : Caller(caller)
-		, ElapsedTime(fDeltaTime)
-		, TotalTime(fTotalTime)
-		, FrameCounter(frameCounter)
-		, Camera(camera)
-		, PipelineState(pipelineState)
-	{}
-
-	float ElapsedTime;
-	float TotalTime;
-	int64_t FrameCounter;
-	Camera* Camera;
-	Diligent::IPipelineState* PipelineState;
+class Scene : public Object {
+	//
 };
 
+//class RenderEventArgs
+//{
+//	void* Caller;
+//	float CurrTime;
+//	float ElapsedTime;
+//public:
+//	RenderEventArgs(void* caller, Camera* camera, float currentTime, float elapsedTime) : Caller(caller)
+//		, Camera(camera), CurrTime(currentTime), ElapsedTime(elapsedTime)
+//	{}
+//
+//	Camera* Camera;
+//};
+//
 
 class pgPass : public Object
 {
-	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
-	virtual void SetEnabled(bool enabled) = 0;
-	virtual bool IsEnabled() const = 0;
+	bool m_bEnabled;
+public:
+	pgPass() : m_bEnabled(true) {
+		//
+	}
 
-	// Render the pass. This should only be called by the RenderTechnique.
-	virtual void PreRender(RenderEventArgs& e) = 0;
-	virtual void Render(RenderEventArgs& e) = 0;
-	virtual void PostRender(RenderEventArgs& e) = 0;
+	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
+	void SetEnabled(bool enabled) {
+		m_bEnabled = enabled;
+	}
+
+	bool IsEnabled() const {
+		return m_bEnabled;
+	}
+
+	// Render the pass. This should only be called by the pgTechnique.
+	virtual void Update(float CurrTime, float ElapsedTime) = 0;
+	virtual void Render(Camera* pCamera) = 0;
 };
 
 class pgTechnique : public Object
@@ -98,16 +103,29 @@ public:
 
 	// Add a pass to the technique. The ID of the added pass is returned
 	// and can be used to retrieve the pass later.
-	virtual unsigned int AddPass(std::shared_ptr<pgPass> pass);
-	virtual std::shared_ptr<pgPass> GetPass(unsigned int ID) const;
+	virtual unsigned int AddPass(pgPass* pass);
+	virtual pgPass* GetPass(unsigned int ID) const;
 
 	// Render the scene using the passes that have been configured.
-	virtual void Render(RenderEventArgs& renderEventArgs);
-
-protected:
+	virtual void Update(float CurrTime, float ElapsedTime);
+	virtual void Render(Camera* pCamera);
 
 private:
-	typedef std::vector< std::shared_ptr<pgPass> > RenderPassList;
+	typedef std::vector<pgPass*> RenderPassList;
 	RenderPassList m_Passes;
 
+};
+
+// Base pass provides implementations for functions used by most passes.
+class pgBasePass : public pgPass
+{
+public:
+	typedef pgPass base;
+
+	pgBasePass();
+	virtual ~pgBasePass();
+
+	// Render the pass. This should only be called by the pgTechnique.
+	virtual void Update(float CurrTime, float ElapsedTime);
+	virtual void Render(Camera* pCamera);
 };
