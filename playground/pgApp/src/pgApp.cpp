@@ -152,7 +152,9 @@ namespace Diligent
 			const float3& look = m_pCamera->getLook();
 
 			ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
-			ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
+
+			// we need to negative it
+			ImGui::Text("look: %f %f %f", -look.x, -look.y, -look.z);
 
 			if (ImGui::Button("Reset view"))
 			{
