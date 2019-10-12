@@ -69,6 +69,7 @@ target_include_directories(${PROJECT_NAME_TMP} PRIVATE
 						${DE_TOP_PATH}/thirdparty/taskflow
 						${DE_TOP_PATH}/thirdparty/flythrough_camera
 						${DE_TOP_PATH}/thirdparty/arcball_camera
+						${DE_TOP_PATH}/thirdparty/argparse
 						)
 
 ######

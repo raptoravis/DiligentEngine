@@ -19,3 +19,6 @@
 [submodule "thirdparty/flythrough_camera"]
 	path = thirdparty/flythrough_camera
 	url = git@github.com:raptoravis/flythrough_camera.git
+[submodule "thirdparty/argparse"]
+	path = thirdparty/argparse
+	url = git@github.com:raptoravis/argparse.git
