@@ -33,9 +33,9 @@ public:
 	virtual ~pgCubePass();
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(float CurrTime, float ElapsedTime);
-	virtual void Render(Camera* pCamera);
-	virtual void UpdateUI();
+	virtual void Update(RenderEventArgs& e);
+	virtual void Render(RenderEventArgs& e);
+	virtual void UpdateUI(RenderEventArgs& e);
 
 };
 

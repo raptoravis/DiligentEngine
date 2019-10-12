@@ -102,15 +102,15 @@ pgBasePass::~pgBasePass()
 }
 
 
-void pgBasePass::Update(float CurrTime, float ElapsedTime)
+void pgBasePass::Update(RenderEventArgs& e)
 {
 }
 
-void pgBasePass::Render(Camera* pCamera)
+void pgBasePass::Render(RenderEventArgs& e)
 {
 }
 
-void pgBasePass::UpdateUI()
+void pgBasePass::UpdateUI(RenderEventArgs& e)
 {
 }
 
@@ -138,37 +138,37 @@ pgPass* pgTechnique::GetPass(unsigned int ID) const
 	return 0;
 }
 
-void pgTechnique::Update(float CurrTime, float ElapsedTime)
+void pgTechnique::Update(RenderEventArgs& e)
 {
 	for (auto pass : m_Passes)
 	{
 		if (pass->IsEnabled())
 		{
-			pass->Update(CurrTime, ElapsedTime);
+			pass->Update(e);
 		}
 	}
 }
 
-void pgTechnique::UpdateUI()
+void pgTechnique::UpdateUI(RenderEventArgs& e)
 {
 	for (auto pass : m_Passes)
 	{
 		if (pass->IsEnabled())
 		{
-			pass->UpdateUI();
+			pass->UpdateUI(e);
 		}
 	}
 }
 
 
 // Render the scene using the passes that have been configured.
-void pgTechnique::Render(Camera* pCamera)
+void pgTechnique::Render(RenderEventArgs& e)
 {
 	for (auto pass : m_Passes)
 	{
 		if (pass->IsEnabled())
 		{
-			pass->Render(pCamera);
+			pass->Render(e);
 		}
 	}
 }

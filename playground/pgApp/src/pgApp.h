@@ -55,5 +55,6 @@ namespace Diligent
 		pgCubePass*	m_pCubePass;
 
 		pgTechnique* m_pTechnique;
+		RenderEventArgs m_evtArgs;
 	};
 }

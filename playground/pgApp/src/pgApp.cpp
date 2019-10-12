@@ -145,7 +145,7 @@ namespace Diligent
 			ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 			ImGui::SameLine();
 			//ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
-			m_pTechnique->UpdateUI();
+			m_pTechnique->UpdateUI(m_evtArgs);
 		}
 		ImGui::End();
 	}
@@ -167,7 +167,7 @@ namespace Diligent
 		m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		m_pTechnique->Render(m_pCamera);
+		m_pTechnique->Render(m_evtArgs);
 	}
 
 
@@ -177,8 +177,10 @@ namespace Diligent
 
 		m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
+		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera);
+
 		UpdateUI();
 
-		m_pTechnique->Update((float)CurrTime, (float)ElapsedTime);
+		m_pTechnique->Update(m_evtArgs);
 	}
 }

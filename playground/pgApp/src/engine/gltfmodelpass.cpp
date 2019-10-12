@@ -121,7 +121,7 @@ pgGLTFPass::~pgGLTFPass()
 
 
 
-void pgGLTFPass::UpdateUI()
+void pgGLTFPass::UpdateUI(RenderEventArgs& e)
 {
 	{
 		ImGui::SameLine();
@@ -291,18 +291,18 @@ void pgGLTFPass::CreateEnvMapSRB()
 }
 
 
-void pgGLTFPass::Update(float CurrTime, float ElapsedTime) {
+void pgGLTFPass::Update(RenderEventArgs& e) {
 	if (!m_Model->Animations.empty() && m_PlayAnimation)
 	{
 		float& AnimationTimer = m_AnimationTimers[m_AnimationIndex];
-		AnimationTimer += static_cast<float>(ElapsedTime);
+		AnimationTimer += static_cast<float>(e.ElapsedTime);
 		AnimationTimer = std::fmod(AnimationTimer, m_Model->Animations[m_AnimationIndex].End);
 		m_Model->UpdateAnimation(m_AnimationIndex, AnimationTimer);
 	}
 }
 
-void pgGLTFPass::Render(Camera* pCamera) {
-	float4x4 CameraView = pCamera->getTransform();
+void pgGLTFPass::Render(RenderEventArgs& e) {
+	float4x4 CameraView = e.pCamera->getTransform();
 
 	float4x4 CameraWorld = CameraView.Inverse();
 	float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);

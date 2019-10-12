@@ -21,7 +21,7 @@ pgCubePass::~pgCubePass()
 {
 }
 
-void pgCubePass::UpdateUI() {
+void pgCubePass::UpdateUI(RenderEventArgs& e) {
 	//
 }
 
@@ -195,12 +195,12 @@ void pgCubePass::CreateIndexBuffer()
 }
 
 // Render a frame
-void pgCubePass::Render(Camera* pCamera)
+void pgCubePass::Render(RenderEventArgs& e)
 {
-	// Clear the back buffer 
-	const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
-	m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	//// Clear the back buffer 
+	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
+	//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 	{
 		// Map the buffer and write current world-view-projection matrix
@@ -229,13 +229,14 @@ void pgCubePass::Render(Camera* pCamera)
 	m_pImmediateContext->Draw(DrawAttrs);
 }
 
-void pgCubePass::Update(float CurrTime, float ElapsedTime)
+void pgCubePass::Update(RenderEventArgs& e)
 {
 	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
+	const float4x4 view = e.pCamera->getTransform();
 
 	// Set cube world view matrix
-	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
-		float4x4::Translation(0.f, 0.0f, 5.0f);
+	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * -1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
+		float4x4::Translation(0.f, 0.0f, 8.0f) * view;
 	float NearPlane = 0.1f;
 	float FarPlane = 100.f;
 	float aspectRatio = static_cast<float>(width) / static_cast<float>(height);

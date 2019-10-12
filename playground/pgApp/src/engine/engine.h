@@ -59,19 +59,27 @@ class Scene : public Object {
 	//
 };
 
-//class RenderEventArgs
-//{
-//	void* Caller;
-//	float CurrTime;
-//	float ElapsedTime;
-//public:
-//	RenderEventArgs(void* caller, Camera* camera, float currentTime, float elapsedTime) : Caller(caller)
-//		, Camera(camera), CurrTime(currentTime), ElapsedTime(elapsedTime)
-//	{}
-//
-//	Camera* Camera;
-//};
-//
+class RenderEventArgs
+{
+public:
+	void* Caller;
+	float CurrTime;
+	float ElapsedTime;
+
+	Camera* pCamera;
+public:
+	RenderEventArgs()	{
+	}
+
+	void set(void* caller, float currentTime, float elapsedTime, Camera* camera) {
+		Caller = caller;
+		pCamera = camera;
+		CurrTime = currentTime;
+		ElapsedTime = elapsedTime;
+	}
+
+};
+
 
 class pgPass : public Object
 {
@@ -91,9 +99,9 @@ public:
 	}
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(float CurrTime, float ElapsedTime) = 0;
-	virtual void Render(Camera* pCamera) = 0;
-	virtual void UpdateUI() = 0;
+	virtual void Update(RenderEventArgs& e) = 0;
+	virtual void Render(RenderEventArgs& e) = 0;
+	virtual void UpdateUI(RenderEventArgs& e) = 0;
 };
 
 class pgTechnique : public Object
@@ -108,9 +116,9 @@ public:
 	virtual pgPass* GetPass(unsigned int ID) const;
 
 	// Render the scene using the passes that have been configured.
-	virtual void Update(float CurrTime, float ElapsedTime);
-	virtual void Render(Camera* pCamera);
-	virtual void UpdateUI();
+	virtual void Update(RenderEventArgs& e);
+	virtual void Render(RenderEventArgs& e);
+	virtual void UpdateUI(RenderEventArgs& e);
 
 private:
 	typedef std::vector<pgPass*> RenderPassList;
@@ -133,7 +141,7 @@ public:
 	virtual ~pgBasePass();
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(float CurrTime, float ElapsedTime);
-	virtual void Render(Camera* pCamera);
-	virtual void UpdateUI();
+	virtual void Update(RenderEventArgs& e);
+	virtual void Render(RenderEventArgs& e);
+	virtual void UpdateUI(RenderEventArgs& e);
 };
