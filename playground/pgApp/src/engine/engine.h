@@ -119,10 +119,15 @@ private:
 // Base pass provides implementations for functions used by most passes.
 class pgBasePass : public pgPass
 {
+protected:
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		  m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>		  m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>         m_pEngineFactory;
+
 public:
 	typedef pgPass base;
 
-	pgBasePass();
+	pgBasePass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory);
 	virtual ~pgBasePass();
 
 	// Render the pass. This should only be called by the pgTechnique.

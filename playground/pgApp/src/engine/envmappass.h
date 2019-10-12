@@ -11,10 +11,6 @@ using namespace Diligent;
 class pgEnvMapPass : public pgBasePass {
 	typedef pgBasePass base;
 
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		  m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>		  m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>         m_pEngineFactory;
-
 	const TEXTURE_FORMAT		m_backbufferFormat;
 	const TEXTURE_FORMAT		m_depthFormat;
 	const int					width;

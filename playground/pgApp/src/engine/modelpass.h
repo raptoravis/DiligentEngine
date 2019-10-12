@@ -5,7 +5,7 @@
 class pgModelPass : public pgBasePass {
 	typedef pgBasePass base;
 
-	pgModelPass(Diligent::IRenderDevice* device);
+	pgModelPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory);
 	virtual ~pgModelPass();
 
 	// Render the pass. This should only be called by the pgTechnique.

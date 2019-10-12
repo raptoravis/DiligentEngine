@@ -70,12 +70,9 @@ void pgEnvMapPass::LoadModel(const char* Path)
 }
 
 
-pgEnvMapPass::pgEnvMapPass(Diligent::IRenderDevice* device, IDeviceContext* pCtx, IEngineFactory* factory, 
+pgEnvMapPass::pgEnvMapPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory,
 	TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, int w, int h)
-	: base()
-	, m_pDevice(device)
-	, m_pImmediateContext(pCtx)
-	, m_pEngineFactory(factory)
+	: base(device, pCtx, factory)
 	, m_backbufferFormat(BackBufferFmt)
 	, m_depthFormat(DepthBufferFmt)
 	, width(w)

@@ -89,8 +89,11 @@ void Camera::update(Diligent::InputController* pInputController, float ElapsedTi
 	}
 }
 
-pgBasePass::pgBasePass()
+pgBasePass::pgBasePass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory)
 	: base()
+	, m_pDevice(device)
+	, m_pImmediateContext(pCtx)
+	, m_pEngineFactory(factory)
 {
 }
 

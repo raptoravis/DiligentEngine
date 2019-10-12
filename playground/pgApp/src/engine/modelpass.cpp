@@ -3,8 +3,8 @@
 #include "engine.h"
 #include "modelpass.h"
 
-pgModelPass::pgModelPass(Diligent::IRenderDevice* device)
-	: base()
+pgModelPass::pgModelPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory)
+	: base(device, pCtx, factory)
 {
 }
 
