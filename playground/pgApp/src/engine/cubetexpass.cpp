@@ -22,10 +22,6 @@ pgCubeTexPass::~pgCubeTexPass()
 {
 }
 
-void pgCubeTexPass::UpdateUI(RenderEventArgs& e) {
-	//
-}
-
 void pgCubeTexPass::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages
@@ -286,7 +282,7 @@ void pgCubeTexPass::Update(RenderEventArgs& e)
 	const float4x4 view = e.pCamera->getTransform();
 
 	// Set cube world view matrix
-	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
+	float4x4 CubeWorldView = float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
 		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
 	float NearPlane = 0.1f;
 	float FarPlane = 100.f;

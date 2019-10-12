@@ -21,10 +21,6 @@ pgCubePass::~pgCubePass()
 {
 }
 
-void pgCubePass::UpdateUI(RenderEventArgs& e) {
-	//
-}
-
 void pgCubePass::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages

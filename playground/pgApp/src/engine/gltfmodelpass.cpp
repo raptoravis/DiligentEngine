@@ -121,7 +121,7 @@ pgGLTFPass::~pgGLTFPass()
 
 
 
-void pgGLTFPass::UpdateUI(RenderEventArgs& e)
+void pgGLTFPass::UpdateUI()
 {
 	{
 		ImGui::SameLine();
@@ -292,6 +292,8 @@ void pgGLTFPass::CreateEnvMapSRB()
 
 
 void pgGLTFPass::Update(RenderEventArgs& e) {
+	UpdateUI();
+
 	if (!m_Model->Animations.empty() && m_PlayAnimation)
 	{
 		float& AnimationTimer = m_AnimationTimers[m_AnimationIndex];

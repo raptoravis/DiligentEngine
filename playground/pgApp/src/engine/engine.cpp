@@ -19,6 +19,7 @@ void Camera::reset() {
 	pos = { 0.0f, 0.0f, 0.0f };
 
 	look = { 0.0f, 0.0f, -1.0f };
+	//look = { 0.0f, 0.0f, 1.0f };
 	//look = { -1.0f, 0.0f, 0.0f };
 
 	m_cameraTransform = Diligent::float4x4::Identity();
@@ -82,6 +83,8 @@ void Camera::update(Diligent::InputController* pInputController, float ElapsedTi
 			moveBackward, moveLeft, moveForward, moveRight,
 			jump, crouch,
 			flag);
+
+		//m_cameraTransform = m_cameraTransform.Transpose();
 	}
 
 	if ((pInputController->GetKeyState(Diligent::InputKeys::Reset) & Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
@@ -148,18 +151,6 @@ void pgTechnique::Update(RenderEventArgs& e)
 		}
 	}
 }
-
-void pgTechnique::UpdateUI(RenderEventArgs& e)
-{
-	for (auto pass : m_Passes)
-	{
-		if (pass->IsEnabled())
-		{
-			pass->UpdateUI(e);
-		}
-	}
-}
-
 
 // Render the scene using the passes that have been configured.
 void pgTechnique::Render(RenderEventArgs& e)

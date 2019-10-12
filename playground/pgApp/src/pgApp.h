@@ -47,14 +47,12 @@ namespace Diligent
 		virtual const Char* GetSampleName()const override final { return "pgApp"; }
 
 	private:
-		void UpdateUI();
-
 		Camera*			m_pCamera;
-		pgGLTFPass*	m_pGLTFPass;
+		pgGLTFPass*		m_pGLTFPass;
 		pgCubeTexPass*	m_pCubeTexPass;
-		pgCubePass*	m_pCubePass;
+		pgCubePass*		m_pCubePass;
 
-		pgTechnique* m_pTechnique;
+		pgTechnique*	m_pTechnique;
 		RenderEventArgs m_evtArgs;
 	};
 }

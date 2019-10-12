@@ -97,10 +97,13 @@ namespace Diligent
 
 		m_pTechnique = new pgTechnique();
 
-		//m_pGLTFPass = new pgGLTFPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
-		//	BackBufferFmt, DepthBufferFmt, width, height);
-		//m_pTechnique->AddPass(m_pGLTFPass);
-
+#if 0
+		m_pGLTFPass = new pgGLTFPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
+			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pTechnique->AddPass(m_pGLTFPass);
+#else
+		m_pGLTFPass = 0;
+#endif
 		m_pCubeTexPass = new pgCubeTexPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
 			BackBufferFmt, DepthBufferFmt, width, height);
 		m_pTechnique->AddPass(m_pCubeTexPass);
@@ -108,46 +111,6 @@ namespace Diligent
 		m_pCubePass = new pgCubePass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
 			BackBufferFmt, DepthBufferFmt, width, height);
 		m_pTechnique->AddPass(m_pCubePass);
-	}
-
-	void pgApp::UpdateUI()
-	{
-		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			//Quaternion rot = Quaternion(m_cameraTransform);
-			//ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
-			const float3& pos = m_pCamera->getPos();
-			const float3& look = m_pCamera->getLook();
-
-			ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
-			ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
-
-			if (ImGui::Button("Reset view"))
-			{
-				m_pCamera->reset();
-			}
-
-			ImGui::Separator();
-
-			float4x4 camTt = m_pCamera->getTransform();
-			//camTt.m10 *= -1.0f;
-			//camTt.m11 *= -1.0f;
-			//camTt.m12 *= -1.0f;
-			//camTt.m20 *= -1.0f;
-			//camTt.m21 *= -1.0f;
-			//camTt.m22 *= -1.0f;
-
-			//Quaternion rot = mRot2Quat(camTt);
-			Quaternion rot = calculateRotation(camTt);
-			
-			ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
-			ImGui::SameLine();
-			//ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
-			m_pTechnique->UpdateUI(m_evtArgs);
-		}
-		ImGui::End();
 	}
 
 	pgApp::~pgApp()
@@ -179,8 +142,35 @@ namespace Diligent
 
 		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera);
 
-		UpdateUI();
+		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			//Quaternion rot = Quaternion(m_cameraTransform);
+			//ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
+			const float3& pos = m_pCamera->getPos();
+			const float3& look = m_pCamera->getLook();
+
+			ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
+			ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
+
+			if (ImGui::Button("Reset view"))
+			{
+				m_pCamera->reset();
+			}
+
+			ImGui::Separator();
+
+			float4x4 camTt = m_pCamera->getTransform();
+
+			//Quaternion rot = mRot2Quat(camTt);
+			Quaternion rot = calculateRotation(camTt);
+
+			ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
+		}
 
 		m_pTechnique->Update(m_evtArgs);
+
+		ImGui::End();
 	}
 }
