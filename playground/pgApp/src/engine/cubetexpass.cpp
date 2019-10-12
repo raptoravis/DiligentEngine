@@ -44,6 +44,13 @@ void pgCubeTexPass::CreatePipelineState()
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
 	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
+
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
+
 	// Enable depth testing
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
 
@@ -231,9 +238,10 @@ void pgCubeTexPass::CreateIndexBuffer()
 void pgCubeTexPass::LoadTexture()
 {
 	TextureLoadInfo loadInfo;
-	loadInfo.IsSRGB = true;
+	loadInfo.IsSRGB = false;
 	RefCntAutoPtr<ITexture> Tex;
-	CreateTextureFromFile("DGLogo.png", loadInfo, m_pDevice, &Tex);
+	//CreateTextureFromFile("DGLogo.png", loadInfo, m_pDevice, &Tex);
+	CreateTextureFromFile("apple-logo.png", loadInfo, m_pDevice, &Tex);
 	// Get shader resource view from the texture
 	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 

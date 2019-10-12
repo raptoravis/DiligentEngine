@@ -104,13 +104,13 @@ namespace Diligent
 #else
 		m_pGLTFPass = 0;
 #endif
-		m_pCubeTexPass = new pgCubeTexPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
-			BackBufferFmt, DepthBufferFmt, width, height);
-		m_pTechnique->AddPass(m_pCubeTexPass);
-
 		m_pCubePass = new pgCubePass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
 			BackBufferFmt, DepthBufferFmt, width, height);
 		m_pTechnique->AddPass(m_pCubePass);
+
+		m_pCubeTexPass = new pgCubeTexPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
+			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pTechnique->AddPass(m_pCubeTexPass);
 	}
 
 	pgApp::~pgApp()
