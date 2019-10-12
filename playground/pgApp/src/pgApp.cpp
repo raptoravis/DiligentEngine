@@ -39,7 +39,6 @@
 
 #include "mat2quat.h"
 
-
 namespace Diligent
 {
 #include "BasicStructures.fxh"
@@ -90,27 +89,29 @@ namespace Diligent
 
 		m_pCamera = new Camera();
 
-		auto BackBufferFmt = m_pSwapChain->GetDesc().ColorBufferFormat;
-		auto DepthBufferFmt = m_pSwapChain->GetDesc().DepthBufferFormat;
-		auto width = m_pSwapChain->GetDesc().Width;
-		auto height = m_pSwapChain->GetDesc().Height;
-
 		m_pTechnique = new pgTechnique();
 
+		pgPassCreateInfo ci;
+		ci.device = m_pDevice;
+		ci.ctx = m_pImmediateContext;
+		ci.factory = m_pEngineFactory;
+		ci.desc = m_pSwapChain->GetDesc();
+
+		m_pOpaquePass = new pgOpaquePass(ci);
+		//m_pTechnique->AddPass(m_pCubeTexPass);
+
 #if 0
-		m_pGLTFPass = new pgGLTFPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
-			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pGLTFPass = new pgGLTFPass(ci);
 		m_pTechnique->AddPass(m_pGLTFPass);
 #else
 		m_pGLTFPass = 0;
 #endif
-		m_pCubePass = new pgCubePass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
-			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pCubePass = new pgCubePass(ci);
 		m_pTechnique->AddPass(m_pCubePass);
 
-		m_pCubeTexPass = new pgCubeTexPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
-			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pCubeTexPass = new pgCubeTexPass(ci);
 		m_pTechnique->AddPass(m_pCubeTexPass);
+
 	}
 
 	pgApp::~pgApp()

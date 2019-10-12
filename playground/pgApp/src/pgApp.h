@@ -30,6 +30,7 @@
 #include "engine/gltfmodelpass.h"
 #include "engine/cubepass.h"
 #include "engine/cubetexpass.h"
+#include "engine/opaquepass.h"
 
 namespace Diligent
 {
@@ -51,6 +52,8 @@ namespace Diligent
 		pgGLTFPass*		m_pGLTFPass;
 		pgCubeTexPass*	m_pCubeTexPass;
 		pgCubePass*		m_pCubePass;
+
+		pgOpaquePass*	m_pOpaquePass;
 
 		pgTechnique*	m_pTechnique;
 		RenderEventArgs m_evtArgs;

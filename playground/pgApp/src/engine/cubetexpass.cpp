@@ -3,19 +3,12 @@
 #include "engine.h"
 #include "cubetexpass.h"
 
-pgCubeTexPass::pgCubeTexPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory, 
-	TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, 
-	int w, int h)
-	: base(device, pCtx, factory)
-	, m_backbufferFormat(BackBufferFmt)
-	, m_depthFormat(DepthBufferFmt)
-	, width(w)
-	, height(h)
+pgCubeTexPass::pgCubeTexPass(const pgPassCreateInfo& ci)
+	: base(ci)
 {
-	CreatePipelineState();
-	CreateVertexBuffer();
-	CreateIndexBuffer();
 	LoadTexture();
+
+	CreatePipelineState();
 }
 
 pgCubeTexPass::~pgCubeTexPass()
@@ -37,9 +30,9 @@ void pgCubeTexPass::CreatePipelineState()
 	// This tutorial will render to a single render target
 	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
 	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_backbufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = m_depthFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -138,101 +131,9 @@ void pgCubeTexPass::CreatePipelineState()
 	// Since we are using mutable variable, we must create a shader resource binding object
 	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
 	m_pPSO->CreateShaderResourceBinding(&m_SRB, true);
-}
 
-void pgCubeTexPass::CreateVertexBuffer()
-{
-	// Layout of this structure matches the one we defined in the pipeline state
-	struct Vertex
-	{
-		float3 pos;
-		float2 uv;
-	};
-
-	// Cube vertices
-
-	//      (-1,+1,+1)________________(+1,+1,+1) 
-	//               /|              /|
-	//              / |             / |
-	//             /  |            /  |
-	//            /   |           /   |
-	//(-1,-1,+1) /____|__________/(+1,-1,+1)
-	//           |    |__________|____| 
-	//           |   /(-1,+1,-1) |    /(+1,+1,-1)
-	//           |  /            |   /
-	//           | /             |  /
-	//           |/              | /
-	//           /_______________|/ 
-	//        (-1,-1,-1)       (+1,-1,-1)
-	// 
-
-	// This time we have to duplicate verices because texture coordinates cannot
-	// be shared
-	Vertex CubeVerts[] =
-	{
-		{float3(-1,-1,-1), float2(0,1)},
-		{float3(-1,+1,-1), float2(0,0)},
-		{float3(+1,+1,-1), float2(1,0)},
-		{float3(+1,-1,-1), float2(1,1)},
-
-		{float3(-1,-1,-1), float2(0,1)},
-		{float3(-1,-1,+1), float2(0,0)},
-		{float3(+1,-1,+1), float2(1,0)},
-		{float3(+1,-1,-1), float2(1,1)},
-
-		{float3(+1,-1,-1), float2(0,1)},
-		{float3(+1,-1,+1), float2(1,1)},
-		{float3(+1,+1,+1), float2(1,0)},
-		{float3(+1,+1,-1), float2(0,0)},
-
-		{float3(+1,+1,-1), float2(0,1)},
-		{float3(+1,+1,+1), float2(0,0)},
-		{float3(-1,+1,+1), float2(1,0)},
-		{float3(-1,+1,-1), float2(1,1)},
-
-		{float3(-1,+1,-1), float2(1,0)},
-		{float3(-1,+1,+1), float2(0,0)},
-		{float3(-1,-1,+1), float2(0,1)},
-		{float3(-1,-1,-1), float2(1,1)},
-
-		{float3(-1,-1,+1), float2(1,1)},
-		{float3(+1,-1,+1), float2(0,1)},
-		{float3(+1,+1,+1), float2(0,0)},
-		{float3(-1,+1,+1), float2(1,0)}
-	};
-
-	BufferDesc VertBuffDesc;
-	VertBuffDesc.Name = "Cube vertex buffer";
-	VertBuffDesc.Usage = USAGE_STATIC;
-	VertBuffDesc.BindFlags = BIND_VERTEX_BUFFER;
-	VertBuffDesc.uiSizeInBytes = sizeof(CubeVerts);
-	BufferData VBData;
-	VBData.pData = CubeVerts;
-	VBData.DataSize = sizeof(CubeVerts);
-	m_pDevice->CreateBuffer(VertBuffDesc, &VBData, &m_CubeVertexBuffer);
-}
-
-void pgCubeTexPass::CreateIndexBuffer()
-{
-	Uint32 Indices[] =
-	{
-		2,0,1,    2,3,0,
-		4,6,5,    4,7,6,
-		8,10,9,   8,11,10,
-		12,14,13, 12,15,14,
-		16,18,17, 16,19,18,
-		20,21,22, 20,22,23
-	};
-
-	BufferDesc IndBuffDesc;
-	IndBuffDesc.Name = "Cube index buffer";
-	IndBuffDesc.Usage = USAGE_STATIC;
-	IndBuffDesc.BindFlags = BIND_INDEX_BUFFER;
-	IndBuffDesc.uiSizeInBytes = sizeof(Indices);
-	BufferData IBData;
-	IBData.pData = Indices;
-	IBData.DataSize = sizeof(Indices);
-	m_pDevice->CreateBuffer(IndBuffDesc, &IBData, &m_CubeIndexBuffer);
+	// Set texture SRV in the SRB
+	m_SRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
 }
 
 void pgCubeTexPass::LoadTexture()
@@ -244,10 +145,8 @@ void pgCubeTexPass::LoadTexture()
 	CreateTextureFromFile("apple-logo.png", loadInfo, m_pDevice, &Tex);
 	// Get shader resource view from the texture
 	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
-
-	// Set texture SRV in the SRB
-	m_SRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
 }
+
 
 // Render a frame
 void pgCubeTexPass::Render(RenderEventArgs& e)
@@ -263,25 +162,11 @@ void pgCubeTexPass::Render(RenderEventArgs& e)
 		*CBConstants = m_WorldViewProjMatrix.Transpose();
 	}
 
-	// Bind vertex and index buffers
-	Uint32 offset = 0;
-	IBuffer *pBuffs[] = { m_CubeVertexBuffer };
-	m_pImmediateContext->SetVertexBuffers(0, 1, pBuffs, &offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
-	m_pImmediateContext->SetIndexBuffer(m_CubeIndexBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
 	// Set the pipeline state
 	m_pImmediateContext->SetPipelineState(m_pPSO);
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 	// makes sure that resources are transitioned to required states.
 	m_pImmediateContext->CommitShaderResources(m_SRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-	DrawAttribs DrawAttrs;
-	DrawAttrs.IsIndexed = true;      // This is an indexed draw call
-	DrawAttrs.IndexType = VT_UINT32; // Index type
-	DrawAttrs.NumIndices = 36;
-	// Verify the state of vertex and index buffers
-	DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
-	m_pImmediateContext->Draw(DrawAttrs);
 }
 
 void pgCubeTexPass::Update(RenderEventArgs& e)
@@ -294,7 +179,7 @@ void pgCubeTexPass::Update(RenderEventArgs& e)
 		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
 	float NearPlane = 0.1f;
 	float FarPlane = 100.f;
-	float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
 	// Projection matrix differs between DX and OpenGL
 	auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane, IsGL);
 	// Compute world-view-projection matrix

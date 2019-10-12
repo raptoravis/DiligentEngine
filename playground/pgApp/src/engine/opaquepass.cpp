@@ -1,19 +1,21 @@
 #pragma once
 
 #include "engine.h"
-#include "cubepass.h"
+#include "opaquepass.h"
 
-pgCubePass::pgCubePass(const pgPassCreateInfo& ci)
+pgOpaquePass::pgOpaquePass(const pgPassCreateInfo& ci)
 	: base(ci)
 {
 	CreatePipelineState();
+	CreateVertexBuffer();
+	CreateIndexBuffer();
 }
 
-pgCubePass::~pgCubePass()
+pgOpaquePass::~pgOpaquePass()
 {
 }
 
-void pgCubePass::CreatePipelineState()
+void pgOpaquePass::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
@@ -44,20 +46,20 @@ void pgCubePass::CreatePipelineState()
 	ShaderCI.SourceLanguage = SHADER_SOURCE_LANGUAGE_HLSL;
 
 	// OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
-	ShaderCI.UseCombinedTextureSamplers = true;
+	ShaderCI.UseCombinedTextureSamplers = false;
 
 	// In this tutorial, we will load shaders from file. To be able to do that,
 	// we need to create a shader source stream factory
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory(nullptr, &pShaderSourceFactory);
+	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./hlsl/", &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
 	{
 		ShaderCI.Desc.ShaderType = SHADER_TYPE_VERTEX;
-		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = "Cube VS";
-		ShaderCI.FilePath = "cube.vsh";
+		ShaderCI.EntryPoint = "VS_main";
+		ShaderCI.Desc.Name = "OpaqueVS";
+		ShaderCI.FilePath = "ForwardRendering.hlsl";
 		m_pDevice->CreateShader(ShaderCI, &pVS);
 		// Create dynamic uniform buffer that will store our transformation matrix
 		// Dynamic buffers can be frequently updated by the CPU
@@ -74,19 +76,20 @@ void pgCubePass::CreatePipelineState()
 	RefCntAutoPtr<IShader> pPS;
 	{
 		ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
-		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = "Cube PS";
-		ShaderCI.FilePath = "cube.psh";
+		ShaderCI.EntryPoint = "PS_main";
+		ShaderCI.Desc.Name = "OpaquePS";
+		ShaderCI.FilePath = "ForwardRendering.hlsl";
 		m_pDevice->CreateShader(ShaderCI, &pPS);
 	}
 
 	// Define vertex shader input layout
 	LayoutElement LayoutElems[] =
 	{
-		// Attribute 0 - vertex position
-		LayoutElement{0, 0, 3, VT_FLOAT32, False},
-		// Attribute 1 - vertex color
-		LayoutElement{1, 0, 4, VT_FLOAT32, False}
+		LayoutElement{0, 0, 3, VT_FLOAT32, False}, //position
+		LayoutElement{1, 0, 3, VT_FLOAT32, False}, //tangent
+		LayoutElement{2, 0, 3, VT_FLOAT32, False}, //binormal
+		LayoutElement{3, 0, 3, VT_FLOAT32, False}, //normal
+		LayoutElement{4, 0, 2, VT_FLOAT32, False}, //tex
 	};
 	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
 	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
@@ -102,14 +105,89 @@ void pgCubePass::CreatePipelineState()
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
 	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_VSConstants);
+	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(m_VSConstants);
 
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 }
 
+void pgOpaquePass::CreateVertexBuffer()
+{
+	// Layout of this structure matches the one we defined in the pipeline state
+	struct Vertex
+	{
+		float3 pos;
+		float4 color;
+	};
+
+	// Cube vertices
+
+	//      (-1,+1,+1)________________(+1,+1,+1)
+	//               /|              /|
+	//              / |             / |
+	//             /  |            /  |
+	//            /   |           /   |
+	//(-1,-1,+1) /____|__________/(+1,-1,+1)
+	//           |    |__________|____|
+	//           |   /(-1,+1,-1) |    /(+1,+1,-1)
+	//           |  /            |   /
+	//           | /             |  /
+	//           |/              | /
+	//           /_______________|/
+	//        (-1,-1,-1)       (+1,-1,-1)
+	//
+
+	Vertex CubeVerts[8] =
+	{
+		{float3(-1,-1,-1), float4(1,0,0,1)},
+		{float3(-1,+1,-1), float4(0,1,0,1)},
+		{float3(+1,+1,-1), float4(0,0,1,1)},
+		{float3(+1,-1,-1), float4(1,1,1,1)},
+
+		{float3(-1,-1,+1), float4(1,1,0,1)},
+		{float3(-1,+1,+1), float4(0,1,1,1)},
+		{float3(+1,+1,+1), float4(1,0,1,1)},
+		{float3(+1,-1,+1), float4(0.2f,0.2f,0.2f,1)},
+	};
+
+	// Create a vertex buffer that stores cube vertices
+	BufferDesc VertBuffDesc;
+	VertBuffDesc.Name = "Cube vertex buffer";
+	VertBuffDesc.Usage = USAGE_STATIC;
+	VertBuffDesc.BindFlags = BIND_VERTEX_BUFFER;
+	VertBuffDesc.uiSizeInBytes = sizeof(CubeVerts);
+	BufferData VBData;
+	VBData.pData = CubeVerts;
+	VBData.DataSize = sizeof(CubeVerts);
+	m_pDevice->CreateBuffer(VertBuffDesc, &VBData, &m_CubeVertexBuffer);
+}
+
+void pgOpaquePass::CreateIndexBuffer()
+{
+	Uint32 Indices[] =
+	{
+		2,0,1, 2,3,0,
+		4,6,5, 4,7,6,
+		0,7,4, 0,3,7,
+		1,0,4, 1,4,5,
+		1,5,2, 5,6,2,
+		3,6,7, 3,2,6
+	};
+
+	BufferDesc IndBuffDesc;
+	IndBuffDesc.Name = "Cube index buffer";
+	IndBuffDesc.Usage = USAGE_STATIC;
+	IndBuffDesc.BindFlags = BIND_INDEX_BUFFER;
+	IndBuffDesc.uiSizeInBytes = sizeof(Indices);
+	BufferData IBData;
+	IBData.pData = Indices;
+	IBData.DataSize = sizeof(Indices);
+	m_pDevice->CreateBuffer(IndBuffDesc, &IBData, &m_CubeIndexBuffer);
+}
+
 // Render a frame
-void pgCubePass::Render(RenderEventArgs& e)
+void pgOpaquePass::Render(RenderEventArgs& e)
 {
 	//// Clear the back buffer 
 	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
@@ -122,14 +200,28 @@ void pgCubePass::Render(RenderEventArgs& e)
 		*CBConstants = m_WorldViewProjMatrix.Transpose();
 	}
 
+	// Bind vertex and index buffers
+	Uint32 offset = 0;
+	IBuffer *pBuffs[] = { m_CubeVertexBuffer };
+	m_pImmediateContext->SetVertexBuffers(0, 1, pBuffs, &offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
+	m_pImmediateContext->SetIndexBuffer(m_CubeIndexBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
 	// Set the pipeline state
 	m_pImmediateContext->SetPipelineState(m_pPSO);
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 	// makes sure that resources are transitioned to required states.
 	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+	DrawAttribs DrawAttrs;
+	DrawAttrs.IsIndexed = true;      // This is an indexed draw call
+	DrawAttrs.IndexType = VT_UINT32; // Index type
+	DrawAttrs.NumIndices = 36;
+	// Verify the state of vertex and index buffers
+	DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
+	m_pImmediateContext->Draw(DrawAttrs);
 }
 
-void pgCubePass::Update(RenderEventArgs& e)
+void pgOpaquePass::Update(RenderEventArgs& e)
 {
 	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
 	const float4x4 view = e.pCamera->getTransform();

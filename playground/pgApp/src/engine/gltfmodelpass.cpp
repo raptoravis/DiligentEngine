@@ -70,13 +70,8 @@ void pgGLTFPass::LoadModel(const char* Path)
 }
 
 
-pgGLTFPass::pgGLTFPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory,
-	TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, int w, int h)
-	: base(device, pCtx, factory)
-	, m_backbufferFormat(BackBufferFmt)
-	, m_depthFormat(DepthBufferFmt)
-	, width(w)
-	, height(h)
+pgGLTFPass::pgGLTFPass(const pgPassCreateInfo& ci)
+	: base(ci)
 {
 	RefCntAutoPtr<ITexture> EnvironmentMap;
 
@@ -86,8 +81,8 @@ pgGLTFPass::pgGLTFPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext
 	CreateUniformBuffer(m_pDevice, sizeof(EnvMapRenderAttribs), "Env map render attribs buffer", &m_EnvMapRenderAttribsCB);
 
 	GLTF_PBR_Renderer::CreateInfo RendererCI;
-	RendererCI.RTVFmt = BackBufferFmt;
-	RendererCI.DSVFmt = DepthBufferFmt;
+	RendererCI.RTVFmt = m_desc.ColorBufferFormat;
+	RendererCI.DSVFmt = m_desc.DepthBufferFormat;
 	RendererCI.AllowDebugView = true;
 	RendererCI.UseIBL = true;
 	RendererCI.FrontCCW = true;
@@ -250,9 +245,9 @@ void pgGLTFPass::CreateEnvMapPSO()
 	PSODesc.GraphicsPipeline.pVS = pVS;
 	PSODesc.GraphicsPipeline.pPS = pPS;
 
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_backbufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
 	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
-	PSODesc.GraphicsPipeline.DSVFormat = m_depthFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
 
@@ -310,7 +305,7 @@ void pgGLTFPass::Render(RenderEventArgs& e) {
 	float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);
 	float NearPlane = 0.1f;
 	float FarPlane = 100.f;
-	float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
 	// Projection matrix differs between DX and OpenGL
 	auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane, m_pDevice->GetDeviceCaps().IsGLDevice());
 	// Compute world-view-projection matrix

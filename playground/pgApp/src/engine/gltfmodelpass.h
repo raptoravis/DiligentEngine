@@ -11,12 +11,6 @@ using namespace Diligent;
 class pgGLTFPass : public pgBasePass {
 	typedef pgBasePass base;
 
-	const TEXTURE_FORMAT		m_backbufferFormat;
-	const TEXTURE_FORMAT		m_depthFormat;
-	const int					width;
-	const int					height;
-
-
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_EnvMapPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_EnvMapSRB;
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_EnvironmentMapSRV;
@@ -58,9 +52,7 @@ class pgGLTFPass : public pgBasePass {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
 public:
-	pgGLTFPass(Diligent::IRenderDevice* pDevice, IDeviceContext* pCtx, IEngineFactory* factory, 
-		TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, 
-		int w, int h);
+	pgGLTFPass(const pgPassCreateInfo& ci);
 
 	virtual ~pgGLTFPass();
 
