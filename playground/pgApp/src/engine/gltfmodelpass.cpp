@@ -4,7 +4,7 @@
 #include <array>
 
 #include "engine.h"
-#include "envmappass.h"
+#include "gltfmodelpass.h"
 
 using namespace Diligent;
 
@@ -27,7 +27,7 @@ namespace
 }
 
 
-const std::pair<const char*, const char*> pgEnvMapPass::GLTFModels[] =
+const std::pair<const char*, const char*> pgGLTFPass::GLTFModels[] =
 {
 	{"Sponza",				"models/Sponza/Sponza.gltf"},
 	{"VirtualCity",			"models/VirtualCity/VC.gltf"},
@@ -40,7 +40,7 @@ const std::pair<const char*, const char*> pgEnvMapPass::GLTFModels[] =
 	{"Normal Tangent Test", "models/NormalTangentTest/NormalTangentTest.gltf"}
 };
 
-void pgEnvMapPass::LoadModel(const char* Path)
+void pgGLTFPass::LoadModel(const char* Path)
 {
 	if (m_Model)
 	{
@@ -70,7 +70,7 @@ void pgEnvMapPass::LoadModel(const char* Path)
 }
 
 
-pgEnvMapPass::pgEnvMapPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory,
+pgGLTFPass::pgGLTFPass(Diligent::IRenderDevice* device, Diligent::IDeviceContext* pCtx, Diligent::IEngineFactory* factory,
 	TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, int w, int h)
 	: base(device, pCtx, factory)
 	, m_backbufferFormat(BackBufferFmt)
@@ -115,13 +115,13 @@ pgEnvMapPass::pgEnvMapPass(Diligent::IRenderDevice* device, Diligent::IDeviceCon
 	LoadModel(GLTFModels[m_SelectedModel].second);
 }
 
-pgEnvMapPass::~pgEnvMapPass()
+pgGLTFPass::~pgGLTFPass()
 {
 }
 
 
 
-void pgEnvMapPass::UpdateUI()
+void pgGLTFPass::UpdateUI()
 {
 	{
 		ImGui::SameLine();
@@ -201,7 +201,7 @@ void pgEnvMapPass::UpdateUI()
 	}
 }
 
-void pgEnvMapPass::CreateEnvMapPSO()
+void pgGLTFPass::CreateEnvMapPSO()
 {
 	ShaderCreateInfo ShaderCI;
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
@@ -262,7 +262,7 @@ void pgEnvMapPass::CreateEnvMapPSO()
 	CreateEnvMapSRB();
 }
 
-void pgEnvMapPass::CreateEnvMapSRB()
+void pgGLTFPass::CreateEnvMapSRB()
 {
 	if (m_BackgroundMode != BackgroundMode::None)
 	{
@@ -291,7 +291,7 @@ void pgEnvMapPass::CreateEnvMapSRB()
 }
 
 
-void pgEnvMapPass::Update(float CurrTime, float ElapsedTime) {
+void pgGLTFPass::Update(float CurrTime, float ElapsedTime) {
 	if (!m_Model->Animations.empty() && m_PlayAnimation)
 	{
 		float& AnimationTimer = m_AnimationTimers[m_AnimationIndex];
@@ -301,7 +301,7 @@ void pgEnvMapPass::Update(float CurrTime, float ElapsedTime) {
 	}
 }
 
-void pgEnvMapPass::Render(Camera* pCamera) {
+void pgGLTFPass::Render(Camera* pCamera) {
 	float4x4 CameraView = pCamera->getTransform();
 
 	float4x4 CameraWorld = CameraView.Inverse();

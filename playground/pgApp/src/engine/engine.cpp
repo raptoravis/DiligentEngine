@@ -110,6 +110,10 @@ void pgBasePass::Render(Camera* pCamera)
 {
 }
 
+void pgBasePass::UpdateUI()
+{
+}
+
 
 pgTechnique::pgTechnique()
 {}
@@ -144,6 +148,18 @@ void pgTechnique::Update(float CurrTime, float ElapsedTime)
 		}
 	}
 }
+
+void pgTechnique::UpdateUI()
+{
+	for (auto pass : m_Passes)
+	{
+		if (pass->IsEnabled())
+		{
+			pass->UpdateUI();
+		}
+	}
+}
+
 
 // Render the scene using the passes that have been configured.
 void pgTechnique::Render(Camera* pCamera)

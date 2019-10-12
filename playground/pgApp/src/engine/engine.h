@@ -93,6 +93,7 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void Update(float CurrTime, float ElapsedTime) = 0;
 	virtual void Render(Camera* pCamera) = 0;
+	virtual void UpdateUI() = 0;
 };
 
 class pgTechnique : public Object
@@ -109,6 +110,7 @@ public:
 	// Render the scene using the passes that have been configured.
 	virtual void Update(float CurrTime, float ElapsedTime);
 	virtual void Render(Camera* pCamera);
+	virtual void UpdateUI();
 
 private:
 	typedef std::vector<pgPass*> RenderPassList;
@@ -133,4 +135,5 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void Update(float CurrTime, float ElapsedTime);
 	virtual void Render(Camera* pCamera);
+	virtual void UpdateUI();
 };

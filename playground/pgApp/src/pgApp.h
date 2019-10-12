@@ -27,8 +27,9 @@
 #include "SampleBase.h"
 #include "BasicMath.h"
 
-#include "engine/envmappass.h"
-#include "engine/modelpass.h"
+#include "engine/gltfmodelpass.h"
+#include "engine/cubepass.h"
+#include "engine/cubetexpass.h"
 
 namespace Diligent
 {
@@ -49,6 +50,10 @@ namespace Diligent
 		void UpdateUI();
 
 		Camera*			m_pCamera;
-		pgEnvMapPass*	m_pEnvMapPass;
+		pgGLTFPass*	m_pGLTFPass;
+		pgCubeTexPass*	m_pCubeTexPass;
+		pgCubePass*	m_pCubePass;
+
+		pgTechnique* m_pTechnique;
 	};
 }

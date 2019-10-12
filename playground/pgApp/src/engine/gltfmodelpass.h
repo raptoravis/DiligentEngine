@@ -8,7 +8,7 @@
 
 using namespace Diligent;
 
-class pgEnvMapPass : public pgBasePass {
+class pgGLTFPass : public pgBasePass {
 	typedef pgBasePass base;
 
 	const TEXTURE_FORMAT		m_backbufferFormat;
@@ -58,17 +58,16 @@ class pgEnvMapPass : public pgBasePass {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
 public:
-	pgEnvMapPass(Diligent::IRenderDevice* pDevice, IDeviceContext* pCtx, IEngineFactory* factory, 
+	pgGLTFPass(Diligent::IRenderDevice* pDevice, IDeviceContext* pCtx, IEngineFactory* factory, 
 		TEXTURE_FORMAT BackBufferFmt, TEXTURE_FORMAT DepthBufferFmt, 
 		int w, int h);
 
-	virtual ~pgEnvMapPass();
+	virtual ~pgGLTFPass();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void Update(float CurrTime, float ElapsedTime);
 	virtual void Render(Camera* pCamera);
-
-	void UpdateUI();
+	virtual void UpdateUI();
 
 };
 

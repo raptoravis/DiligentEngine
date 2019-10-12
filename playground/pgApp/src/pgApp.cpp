@@ -95,8 +95,19 @@ namespace Diligent
 		auto width = m_pSwapChain->GetDesc().Width;
 		auto height = m_pSwapChain->GetDesc().Height;
 
-		m_pEnvMapPass = new pgEnvMapPass(m_pDevice, m_pImmediateContext, m_pEngineFactory, 
+		m_pTechnique = new pgTechnique();
+
+		//m_pGLTFPass = new pgGLTFPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
+		//	BackBufferFmt, DepthBufferFmt, width, height);
+		//m_pTechnique->AddPass(m_pGLTFPass);
+
+		m_pCubeTexPass = new pgCubeTexPass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
 			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pTechnique->AddPass(m_pCubeTexPass);
+
+		m_pCubePass = new pgCubePass(m_pDevice, m_pImmediateContext, m_pEngineFactory,
+			BackBufferFmt, DepthBufferFmt, width, height);
+		m_pTechnique->AddPass(m_pCubePass);
 	}
 
 	void pgApp::UpdateUI()
@@ -134,8 +145,7 @@ namespace Diligent
 			ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 			ImGui::SameLine();
 			//ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
-
-			m_pEnvMapPass->UpdateUI();
+			m_pTechnique->UpdateUI();
 		}
 		ImGui::End();
 	}
@@ -143,7 +153,10 @@ namespace Diligent
 	pgApp::~pgApp()
 	{
 		delete m_pCamera;
-		m_pCamera = 0;
+		delete m_pGLTFPass;
+		delete m_pCubeTexPass;
+		delete m_pCubePass;
+		delete m_pTechnique;
 	}
 
 	// Render a frame
@@ -154,9 +167,7 @@ namespace Diligent
 		m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		
-
-		m_pEnvMapPass->Render(m_pCamera);
+		m_pTechnique->Render(m_pCamera);
 	}
 
 
@@ -168,6 +179,6 @@ namespace Diligent
 
 		UpdateUI();
 
-		m_pEnvMapPass->Update((float)CurrTime, (float)ElapsedTime);
+		m_pTechnique->Update((float)CurrTime, (float)ElapsedTime);
 	}
 }
