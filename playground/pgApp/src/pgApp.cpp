@@ -25,6 +25,11 @@
 #include "argparse.h"
 
 #include "pgApp.h"
+#include "engine/gltfmodelpass.h"
+#include "engine/cubepass.h"
+#include "engine/cubetexpass.h"
+#include "engine/opaquepass.h"
+
 #include "MapHelper.h"
 #include "BasicMath.h"
 #include "GraphicsUtilities.h"
@@ -89,6 +94,7 @@ namespace Diligent
 
 		m_pCamera = new Camera();
 
+		// technique will clean up passed added in it
 		m_pTechnique = new pgTechnique();
 
 		pgPassCreateInfo ci;
@@ -97,29 +103,27 @@ namespace Diligent
 		ci.factory = m_pEngineFactory;
 		ci.desc = m_pSwapChain->GetDesc();
 
-		m_pOpaquePass = new pgOpaquePass(ci);
-		//m_pTechnique->AddPass(m_pCubeTexPass);
+		pgOpaquePass* pOpaquePass = new pgOpaquePass(ci);
+		//m_pTechnique->addPass(pOpaquePass);
 
 #if 0
-		m_pGLTFPass = new pgGLTFPass(ci);
-		m_pTechnique->AddPass(m_pGLTFPass);
+		pgGLTFPass* pGLTFPass = new pgGLTFPass(ci);
+		m_pTechnique->addPass(pGLTFPass);
 #else
-		m_pGLTFPass = 0;
+		//
 #endif
-		m_pCubePass = new pgCubePass(ci);
-		m_pTechnique->AddPass(m_pCubePass);
+		pgCubePass* pCubePass = new pgCubePass(ci);
+		m_pTechnique->addPass(pCubePass);
 
-		m_pCubeTexPass = new pgCubeTexPass(ci);
-		m_pTechnique->AddPass(m_pCubeTexPass);
+		pgCubeTexPass* pCubeTexPass = new pgCubeTexPass(ci);
+		m_pTechnique->addPass(pCubeTexPass);
 
 	}
 
 	pgApp::~pgApp()
 	{
 		delete m_pCamera;
-		delete m_pGLTFPass;
-		delete m_pCubeTexPass;
-		delete m_pCubePass;
+
 		delete m_pTechnique;
 	}
 

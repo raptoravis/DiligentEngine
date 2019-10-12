@@ -329,6 +329,11 @@ struct pgPassCreateInfo {
 	Diligent::IEngineFactory*		factory;
 
 	Diligent::SwapChainDesc			desc;
+
+	Scene*							scene;
+
+	pgPassCreateInfo() : scene(0)
+	{}
 };
 
 class pgPass : public Object
@@ -340,6 +345,7 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
 
 	Diligent::SwapChainDesc								m_desc;
+	Scene*												m_scene;
 
 public:
 	pgPass(const pgPassCreateInfo& ci) 
@@ -348,6 +354,7 @@ public:
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
 		, m_desc(ci.desc)
+		, m_scene(ci.scene)
 	{
 	}
 
@@ -373,8 +380,8 @@ public:
 
 	// Add a pass to the technique. The ID of the added pass is returned
 	// and can be used to retrieve the pass later.
-	virtual unsigned int AddPass(pgPass* pass);
-	virtual pgPass* GetPass(unsigned int ID) const;
+	unsigned int addPass(pgPass* pass);
+	pgPass* getPass(unsigned int ID) const;
 
 	// Render the scene using the passes that have been configured.
 	virtual void Update(RenderEventArgs& e);
@@ -398,5 +405,4 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void Update(RenderEventArgs& e);
 	virtual void Render(RenderEventArgs& e);
-	virtual void UpdateUI(RenderEventArgs& e);
 };

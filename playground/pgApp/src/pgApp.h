@@ -27,10 +27,7 @@
 #include "SampleBase.h"
 #include "BasicMath.h"
 
-#include "engine/gltfmodelpass.h"
-#include "engine/cubepass.h"
-#include "engine/cubetexpass.h"
-#include "engine/opaquepass.h"
+#include "engine/engine.h"
 
 namespace Diligent
 {
@@ -49,11 +46,6 @@ namespace Diligent
 
 	private:
 		Camera*			m_pCamera;
-		pgGLTFPass*		m_pGLTFPass;
-		pgCubeTexPass*	m_pCubeTexPass;
-		pgCubePass*		m_pCubePass;
-
-		pgOpaquePass*	m_pOpaquePass;
 
 		pgTechnique*	m_pTechnique;
 		RenderEventArgs m_evtArgs;

@@ -114,8 +114,6 @@ pgGLTFPass::~pgGLTFPass()
 {
 }
 
-
-
 void pgGLTFPass::UpdateUI()
 {
 	{
