@@ -88,7 +88,9 @@ namespace Diligent
 			//camTt.m21 *= -1.0f;
 			//camTt.m22 *= -1.0f;
 
-			Quaternion rot = mRot2Quat(camTt);
+			//Quaternion rot = mRot2Quat(camTt);
+			Quaternion rot = calculateRotation(camTt);
+			
 			ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 			ImGui::SameLine();
 			//ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
