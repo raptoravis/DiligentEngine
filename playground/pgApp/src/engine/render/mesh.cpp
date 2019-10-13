@@ -2,28 +2,30 @@
 
 using namespace Diligent;
 
-void pgMesh::AddVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> pgBuffer)
+void pgMesh::addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> pgBuffer)
 {
 	m_VertexBuffers[binding] = pgBuffer;
 }
 
-void pgMesh::SetIndexBuffer(std::shared_ptr<pgBuffer> pgBuffer)
+void pgMesh::setIndexBuffer(std::shared_ptr<pgBuffer> pgBuffer)
 {
 	m_pIndexBuffer = pgBuffer;
 }
 
-void pgMesh::SetMaterial(std::shared_ptr<pgMaterial> pgMaterial)
+void pgMesh::setMaterial(std::shared_ptr<pgMaterial> pgMaterial)
 {
 	m_pMaterial = pgMaterial;
 }
 
-std::shared_ptr<pgMaterial> pgMesh::GetMaterial() const
+std::shared_ptr<pgMaterial> pgMesh::getMaterial() const
 {
 	return m_pMaterial;
 }
 
-void pgMesh::render(pgSceneNode* sceneNode, pgRenderEventArgs& e)
+void pgMesh::render(pgRenderEventArgs& e)
 {
+	assert(e.pPass);
+
 	constexpr uint32_t kMaxBuffers = Diligent::MaxBufferSlots;
 
 	Uint32 offset[kMaxBuffers] = {0};
@@ -42,7 +44,7 @@ void pgMesh::render(pgSceneNode* sceneNode, pgRenderEventArgs& e)
 	m_pImmediateContext->SetVertexBuffers(0, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	e.pPass->updateSRB(sceneNode, e);
+	e.pPass->updateSRB(e);
 
 	if (m_pMaterial)
 	{

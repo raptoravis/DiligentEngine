@@ -12,5 +12,5 @@ public:
 	Cube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
 	virtual ~Cube();
 
-	virtual void render(pgSceneNode* sceneNode, pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 };

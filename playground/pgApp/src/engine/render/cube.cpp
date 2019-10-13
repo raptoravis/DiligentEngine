@@ -57,7 +57,7 @@ void Cube::CreateVertexBuffer()
 		(const float*)CubeVerts, 8, sizeof(Vertex));
 
 	pgBufferBinding binding{"POSITION", 0};
-	AddVertexBuffer(binding, buffer);
+	addVertexBuffer(binding, buffer);
 }
 
 void Cube::CreateIndexBuffer()
@@ -77,8 +77,6 @@ void Cube::CreateIndexBuffer()
 }
 
 
-void Cube::render(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
-	assert(e.pPass);
-
-	pgMesh::render(sceneNode, e);
+void Cube::render(pgRenderEventArgs& e) {
+	pgMesh::render(e);
 }

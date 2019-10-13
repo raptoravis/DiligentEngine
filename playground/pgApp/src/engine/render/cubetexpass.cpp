@@ -156,14 +156,13 @@ void pgCubeTexPass::render(pgRenderEventArgs& e)
 	m_scene->render(e);
 }
 
-void pgCubeTexPass::updateSRB(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
+void pgCubeTexPass::updateSRB(pgRenderEventArgs& e) {
 	const float4x4 view = e.pCamera->getViewMatrix();
 
-	const float4x4 local = sceneNode->GetLocalTransform();
+	const float4x4 local = e.pSceneNode->getLocalTransform();
 
 	// Set cube world view matrix
-	float4x4 CubeWorldView = local * float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
-		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
+	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * local * view;
 
 	auto& Proj = e.pCamera->getProjectionMatrix();
 

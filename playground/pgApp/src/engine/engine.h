@@ -156,6 +156,7 @@ public:
 };
 
 class pgPass;
+class pgSceneNode;
 
 class pgRenderEventArgs
 {
@@ -164,9 +165,10 @@ public:
 	float CurrTime;
 	float ElapsedTime;
 
-	pgCamera* pCamera;
+	pgCamera*		pCamera;
 
-	pgPass* pPass;
+	pgPass*			pPass;
+	pgSceneNode*	pSceneNode;
 public:
 	pgRenderEventArgs() :
 		pPass(0)
@@ -433,13 +435,13 @@ public:
 	}
 
 	// Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
-	virtual void AddVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> buffer);
-	virtual void SetIndexBuffer(std::shared_ptr<pgBuffer> buffer);
+	virtual void addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> buffer);
+	virtual void setIndexBuffer(std::shared_ptr<pgBuffer> buffer);
 
-	virtual void SetMaterial(std::shared_ptr<pgMaterial> material);
-	virtual std::shared_ptr<pgMaterial> GetMaterial() const;
+	virtual void setMaterial(std::shared_ptr<pgMaterial> material);
+	virtual std::shared_ptr<pgMaterial> getMaterial() const;
 
-	virtual void render(pgSceneNode* sceneNode, pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -453,20 +455,20 @@ public:
 	/**
 	 * Assign a name to this scene node so that it can be searched for later.
 	 */
-	const std::string& GetName() const;
-	void SetName(const std::string& name);
+	const std::string& getName() const;
+	void setName(const std::string& name);
 
-	Diligent::float4x4 GetLocalTransform() const;
-	void SetLocalTransform(const Diligent::float4x4& localTransform);
-	Diligent::float4x4 GetInverseLocalTransform() const;
-	Diligent::float4x4 GetWorldTransfom() const;
-	void SetWorldTransform(const Diligent::float4x4& worldTransform);
+	Diligent::float4x4 getLocalTransform() const;
+	void setLocalTransform(const Diligent::float4x4& localTransform);
+	Diligent::float4x4 getInverseLocalTransform() const;
+	Diligent::float4x4 getWorldTransfom() const;
+	void setWorldTransform(const Diligent::float4x4& worldTransform);
 
-	Diligent::float4x4 GetInverseWorldTransform() const;
+	Diligent::float4x4 getInverseWorldTransform() const;
 
-	void AddChild(std::shared_ptr<pgSceneNode> pNode);
-	void RemoveChild(std::shared_ptr<pgSceneNode> pNode);
-	void SetParent(std::weak_ptr<pgSceneNode> pNode);
+	void addChild(std::shared_ptr<pgSceneNode> pNode);
+	void removeChild(std::shared_ptr<pgSceneNode> pNode);
+	void setParent(std::weak_ptr<pgSceneNode> pNode);
 
 	void addMesh(std::shared_ptr<pgMesh> mesh);
 	void RemoveMesh(std::shared_ptr<pgMesh> mesh);
@@ -586,7 +588,7 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e) = 0;
-	virtual void updateSRB(pgSceneNode* sceneNode, pgRenderEventArgs& e) = 0;
+	virtual void updateSRB(pgRenderEventArgs& e) = 0;
 	virtual void render(pgRenderEventArgs& e) = 0;
 };
 
@@ -601,9 +603,10 @@ public:
 	unsigned int addPass(std::shared_ptr<pgPass> pass);
 	std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
+	void update(pgRenderEventArgs& e);
+
 	// Render the scene using the passes that have been configured.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
+	void render(pgRenderEventArgs& e);
 
 private:
 	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;

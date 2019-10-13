@@ -95,12 +95,14 @@ namespace Diligent
 		std::shared_ptr<Cube> cube = std::make_shared<Cube>(m_pDevice, m_pImmediateContext);
 		std::shared_ptr<CubeTex> cubeTex = std::make_shared<CubeTex>(m_pDevice, m_pImmediateContext);
 
-		std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>();
+		float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) *float4x4::Translation(0.f, 0.0f, 8.0f);
+		std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>(trans1);
 		root1->addMesh(cube);
 		std::shared_ptr<pgScene> sceneCube = std::make_shared<pgScene>(sci);
 		sceneCube->setRootNode(root1);
 
-		std::shared_ptr<pgSceneNode> root2 = std::make_shared<pgSceneNode>();
+		float4x4 trans2 = float4x4::Scale(0.6f) * float4x4::RotationX(-PI_F * 0.1f) *float4x4::Translation(0.f, 0.0f, 5.0f);
+		std::shared_ptr<pgSceneNode> root2 = std::make_shared<pgSceneNode>(trans2);
 		root2->addMesh(cubeTex);
 		std::shared_ptr<pgScene> sceneCubeTex = std::make_shared<pgScene>(sci);
 		sceneCubeTex->setRootNode(root2);

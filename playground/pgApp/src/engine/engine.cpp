@@ -88,8 +88,12 @@ void pgTechnique::render(pgRenderEventArgs& e)
 	{
 		if (pass->isEnabled())
 		{
+			// set the pass
 			e.pPass = pass.get();
+
 			pass->render(e);
+
+			// clear it
 			e.pPass = 0;
 		}
 	}

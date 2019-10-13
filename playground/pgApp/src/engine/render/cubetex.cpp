@@ -80,7 +80,7 @@ void CubeTex::CreateVertexBuffer()
 		(const float*)CubeVerts, 24, sizeof(Vertex));
 
 	pgBufferBinding binding{ "POSITION", 0 };
-	AddVertexBuffer(binding, buffer);
+	addVertexBuffer(binding, buffer);
 }
 
 void CubeTex::CreateIndexBuffer()
@@ -99,6 +99,6 @@ void CubeTex::CreateIndexBuffer()
 		Indices, 36);
 }
 
-void CubeTex::render(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
-	pgMesh::render(sceneNode, e);
+void CubeTex::render(pgRenderEventArgs& e) {
+	pgMesh::render(e);
 }

@@ -147,7 +147,7 @@ bool pgSceneAss::LoadFromFile( const std::wstring& fileName )
         {
             // Save the root nodes local transform
             // so it can be restored on reload.
-            localTransform = m_pRootNode->GetLocalTransform();
+            localTransform = m_pRootNode->getLocalTransform();
             m_pRootNode.reset();
         }
         // Delete the previously loaded assets.
@@ -167,7 +167,7 @@ bool pgSceneAss::LoadFromFile( const std::wstring& fileName )
         }
 
         m_pRootNode = ImportSceneNode( m_pRootNode, scene->mRootNode );
-        m_pRootNode->SetLocalTransform( localTransform );
+        m_pRootNode->setLocalTransform( localTransform );
     }
 
     return true;
@@ -325,33 +325,33 @@ void pgSceneAss::ImportMesh( const aiMesh& mesh )
     std::shared_ptr<pgMesh> pMesh = CreateMesh();
 
     assert( mesh.mMaterialIndex < m_Materials.size() );
-    pMesh->SetMaterial( m_Materials[mesh.mMaterialIndex] );
+    pMesh->setMaterial( m_Materials[mesh.mMaterialIndex] );
 
     if ( mesh.HasPositions() )
     {
         std::shared_ptr<pgBuffer> positions = CreateFloatVertexBuffer( &( mesh.mVertices[0].x ), mesh.mNumVertices, sizeof( aiVector3D ) );
-        pMesh->AddVertexBuffer( pgBufferBinding( "POSITION", 0 ), positions );
+        pMesh->addVertexBuffer( pgBufferBinding( "POSITION", 0 ), positions );
     }
 
     if ( mesh.HasNormals() )
     {
         std::shared_ptr<pgBuffer> normals = CreateFloatVertexBuffer( &( mesh.mNormals[0].x ), mesh.mNumVertices, sizeof( aiVector3D ) );
-        pMesh->AddVertexBuffer( pgBufferBinding( "NORMAL", 0 ), normals );
+        pMesh->addVertexBuffer( pgBufferBinding( "NORMAL", 0 ), normals );
     }
 
     if ( mesh.HasTangentsAndBitangents() )
     {
         std::shared_ptr<pgBuffer> tangents = CreateFloatVertexBuffer( &( mesh.mTangents[0].x ), mesh.mNumVertices, sizeof( aiVector3D ) );
-        pMesh->AddVertexBuffer( pgBufferBinding( "TANGENT", 0 ), tangents );
+        pMesh->addVertexBuffer( pgBufferBinding( "TANGENT", 0 ), tangents );
 
         std::shared_ptr<pgBuffer> bitangents = CreateFloatVertexBuffer( &( mesh.mBitangents[0].x ), mesh.mNumVertices, sizeof( aiVector3D ) );
-        pMesh->AddVertexBuffer( pgBufferBinding( "BINORMAL", 0 ), bitangents );
+        pMesh->addVertexBuffer( pgBufferBinding( "BINORMAL", 0 ), bitangents );
     }
 
     for ( uint32_t i = 0; mesh.HasVertexColors( i ); ++i )
     {
         std::shared_ptr<pgBuffer> colors = CreateFloatVertexBuffer( &( mesh.mColors[i][0].r ), mesh.mNumVertices, sizeof( aiColor4D ) );
-        pMesh->AddVertexBuffer( pgBufferBinding( "COLOR", i ), colors );
+        pMesh->addVertexBuffer( pgBufferBinding( "COLOR", i ), colors );
     }
 
     for ( uint32_t i = 0; mesh.HasTextureCoords( i ); ++i )
@@ -366,7 +366,7 @@ void pgSceneAss::ImportMesh( const aiMesh& mesh )
                 texcoods1D[j] = mesh.mTextureCoords[i][j].x;
             }
             std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( texcoods1D.data(), (uint32_t)texcoods1D.size(), sizeof( float ) );
-            pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
+            pMesh->addVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
         case 2: // 2-component texture coordinates (U,V)
@@ -377,7 +377,7 @@ void pgSceneAss::ImportMesh( const aiMesh& mesh )
                 texcoods2D[j] = aiVector2D( mesh.mTextureCoords[i][j].x, mesh.mTextureCoords[i][j].y );
             }
             std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods2D[0].x ), (uint32_t)texcoods2D.size(), sizeof( aiVector2D ) );
-            pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
+            pMesh->addVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
         case 3: // 3-component texture coordinates (U,V,W)
@@ -388,7 +388,7 @@ void pgSceneAss::ImportMesh( const aiMesh& mesh )
                 texcoods3D[j] = mesh.mTextureCoords[i][j];
             }
             std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods3D[0].x ), (uint32_t)texcoods3D.size(), sizeof( aiVector3D ) );
-            pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
+            pMesh->addVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
         }
@@ -412,7 +412,7 @@ void pgSceneAss::ImportMesh( const aiMesh& mesh )
         if ( indices.size() > 0 )
         {
             std::shared_ptr<pgBuffer> indexBuffer = CreateUIntIndexBuffer( indices.data(), (uint32_t)indices.size() );
-            pMesh->SetIndexBuffer( indexBuffer );
+            pMesh->setIndexBuffer( indexBuffer );
         }
     }
 
@@ -436,12 +436,12 @@ std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode( std::shared_ptr<pgScen
                               mat.a4, mat.b4, mat.c4, mat.d4 );
 
     std::shared_ptr<pgSceneNode> pNode = std::make_shared<pgSceneNode>( localTransform );
-    pNode->SetParent( parent );
+    pNode->setParent( parent );
 
     std::string nodeName( aiNode->mName.C_Str() );
     if ( !nodeName.empty() )
     {
-        pNode->SetName( nodeName );
+        pNode->setName( nodeName );
     }
 
     // Add meshes to scene node
@@ -457,7 +457,7 @@ std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode( std::shared_ptr<pgScen
     for ( uint32_t i = 0; i < aiNode->mNumChildren; ++i )
     {
         std::shared_ptr<pgSceneNode> pChild = ImportSceneNode( pNode, aiNode->mChildren[i] );
-        pNode->AddChild( pChild );
+        pNode->addChild( pChild );
     }
 
     return pNode;
