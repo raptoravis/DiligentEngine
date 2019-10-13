@@ -127,6 +127,8 @@ void pgCubePass::Render(RenderEventArgs& e)
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 	// makes sure that resources are transitioned to required states.
 	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+	m_scene->Render(e);
 }
 
 void pgCubePass::Update(RenderEventArgs& e)

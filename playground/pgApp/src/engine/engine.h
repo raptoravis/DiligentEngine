@@ -15,6 +15,7 @@
 #include "InputController.h"
 
 #include <map>
+#include <memory>
 
 class Object
 {
@@ -253,7 +254,7 @@ public:
 	virtual void Render(RenderEventArgs& renderEventArgs) = 0;
 };
 
-class SceneNode : public Object
+class SceneNode : public Object, public std::enable_shared_from_this<SceneNode>
 {
 public:
 	typedef Object base;
@@ -275,12 +276,12 @@ public:
 
 	Diligent::float4x4 GetInverseWorldTransform() const;
 
-	void AddChild(SceneNode* pNode);
-	void RemoveChild(SceneNode* pNode);
-	void SetParent(SceneNode* pNode);
+	void AddChild(std::shared_ptr<SceneNode> pNode);
+	void RemoveChild(std::shared_ptr<SceneNode> pNode);
+	void SetParent(std::weak_ptr<SceneNode> pNode);
 
-	void AddMesh(Mesh* mesh);
-	void RemoveMesh(Mesh* mesh);
+	void AddMesh(std::shared_ptr<Mesh> mesh);
+	void RemoveMesh(std::shared_ptr<Mesh> mesh);
 
 	/**
 	 * Render meshes associated with this scene node.
@@ -293,9 +294,9 @@ protected:
 	Diligent::float4x4 GetParentWorldTransform() const;
 
 private:
-	typedef std::vector< SceneNode* > NodeList;
-	typedef std::multimap< std::string, SceneNode* > NodeNameMap;
-	typedef std::vector< Mesh* > MeshList;
+	typedef std::vector< std::shared_ptr<SceneNode> > NodeList;
+	typedef std::multimap< std::string, std::shared_ptr<SceneNode> > NodeNameMap;
+	typedef std::vector< std::shared_ptr<Mesh> > MeshList;
 
 	std::string m_Name;
 
@@ -304,7 +305,7 @@ private:
 	// This is the inverse of the local -> world transform.
 	Diligent::float4x4 m_InverseTransform;
 
-	SceneNode* m_pParentNode;
+	std::weak_ptr<SceneNode> m_pParentNode;
 	NodeList m_Children;
 	NodeNameMap m_ChildrenByName;
 	MeshList m_Meshes;
@@ -312,9 +313,9 @@ private:
 
 class Scene : public Object {
 protected:
-	SceneNode* m_pRootNode;
+	std::shared_ptr<SceneNode> m_pRootNode; 
 public:
-	Scene(SceneNode* root) 
+	Scene(std::shared_ptr<SceneNode> root)
 		: m_pRootNode(root)
 	{
 	}
@@ -330,7 +331,7 @@ struct pgPassCreateInfo {
 
 	Diligent::SwapChainDesc			desc;
 
-	Scene*							scene;
+	std::shared_ptr<Scene>			scene;
 
 	pgPassCreateInfo() : scene(0)
 	{}
@@ -345,7 +346,7 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
 
 	Diligent::SwapChainDesc								m_desc;
-	Scene*												m_scene;
+	std::shared_ptr<Scene>								m_scene;
 
 public:
 	pgPass(const pgPassCreateInfo& ci) 
@@ -380,15 +381,15 @@ public:
 
 	// Add a pass to the technique. The ID of the added pass is returned
 	// and can be used to retrieve the pass later.
-	unsigned int addPass(pgPass* pass);
-	pgPass* getPass(unsigned int ID) const;
+	unsigned int addPass(std::shared_ptr<pgPass> pass);
+	std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
 	// Render the scene using the passes that have been configured.
 	virtual void Update(RenderEventArgs& e);
 	virtual void Render(RenderEventArgs& e);
 
 private:
-	typedef std::vector<pgPass*> RenderPassList;
+	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
 	RenderPassList m_Passes;
 
 };

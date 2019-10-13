@@ -58,7 +58,7 @@ Diligent::float4x4 SceneNode::GetInverseWorldTransform() const
 Diligent::float4x4 SceneNode::GetParentWorldTransform() const
 {
 	Diligent::float4x4 parentTransform(1.0f);
-	if (SceneNode* parent = m_pParentNode)
+	if (std::shared_ptr<SceneNode> parent = m_pParentNode.lock())
 	{
 		parentTransform = parent->GetWorldTransfom();
 	}
@@ -66,7 +66,7 @@ Diligent::float4x4 SceneNode::GetParentWorldTransform() const
 	return parentTransform;
 }
 
-void SceneNode::AddChild(SceneNode* pNode)
+void SceneNode::AddChild(std::shared_ptr<SceneNode> pNode)
 {
 	if (pNode)
 	{
@@ -74,7 +74,7 @@ void SceneNode::AddChild(SceneNode* pNode)
 		if (iter == m_Children.end())
 		{
 			Diligent::float4x4 worldTransform = pNode->GetWorldTransfom();
-			pNode->m_pParentNode = this;
+			pNode->m_pParentNode = shared_from_this();
 			Diligent::float4x4 localTransform = GetInverseWorldTransform() * worldTransform;
 			pNode->SetLocalTransform(localTransform);
 			m_Children.push_back(pNode);
@@ -86,14 +86,14 @@ void SceneNode::AddChild(SceneNode* pNode)
 	}
 }
 
-void SceneNode::RemoveChild(SceneNode* pNode)
+void SceneNode::RemoveChild(std::shared_ptr<SceneNode> pNode)
 {
 	if (pNode)
 	{
 		NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
 		if (iter != m_Children.end())
 		{
-			pNode->SetParent(0);
+			pNode->SetParent(std::weak_ptr<SceneNode>());
 
 			m_Children.erase(iter);
 
@@ -115,23 +115,25 @@ void SceneNode::RemoveChild(SceneNode* pNode)
 	}
 }
 
-void SceneNode::SetParent(SceneNode* wpNode)
+void SceneNode::SetParent(std::weak_ptr<SceneNode> wpNode)
 {
-	if (SceneNode* parent = wpNode)
+	std::shared_ptr<SceneNode> me = shared_from_this();
+
+	if (std::shared_ptr<SceneNode> parent = wpNode.lock())
 	{
-		parent->AddChild(this);
+		parent->AddChild(shared_from_this());
 	}
-	else if (SceneNode* parentOld = m_pParentNode)
+	else if (parent = m_pParentNode.lock())
 	{
 		// Setting parent to NULL.. remove from current parent and reset parent node.
 		Diligent::float4x4 worldTransform = GetWorldTransfom();
-		parentOld->RemoveChild(this);
-		m_pParentNode = 0;
+		parent->RemoveChild(shared_from_this());
+		m_pParentNode.reset();
 		SetLocalTransform(worldTransform);
 	}
 }
 
-void SceneNode::AddMesh(Mesh* mesh)
+void SceneNode::AddMesh(std::shared_ptr<Mesh> mesh)
 {
 	assert(mesh);
 	MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);
@@ -141,7 +143,7 @@ void SceneNode::AddMesh(Mesh* mesh)
 	}
 }
 
-void SceneNode::RemoveMesh(Mesh* mesh)
+void SceneNode::RemoveMesh(std::shared_ptr<Mesh> mesh)
 {
 	assert(mesh);
 	MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);

@@ -29,6 +29,8 @@
 #include "engine/cubepass.h"
 #include "engine/cubetexpass.h"
 #include "engine/opaquepass.h"
+#include "engine/cube.h"
+#include "engine/cubetex.h"
 
 #include "MapHelper.h"
 #include "BasicMath.h"
@@ -97,25 +99,39 @@ namespace Diligent
 		// technique will clean up passed added in it
 		m_pTechnique = new pgTechnique();
 
+		std::shared_ptr<Cube> cube = std::make_shared<Cube>(m_pDevice, m_pImmediateContext);
+		std::shared_ptr<CubeTex> cubeTex = std::make_shared<CubeTex>(m_pDevice, m_pImmediateContext);
+
+		std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>();
+		root1->AddMesh(cube);
+		std::shared_ptr<Scene> sceneCube = std::make_shared<Scene>(root1);
+
+		std::shared_ptr<SceneNode> root2 = std::make_shared<SceneNode>();
+		root2->AddMesh(cubeTex);
+		std::shared_ptr<Scene> sceneCubeTex = std::make_shared<Scene>(root2);
+
 		pgPassCreateInfo ci;
 		ci.device = m_pDevice;
 		ci.ctx = m_pImmediateContext;
 		ci.factory = m_pEngineFactory;
 		ci.desc = m_pSwapChain->GetDesc();
+		
 
-		pgOpaquePass* pOpaquePass = new pgOpaquePass(ci);
+		std::shared_ptr<pgOpaquePass> pOpaquePass = std::make_shared<pgOpaquePass>(ci);
 		//m_pTechnique->addPass(pOpaquePass);
 
 #if 0
-		pgGLTFPass* pGLTFPass = new pgGLTFPass(ci);
+		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(ci);
 		m_pTechnique->addPass(pGLTFPass);
 #else
 		//
 #endif
-		pgCubePass* pCubePass = new pgCubePass(ci);
+		ci.scene = sceneCube;
+		std::shared_ptr<pgCubePass> pCubePass = std::make_shared<pgCubePass>(ci);
 		m_pTechnique->addPass(pCubePass);
 
-		pgCubeTexPass* pCubeTexPass = new pgCubeTexPass(ci);
+		ci.scene = sceneCubeTex;
+		std::shared_ptr<pgCubeTexPass> pCubeTexPass = std::make_shared<pgCubeTexPass>(ci);
 		m_pTechnique->addPass(pCubeTexPass);
 
 	}

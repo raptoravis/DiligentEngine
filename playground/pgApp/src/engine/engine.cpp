@@ -23,22 +23,17 @@ pgTechnique::pgTechnique()
 
 pgTechnique::~pgTechnique()
 {
-	for (auto pass : m_Passes)
-	{
-		delete pass;
-	}
-
 	m_Passes.clear();
 }
 
-unsigned int pgTechnique::addPass(pgPass* pass)
+unsigned int pgTechnique::addPass(std::shared_ptr<pgPass> pass)
 {
 	// No check for duplicate passes (it may be intended to render the same pass multiple times?)
 	m_Passes.push_back(pass);
 	return static_cast<unsigned int>(m_Passes.size()) - 1;
 }
 
-pgPass* pgTechnique::getPass(unsigned int ID) const
+std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
 {
 	if (ID < m_Passes.size())
 	{
