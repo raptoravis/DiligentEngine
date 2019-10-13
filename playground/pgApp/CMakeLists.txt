@@ -45,7 +45,7 @@ set_target_properties(${PROJECT_NAME_TMP} PROPERTIES VS_DEBUGGER_COMMAND_ARGUMEN
 
 target_link_libraries(${PROJECT_NAME_TMP} PRIVATE Diligent-TextureLoader 
 			Diligent-AssetLoader DiligentFX
-			#assimp
+			assimp
 			)
 
 
@@ -63,7 +63,7 @@ target_include_directories(${PROJECT_NAME_TMP} PRIVATE
 						${DE_TOP_PATH}/thirdparty/
 						${DE_TOP_PATH}/thirdparty/glm-0.9.9.6/
 						#${DE_TOP_PATH}/thirdparty/assimp-5.0.0/include
-						${CMAKE_BINARY_DIR}/thirdparty/assimp-5.0.0/include # assimp generated config.h			
+						#${CMAKE_BINARY_DIR}/thirdparty/assimp-5.0.0/include # assimp generated config.h			
 						${DE_TOP_PATH}/thirdparty/entt/src
 						${DE_TOP_PATH}/thirdparty/fibertaskinglib/include
 						${DE_TOP_PATH}/thirdparty/taskflow

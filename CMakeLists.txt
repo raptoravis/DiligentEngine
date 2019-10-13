@@ -43,7 +43,7 @@ endif()
 
 ## 
 add_subdirectory(thirdparty/glm-0.9.9.6)
-#add_subdirectory(thirdparty/assimp-5.0.0)
+add_subdirectory(thirdparty/assimp-5.0.0)
 add_subdirectory(thirdparty/fibertaskinglib)
 
 add_subdirectory(playground)

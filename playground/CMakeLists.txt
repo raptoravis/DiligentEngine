@@ -6,6 +6,11 @@ else()
     set(INSTALL_DILIGENT_SAMPLES OFF)
 endif()
 
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+endif(MSVC)
+
+
 function(add_sample_app APP_NAME IDE_FOLDER SOURCE INCLUDE SHADERS ASSETS)
 
 	set_source_files_properties(${SHADERS} PROPERTIES VS_TOOL_OVERRIDE "None")

@@ -14,8 +14,69 @@
 #include "imGuIZMO.h"
 #include "InputController.h"
 
+#include <locale>
+#include <codecvt>
+
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <streambuf>
+#include <filesystem>
+
+#include <vector>
 #include <map>
+#include <ctime>
+#include <algorithm>
+#include <random>
+#include <atomic>
+#include <mutex>
+#include <thread>
+
 #include <memory>
+
+#pragma warning(disable : 4996)
+
+// Report an error to the Debug output in Visual Studio, display a message box with the error message and throw an exception.
+void ReportErrorAndThrow(const std::string& file, int line, const std::string& function, const std::string& message);
+
+// Report an error message and throw an std::exception.
+#define ReportError( msg ) ReportErrorAndThrow( __FILE__, __LINE__, __FUNCTION__, (msg) )
+
+template<typename T>
+inline void SafeDelete(T& ptr)
+{
+	if (ptr != NULL)
+	{
+		delete ptr;
+		ptr = NULL;
+	}
+}
+
+template<typename T>
+inline void SafeDeleteArray(T& ptr)
+{
+	if (ptr != NULL)
+	{
+		delete[] ptr;
+		ptr = NULL;
+	}
+}
+
+// Convert a multi-byte character string (UTF-8) to a wide (UTF-16) encoded string.
+inline std::wstring ConvertString(const std::string& string)
+{
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.from_bytes(string);
+}
+
+// Converts a wide (UTF-16) encoded string into a multi-byte (UTF-8) character string.
+inline std::string ConvertString(const std::wstring& wstring)
+{
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.to_bytes(wstring);
+}
+
 
 class Object
 {
@@ -79,6 +140,30 @@ public:
 
 };
 
+class Texture : public Object
+{
+public:
+	// Get the width of the textures in texels.
+	virtual uint16_t GetWidth() const = 0;
+	// Get the height of the texture in texles.
+	virtual uint16_t GetHeight() const = 0;
+	// Get the depth of the texture in texture slices for 3D textures, or 
+	// cube faces for cubemap textures.
+	virtual uint16_t GetDepth() const = 0;
+
+	// Get the bits-per-pixel of the texture.
+	virtual uint8_t GetBPP() const = 0;
+
+	// Check to see if this texture has an alpha channel.
+	virtual bool IsTransparent() const = 0;
+};
+
+
+class Buffer : public Object
+{
+public:
+};
+
 // A material class is used to wrap the shaders and to 
 // manage the shader parameters.
 class Material : public Object
@@ -139,8 +224,8 @@ public:
 	float GetBumpIntensity() const;
 	void SetBumpIntensity(float bumpIntensity);
 
-	Diligent::ITexture* GetTexture(TextureType ID) const;
-	void SetTexture(TextureType type, Diligent::ITexture* texture);
+	std::shared_ptr<Texture> GetTexture(TextureType ID) const;
+	void SetTexture(TextureType type, std::shared_ptr<Texture> texture);
 
 	// This material defines a transparent material 
 	// if the opacity value is < 1, or there is an opacity map, or the diffuse texture has an alpha channel.
@@ -226,11 +311,41 @@ private:
 
 	// Textures are stored by which texture unit (or texture register)
 	// they are bound to.
-	typedef std::map<TextureType, Diligent::ITexture* > TextureMap;
+	typedef std::map<TextureType, std::shared_ptr<Texture> > TextureMap;
 	TextureMap m_Textures;
 
 	// Set to true if the contents of the constant buffer needs to be updated.
 	bool    m_Dirty;
+};
+
+// Defines either a semantic (HLSL) or an input index (GLSL/HLSL)
+// to bind an input buffer.
+struct BufferBinding
+{
+	BufferBinding()
+		: Index(0)
+	{}
+
+	BufferBinding(const std::string& name, unsigned int index)
+		: Name(name)
+		, Index(index)
+	{}
+
+	// Provide the < operator for STL containers.
+	bool operator<(const BufferBinding& rhs) const
+	{
+		if (Name < rhs.Name) return true;
+		if (Name > rhs.Name) return false;
+		// Names are equal...
+		if (Index < rhs.Index) return true;
+		if (Index > rhs.Index) return false;
+		// Indexes are equal...
+
+		return false;
+	}
+
+	std::string Name;
+	unsigned int Index;
 };
 
 // A mesh contains the geometry and materials required to render this mesh.
@@ -249,6 +364,23 @@ public:
 
 	virtual ~Mesh() {
 		//
+	}
+
+	// Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
+	virtual void AddVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> buffer) {
+		//
+	}
+
+	virtual void SetIndexBuffer(std::shared_ptr<Buffer> buffer) {
+		//
+	}
+
+	virtual void SetMaterial(std::shared_ptr<Material> material) {
+		//
+	}
+
+	virtual std::shared_ptr<Material> GetMaterial() const {
+		return nullptr;
 	}
 
 	virtual void Render(RenderEventArgs& renderEventArgs) = 0;
@@ -315,9 +447,17 @@ class Scene : public Object {
 protected:
 	std::shared_ptr<SceneNode> m_pRootNode; 
 public:
+	Scene() {
+		//
+	}
+
 	Scene(std::shared_ptr<SceneNode> root)
 		: m_pRootNode(root)
 	{
+	}
+
+	virtual std::shared_ptr<SceneNode> GetRootNode() const {
+		return m_pRootNode;
 	}
 
 	virtual void Render(RenderEventArgs& renderEventArgs);
