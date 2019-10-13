@@ -50,8 +50,8 @@ function(add_sample_app APP_NAME IDE_FOLDER SOURCE INCLUDE SHADERS ASSETS)
 		FOLDER ${IDE_FOLDER}
 	)
 
-	source_group("src" FILES ${SOURCE} ${INCLUDE})
-	source_group("assets" FILES ${ALL_ASSETS})	
+	#source_group("src" FILES ${SOURCE} ${INCLUDE})
+	#source_group("assets" FILES ${ALL_ASSETS})	
 
     target_sources(${APP_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
     set_source_files_properties(
