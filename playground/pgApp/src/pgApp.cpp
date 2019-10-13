@@ -21,9 +21,6 @@
  *  of the possibility of such damages.
  */
 
-#pragma warning(disable : 4244)
-#include "argparse.h"
-
 #include "pgApp.h"
 #include "engine/render/gltfmodelpass.h"
 #include "engine/render/cubepass.h"
@@ -56,40 +53,6 @@ namespace Diligent
 		return new pgApp();
 	}
 
-	static void argparse_test(int argc, char* argv[]) {
-		//const auto* cmdLine = GetCommandLineA();
-
-		//run as : [program name] "0 -c" abc - a 1 - sdfl --flag - v 1 2.7 3 4 9 8.12 87
-		ArgumentParser parser("Argument parser example");
-
-		parser.add_argument("-a", "an integer");
-		parser.add_argument("-s", "an combined flag", true);
-		parser.add_argument("-d", "an combined flag", true);
-		parser.add_argument("-f", "an combined flag", true);
-		parser.add_argument("--flag", "a flag");
-		parser.add_argument("-v", "a vector", true);
-		parser.add_argument("-l", "--long", "a long argument", false);
-
-		try {
-			parser.parse(argc, argv);
-		}
-		catch (const ArgumentParser::ArgumentNotFound& ex) {
-			std::cout << ex.what() << std::endl;
-			return;
-		}
-		if (parser.is_help()) {
-			return;
-		}
-		std::cout << "a: " << parser.get<int>("a") << std::endl;
-		std::cout << "flag: " << std::boolalpha << parser.get<bool>("flag")
-			<< std::endl;
-		std::cout << "d: " << std::boolalpha << parser.get<bool>("d") << std::endl;
-		std::cout << "long flag: " << std::boolalpha << parser.get<bool>("l")
-			<< std::endl;
-		auto v = parser.getv<double>("v");
-		std::cout << "v: ";
-	}
-	
 	void pgApp::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, IDeviceContext** ppContexts, Uint32 NumDeferredCtx, ISwapChain* pSwapChain)
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
@@ -167,7 +130,7 @@ namespace Diligent
 		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera);
 
 		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+		//ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			//Quaternion rot = Quaternion(m_cameraTransform);
