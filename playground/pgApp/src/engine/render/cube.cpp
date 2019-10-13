@@ -3,7 +3,7 @@
 using namespace Diligent;
 
 Cube::Cube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
-	: Mesh(device, ctx)
+	: pgMesh(device, ctx)
 {
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -88,7 +88,7 @@ void Cube::CreateIndexBuffer()
 }
 
 
-void Cube::Render(RenderEventArgs& renderEventArgs) {
+void Cube::Render(pgRenderEventArgs& renderEventArgs) {
 	// Bind vertex and index buffers
 	Uint32 offset = 0;
 	IBuffer *pBuffs[] = { m_CubeVertexBuffer };

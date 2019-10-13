@@ -6,15 +6,15 @@
 //#define ARCBALL_CAMERA_IMPLEMENTATION
 //#include "arcball_camera.h"
 
-Camera::Camera() {
+pgCamera::pgCamera() {
 	reset();
 }
 
-Camera::~Camera() {
+pgCamera::~pgCamera() {
 	//
 }
 
-void Camera::reset() {
+void pgCamera::reset() {
 	pos = { 0.0f, 0.0f, 0.0f };
 
 	look = { 0.0f, 0.0f, -1.0f };
@@ -24,7 +24,7 @@ void Camera::reset() {
 	m_cameraTransform = Diligent::float4x4::Identity();
 }
 
-void Camera::update(Diligent::InputController* pInputController, float ElapsedTime) {
+void pgCamera::update(Diligent::InputController* pInputController, float ElapsedTime) {
 	const auto& mouseState = pInputController->GetMouseState();
 	float MouseDeltaX = 0;
 	float MouseDeltaY = 0;
@@ -67,7 +67,7 @@ void Camera::update(Diligent::InputController* pInputController, float ElapsedTi
 		}
 
 		float delta_time_sec = ElapsedTime;
-		//int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
+		//int flag = FLYTHROUGH_pgCamera_LEFT_HANDED_BIT;
 		int flag = 0;
 
 		float* view = &m_cameraTransform.m00;

@@ -50,7 +50,7 @@ void pgOpaquePass::CreatePipelineState()
 	// In this tutorial, we will load shaders from file. To be able to do that,
 	// we need to create a shader source stream factory
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./hlsl/", &pShaderSourceFactory);
+	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
@@ -124,7 +124,7 @@ void pgOpaquePass::LoadTexture()
 
 
 // Render a frame
-void pgOpaquePass::Render(RenderEventArgs& e)
+void pgOpaquePass::Render(pgRenderEventArgs& e)
 {
 	//// Clear the back buffer 
 	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
@@ -146,7 +146,7 @@ void pgOpaquePass::Render(RenderEventArgs& e)
 	m_scene->Render(e);
 }
 
-void pgOpaquePass::Update(RenderEventArgs& e)
+void pgOpaquePass::Update(pgRenderEventArgs& e)
 {
 	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
 	const float4x4 view = e.pCamera->getTransform();

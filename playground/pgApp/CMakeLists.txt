@@ -22,6 +22,7 @@ file(GLOB_RECURSE ASSETS_ALL
 
 set(ASSETS ${ASSETS_ALL})
 list(FILTER ASSETS EXCLUDE REGEX ".*\.hlsl$")
+list(FILTER ASSETS EXCLUDE REGEX ".*\.obj$")
 
 file(GLOB_RECURSE SRC_SOURCE
 	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -78,3 +79,4 @@ add_custom_command(TARGET ${PROJECT_NAME_TMP} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/../../DiligentFX/Shaders/PostProcess/ToneMapping/public/ToneMapping.fxh" "${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/../../DiligentFX/Shaders/Common/public/BasicStructures.fxh" "${CMAKE_CURRENT_SOURCE_DIR}/assets/shaders"
 )
+

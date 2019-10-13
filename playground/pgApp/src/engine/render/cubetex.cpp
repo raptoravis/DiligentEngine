@@ -4,7 +4,7 @@
 using namespace Diligent;
 
 CubeTex::CubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
-	: Mesh(device, ctx)
+	: pgMesh(device, ctx)
 {
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -109,7 +109,7 @@ void CubeTex::CreateIndexBuffer()
 	m_pDevice->CreateBuffer(IndBuffDesc, &IBData, &m_CubeIndexBuffer);
 }
 
-void CubeTex::Render(RenderEventArgs& renderEventArgs) {
+void CubeTex::Render(pgRenderEventArgs& renderEventArgs) {
 	// Bind vertex and index buffers
 	Uint32 offset = 0;
 	IBuffer *pBuffs[] = { m_CubeVertexBuffer };

@@ -6,57 +6,57 @@ struct aiMaterial;
 struct aiMesh;
 struct aiNode;
 
-class Material;
-class Buffer;
-class Mesh;
-class Texture;
-class Camera;
-class SceneNode;
+class pgMaterial;
+class pgBuffer;
+class pgMesh;
+class pgTexture;
+class pgCamera;
+class pgSceneNode;
 
 namespace fs = std::filesystem;
 
 // A model base class.
 // Implements a basic model loader using Assimp.
-class SceneAss : public Scene
+class SceneAss : public pgScene
 {
 public:
-    typedef Scene base;
+    typedef pgScene base;
 
-	virtual std::shared_ptr<SceneNode> GetRootNode() const;
+	virtual std::shared_ptr<pgSceneNode> getRootNode() const;
     virtual bool LoadFromFile( const std::wstring& fileName );
     virtual bool LoadFromString( const std::string& scene, const std::string& format );
-    virtual void Render( RenderEventArgs& renderArgs );
+    virtual void Render( pgRenderEventArgs& renderArgs );
+
+	SceneAss(const pgSceneCreateInfo& ci);
+	virtual ~SceneAss();
 
 protected:
     friend class ProgressHandler;
 
-    SceneAss();
-    virtual ~SceneAss();
+    virtual std::shared_ptr<pgBuffer> CreateFloatVertexBuffer( const float* data, unsigned int count, unsigned int stride );
+    virtual std::shared_ptr<pgBuffer> CreateUIntIndexBuffer( const unsigned int* data, unsigned int sizeInBytes );
 
-    virtual std::shared_ptr<Buffer> CreateFloatVertexBuffer( const float* data, unsigned int count, unsigned int stride ) const = 0;
-    virtual std::shared_ptr<Buffer> CreateUIntIndexBuffer( const unsigned int* data, unsigned int sizeInBytes ) const = 0;
+    virtual std::shared_ptr<pgMesh> CreateMesh();
+    virtual std::shared_ptr<pgMaterial> CreateMaterial();
+    virtual std::shared_ptr<pgTexture> CreateTexture( const std::wstring& fileName );
+    virtual std::shared_ptr<pgTexture> CreateTexture2D( uint16_t width, uint16_t height );
 
-    virtual std::shared_ptr<Mesh> CreateMesh() const = 0;
-    virtual std::shared_ptr<Material> CreateMaterial() const = 0;
-    virtual std::shared_ptr<Texture> CreateTexture( const std::wstring& fileName ) const = 0;
-    virtual std::shared_ptr<Texture> CreateTexture2D( uint16_t width, uint16_t height ) = 0;
-
-    virtual std::shared_ptr<Texture> GetDefaultTexture() = 0;
+    //virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
 
 private:
-    typedef std::map<std::string, std::shared_ptr<Material> > MaterialMap;
-    typedef std::vector< std::shared_ptr<Material> > MaterialList;
-    typedef std::vector< std::shared_ptr<Mesh> > MeshList;
+    typedef std::map<std::string, std::shared_ptr<pgMaterial> > MaterialMap;
+    typedef std::vector< std::shared_ptr<pgMaterial> > MaterialList;
+    typedef std::vector< std::shared_ptr<pgMesh> > MeshList;
 
     MaterialMap m_MaterialMap;
     MaterialList m_Materials;
     MeshList m_Meshes;
 
-    std::shared_ptr<SceneNode> m_pRootNode;
+    std::shared_ptr<pgSceneNode> m_pRootNode;
 
     void ImportMaterial( const aiMaterial& material, fs::path parentPath );
     void ImportMesh( const aiMesh& mesh );
-    std::shared_ptr<SceneNode> ImportSceneNode( std::shared_ptr<SceneNode> parent, aiNode* aiNode );
+    std::shared_ptr<pgSceneNode> ImportSceneNode( std::shared_ptr<pgSceneNode> parent, aiNode* aiNode );
 
     std::wstring m_SceneFile;
 };

@@ -1,4 +1,4 @@
-/*     Copyright 2019 Diligent Graphics LLC
+/*     
  *  
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@
 #include "engine/render/cube.h"
 #include "engine/render/cubetex.h"
 
+#include "engine/scene/sceneass.h"
+
 #include "MapHelper.h"
 #include "BasicMath.h"
 #include "GraphicsUtilities.h"
@@ -41,7 +43,7 @@
 
 #include <windows.h>
 
-#include "mat2quat.h"
+#include "engine/mat2quat.h"
 
 namespace Diligent
 {
@@ -57,24 +59,33 @@ namespace Diligent
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
-		m_pCamera = new Camera();
+		m_pCamera = new pgCamera();
 
 		// technique will clean up passed added in it
 		m_pTechnique = new pgTechnique();
 
-		pgPassCreateInfo ci;
+		pgCreateInfo ci;
 		ci.device = m_pDevice;
 		ci.ctx = m_pImmediateContext;
 		ci.factory = m_pEngineFactory;
 		ci.desc = m_pSwapChain->GetDesc();
-#if 0	
-		ci.scene = sceneCubeTex;
-		std::shared_ptr<pgOpaquePass> pOpaquePass = std::make_shared<pgOpaquePass>(ci);
+
+		pgPassCreateInfo pci {ci};
+
+		pgSceneCreateInfo sci {ci};
+
+#if 0
+		std::shared_ptr<SceneAss> sceneAss = std::make_shared<SceneAss>(sci);
+		std::wstring filePath = L"resources/models/test/test_scene.nff";
+		sceneAss->LoadFromFile(filePath);
+
+		pci.scene = sceneAss;
+		std::shared_ptr<pgOpaquePass> pOpaquePass = std::make_shared<pgOpaquePass>(pci);
 		m_pTechnique->addPass(pOpaquePass);
 #endif
 
 #if 0
-		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(ci);
+		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(pci);
 		m_pTechnique->addPass(pGLTFPass);
 #else
 		//
@@ -84,20 +95,22 @@ namespace Diligent
 		std::shared_ptr<Cube> cube = std::make_shared<Cube>(m_pDevice, m_pImmediateContext);
 		std::shared_ptr<CubeTex> cubeTex = std::make_shared<CubeTex>(m_pDevice, m_pImmediateContext);
 
-		std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>();
-		root1->AddMesh(cube);
-		std::shared_ptr<Scene> sceneCube = std::make_shared<Scene>(root1);
+		std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>();
+		root1->addMesh(cube);
+		std::shared_ptr<pgScene> sceneCube = std::make_shared<pgScene>(sci);
+		sceneCube->setRootNode(root1);
 
-		std::shared_ptr<SceneNode> root2 = std::make_shared<SceneNode>();
-		root2->AddMesh(cubeTex);
-		std::shared_ptr<Scene> sceneCubeTex = std::make_shared<Scene>(root2);
+		std::shared_ptr<pgSceneNode> root2 = std::make_shared<pgSceneNode>();
+		root2->addMesh(cubeTex);
+		std::shared_ptr<pgScene> sceneCubeTex = std::make_shared<pgScene>(sci);
+		sceneCubeTex->setRootNode(root2);
 
-		ci.scene = sceneCube;
-		std::shared_ptr<pgCubePass> pCubePass = std::make_shared<pgCubePass>(ci);
+		pci.scene = sceneCube;
+		std::shared_ptr<pgCubePass> pCubePass = std::make_shared<pgCubePass>(pci);
 		m_pTechnique->addPass(pCubePass);
 
-		ci.scene = sceneCubeTex;
-		std::shared_ptr<pgCubeTexPass> pCubeTexPass = std::make_shared<pgCubeTexPass>(ci);
+		pci.scene = sceneCubeTex;
+		std::shared_ptr<pgCubeTexPass> pCubeTexPass = std::make_shared<pgCubeTexPass>(pci);
 		m_pTechnique->addPass(pCubeTexPass);
 #endif
 	}

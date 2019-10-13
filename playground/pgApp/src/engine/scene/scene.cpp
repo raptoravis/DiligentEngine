@@ -1,64 +1,64 @@
 #include "../engine.h"
 
-SceneNode::SceneNode(const Diligent::float4x4& localTransform)
+pgSceneNode::pgSceneNode(const Diligent::float4x4& localTransform)
 	: m_LocalTransform(localTransform)
 	, m_Name("SceneNode")
 {
 	m_InverseTransform = m_LocalTransform.Inverse();
 }
 
-SceneNode::~SceneNode()
+pgSceneNode::~pgSceneNode()
 {
 	// Delete children.
 	m_Children.clear();
 }
 
-const std::string& SceneNode::GetName() const
+const std::string& pgSceneNode::GetName() const
 {
 	return m_Name;
 }
 
-void  SceneNode::SetName(const std::string& name)
+void  pgSceneNode::SetName(const std::string& name)
 {
 	m_Name = name;
 }
 
-Diligent::float4x4 SceneNode::GetLocalTransform() const
+Diligent::float4x4 pgSceneNode::GetLocalTransform() const
 {
 	return m_LocalTransform;
 }
 
-void SceneNode::SetLocalTransform(const Diligent::float4x4& localTransform)
+void pgSceneNode::SetLocalTransform(const Diligent::float4x4& localTransform)
 {
 	m_LocalTransform = localTransform;
 	m_InverseTransform = localTransform.Inverse();
 }
 
-Diligent::float4x4 SceneNode::GetInverseLocalTransform() const
+Diligent::float4x4 pgSceneNode::GetInverseLocalTransform() const
 {
 	return m_InverseTransform;
 }
 
-Diligent::float4x4 SceneNode::GetWorldTransfom() const
+Diligent::float4x4 pgSceneNode::GetWorldTransfom() const
 {
 	return GetParentWorldTransform() * m_LocalTransform;
 }
 
-void SceneNode::SetWorldTransform(const Diligent::float4x4& worldTransform)
+void pgSceneNode::SetWorldTransform(const Diligent::float4x4& worldTransform)
 {
 	Diligent::float4x4 inverseParentTransform = GetParentWorldTransform().Inverse();
 	SetLocalTransform(inverseParentTransform * worldTransform);
 }
 
-Diligent::float4x4 SceneNode::GetInverseWorldTransform() const
+Diligent::float4x4 pgSceneNode::GetInverseWorldTransform() const
 {
 	return GetWorldTransfom().Inverse();
 }
 
-Diligent::float4x4 SceneNode::GetParentWorldTransform() const
+Diligent::float4x4 pgSceneNode::GetParentWorldTransform() const
 {
 	Diligent::float4x4 parentTransform(1.0f);
-	if (std::shared_ptr<SceneNode> parent = m_pParentNode.lock())
+	if (std::shared_ptr<pgSceneNode> parent = m_pParentNode.lock())
 	{
 		parentTransform = parent->GetWorldTransfom();
 	}
@@ -66,7 +66,7 @@ Diligent::float4x4 SceneNode::GetParentWorldTransform() const
 	return parentTransform;
 }
 
-void SceneNode::AddChild(std::shared_ptr<SceneNode> pNode)
+void pgSceneNode::AddChild(std::shared_ptr<pgSceneNode> pNode)
 {
 	if (pNode)
 	{
@@ -86,14 +86,14 @@ void SceneNode::AddChild(std::shared_ptr<SceneNode> pNode)
 	}
 }
 
-void SceneNode::RemoveChild(std::shared_ptr<SceneNode> pNode)
+void pgSceneNode::RemoveChild(std::shared_ptr<pgSceneNode> pNode)
 {
 	if (pNode)
 	{
 		NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
 		if (iter != m_Children.end())
 		{
-			pNode->SetParent(std::weak_ptr<SceneNode>());
+			pNode->SetParent(std::weak_ptr<pgSceneNode>());
 
 			m_Children.erase(iter);
 
@@ -115,11 +115,11 @@ void SceneNode::RemoveChild(std::shared_ptr<SceneNode> pNode)
 	}
 }
 
-void SceneNode::SetParent(std::weak_ptr<SceneNode> wpNode)
+void pgSceneNode::SetParent(std::weak_ptr<pgSceneNode> wpNode)
 {
-	std::shared_ptr<SceneNode> me = shared_from_this();
+	std::shared_ptr<pgSceneNode> me = shared_from_this();
 
-	if (std::shared_ptr<SceneNode> parent = wpNode.lock())
+	if (std::shared_ptr<pgSceneNode> parent = wpNode.lock())
 	{
 		parent->AddChild(shared_from_this());
 	}
@@ -133,7 +133,7 @@ void SceneNode::SetParent(std::weak_ptr<SceneNode> wpNode)
 	}
 }
 
-void SceneNode::AddMesh(std::shared_ptr<Mesh> mesh)
+void pgSceneNode::addMesh(std::shared_ptr<pgMesh> mesh)
 {
 	assert(mesh);
 	MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);
@@ -143,7 +143,7 @@ void SceneNode::AddMesh(std::shared_ptr<Mesh> mesh)
 	}
 }
 
-void SceneNode::RemoveMesh(std::shared_ptr<Mesh> mesh)
+void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 {
 	assert(mesh);
 	MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);
@@ -153,7 +153,7 @@ void SceneNode::RemoveMesh(std::shared_ptr<Mesh> mesh)
 	}
 }
 
-void SceneNode::Render(RenderEventArgs& args)
+void pgSceneNode::Render(pgRenderEventArgs& args)
 {
 	// First render all my meshes.
 	for (auto mesh : m_Meshes)
@@ -168,7 +168,7 @@ void SceneNode::Render(RenderEventArgs& args)
 	}
 }
 
-void Scene::Render(RenderEventArgs& args)
+void pgScene::Render(pgRenderEventArgs& args)
 {
 	if (m_pRootNode)
 	{

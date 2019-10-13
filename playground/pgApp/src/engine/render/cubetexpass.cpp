@@ -148,7 +148,7 @@ void pgCubeTexPass::LoadTexture()
 
 
 // Render a frame
-void pgCubeTexPass::Render(RenderEventArgs& e)
+void pgCubeTexPass::Render(pgRenderEventArgs& e)
 {
 	//// Clear the back buffer 
 	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
@@ -170,7 +170,7 @@ void pgCubeTexPass::Render(RenderEventArgs& e)
 	m_scene->Render(e);
 }
 
-void pgCubeTexPass::Update(RenderEventArgs& e)
+void pgCubeTexPass::Update(pgRenderEventArgs& e)
 {
 	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
 	const float4x4 view = e.pCamera->getTransform();

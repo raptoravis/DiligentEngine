@@ -99,7 +99,7 @@ private:
     void WriteMaterialFile();
     void WriteGeometryFile(bool noMtl=false);
     std::string GetMaterialName(unsigned int index);
-    void AddMesh(const aiString& name, const aiMesh* m, const aiMatrix4x4& mat);
+    void addMesh(const aiString& name, const aiMesh* m, const aiMatrix4x4& mat);
     void AddNode(const aiNode* nd, const aiMatrix4x4& mParent);
 
 private:

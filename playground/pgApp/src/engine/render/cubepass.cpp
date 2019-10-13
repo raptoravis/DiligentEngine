@@ -108,7 +108,7 @@ void pgCubePass::CreatePipelineState()
 }
 
 // Render a frame
-void pgCubePass::Render(RenderEventArgs& e)
+void pgCubePass::Render(pgRenderEventArgs& e)
 {
 	//// Clear the back buffer 
 	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
@@ -130,7 +130,7 @@ void pgCubePass::Render(RenderEventArgs& e)
 	m_scene->Render(e);
 }
 
-void pgCubePass::Update(RenderEventArgs& e)
+void pgCubePass::Update(pgRenderEventArgs& e)
 {
 	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
 	const float4x4 view = e.pCamera->getTransform();

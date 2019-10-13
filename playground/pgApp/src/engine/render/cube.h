@@ -4,7 +4,7 @@
 
 #include "../engine.h"
 
-class Cube : public Mesh {
+class Cube : public pgMesh {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_CubeVertexBuffer;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer>                m_CubeIndexBuffer;
 
@@ -15,5 +15,5 @@ public:
 	Cube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
 	virtual ~Cube();
 
-	virtual void Render(RenderEventArgs& renderEventArgs);
+	virtual void Render(pgRenderEventArgs& renderEventArgs);
 };

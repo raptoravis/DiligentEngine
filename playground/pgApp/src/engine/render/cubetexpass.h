@@ -25,8 +25,8 @@ public:
 	virtual ~pgCubeTexPass();
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(RenderEventArgs& e);
-	virtual void Render(RenderEventArgs& e);
+	virtual void Update(pgRenderEventArgs& e);
+	virtual void Render(pgRenderEventArgs& e);
 
 };
 

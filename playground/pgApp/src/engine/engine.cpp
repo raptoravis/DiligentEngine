@@ -37,11 +37,11 @@ pgBasePass::~pgBasePass()
 }
 
 
-void pgBasePass::Update(RenderEventArgs& e)
+void pgBasePass::Update(pgRenderEventArgs& e)
 {
 }
 
-void pgBasePass::Render(RenderEventArgs& e)
+void pgBasePass::Render(pgRenderEventArgs& e)
 {
 }
 
@@ -70,7 +70,7 @@ std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
 	return 0;
 }
 
-void pgTechnique::Update(RenderEventArgs& e)
+void pgTechnique::Update(pgRenderEventArgs& e)
 {
 	for (auto pass : m_Passes)
 	{
@@ -82,7 +82,7 @@ void pgTechnique::Update(RenderEventArgs& e)
 }
 
 // Render the scene using the passes that have been configured.
-void pgTechnique::Render(RenderEventArgs& e)
+void pgTechnique::Render(pgRenderEventArgs& e)
 {
 	for (auto pass : m_Passes)
 	{

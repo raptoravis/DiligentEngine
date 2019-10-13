@@ -332,7 +332,7 @@ void ObjExporter::WriteGeometryFile(bool noMtl) {
 }
 
 // ------------------------------------------------------------------------------------------------
-void ObjExporter::AddMesh(const aiString& name, const aiMesh* m, const aiMatrix4x4& mat) {
+void ObjExporter::addMesh(const aiString& name, const aiMesh* m, const aiMatrix4x4& mat) {
     mMeshes.push_back(MeshInstance() );
     MeshInstance& mesh = mMeshes.back();
 
@@ -397,9 +397,9 @@ void ObjExporter::AddNode(const aiNode* nd, const aiMatrix4x4& mParent) {
     for(unsigned int i = 0; i < nd->mNumMeshes; ++i) {
         cm = pScene->mMeshes[nd->mMeshes[i]];
         if (nullptr != cm) {
-            AddMesh(cm->mName, pScene->mMeshes[nd->mMeshes[i]], mAbs);
+            addMesh(cm->mName, pScene->mMeshes[nd->mMeshes[i]], mAbs);
         } else {
-            AddMesh(nd->mName, pScene->mMeshes[nd->mMeshes[i]], mAbs);
+            addMesh(nd->mName, pScene->mMeshes[nd->mMeshes[i]], mAbs);
         }
     }
 

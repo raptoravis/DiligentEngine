@@ -283,7 +283,7 @@ void pgGLTFPass::CreateEnvMapSRB()
 }
 
 
-void pgGLTFPass::Update(RenderEventArgs& e) {
+void pgGLTFPass::Update(pgRenderEventArgs& e) {
 	UpdateUI();
 
 	if (!m_Model->Animations.empty() && m_PlayAnimation)
@@ -295,7 +295,7 @@ void pgGLTFPass::Update(RenderEventArgs& e) {
 	}
 }
 
-void pgGLTFPass::Render(RenderEventArgs& e) {
+void pgGLTFPass::Render(pgRenderEventArgs& e) {
 	float4x4 CameraView = e.pCamera->getTransform();
 
 	float4x4 CameraWorld = CameraView.Inverse();

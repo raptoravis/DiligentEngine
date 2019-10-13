@@ -1,6 +1,6 @@
 #include "../engine.h"
 
-Material::Material(Diligent::IRenderDevice* device)
+pgMaterial::pgMaterial(Diligent::IRenderDevice* device)
 	: m_RenderDevice(device)
 	, m_Dirty(false)
 {
@@ -21,7 +21,7 @@ Material::Material(Diligent::IRenderDevice* device)
 	m_RenderDevice->CreateBuffer(VertBuffDesc, &VBData, &m_pConstantBuffer);
 }
 
-Material::~Material()
+pgMaterial::~pgMaterial()
 {
 	if (m_pProperties)
 	{
@@ -30,14 +30,14 @@ Material::~Material()
 	}
 }
 
-void Material::Bind(Diligent::IShader* pShader) const
+void pgMaterial::Bind(Diligent::IShader* pShader) const
 {
 	if (!pShader) return;
 
 	if (m_Dirty)
 	{
 		// Make sure the constant buffer associated to this material is updated.
-		Material* _this = const_cast<Material*>(this);
+		pgMaterial* _this = const_cast<pgMaterial*>(this);
 		_this->UpdateConstantBuffer();
 		_this->m_Dirty = false;
 	}
@@ -60,115 +60,115 @@ void Material::Bind(Diligent::IShader* pShader) const
 	//}
 }
 
-const Diligent::float4& Material::GetGlobalAmbientColor() const
+const Diligent::float4& pgMaterial::GetGlobalAmbientColor() const
 {
 	return m_pProperties->m_GlobalAmbient;
 }
 
-void Material::SetGlobalAmbientColor(const Diligent::float4& globalAmbient)
+void pgMaterial::SetGlobalAmbientColor(const Diligent::float4& globalAmbient)
 {
 	m_pProperties->m_GlobalAmbient = globalAmbient;
 	m_Dirty = true;
 }
 
-const Diligent::float4& Material::GetAmbientColor() const
+const Diligent::float4& pgMaterial::GetAmbientColor() const
 {
 	return m_pProperties->m_AmbientColor;
 }
 
-void Material::SetAmbientColor(const Diligent::float4& ambient)
+void pgMaterial::SetAmbientColor(const Diligent::float4& ambient)
 {
 	m_pProperties->m_AmbientColor = ambient;
 	m_Dirty = true;
 }
 
-const Diligent::float4& Material::GetDiffuseColor() const
+const Diligent::float4& pgMaterial::GetDiffuseColor() const
 {
 	return m_pProperties->m_DiffuseColor;
 }
 
-void Material::SetDiffuseColor(const Diligent::float4& diffuse)
+void pgMaterial::SetDiffuseColor(const Diligent::float4& diffuse)
 {
 	m_pProperties->m_DiffuseColor = diffuse;
 	m_Dirty = true;
 }
 
-const Diligent::float4& Material::GetEmissiveColor() const
+const Diligent::float4& pgMaterial::GetEmissiveColor() const
 {
 	return m_pProperties->m_EmissiveColor;
 }
 
-void Material::SetEmissiveColor(const Diligent::float4& emissive)
+void pgMaterial::SetEmissiveColor(const Diligent::float4& emissive)
 {
 	m_pProperties->m_EmissiveColor = emissive;
 	m_Dirty = true;
 }
 
-const Diligent::float4& Material::GetSpecularColor() const
+const Diligent::float4& pgMaterial::GetSpecularColor() const
 {
 	return m_pProperties->m_SpecularColor;
 }
 
-void Material::SetSpecularColor(const Diligent::float4& specular)
+void pgMaterial::SetSpecularColor(const Diligent::float4& specular)
 {
 	m_pProperties->m_SpecularColor = specular;
 	m_Dirty = true;
 }
 
-float Material::GetSpecularPower() const
+float pgMaterial::GetSpecularPower() const
 {
 	return m_pProperties->m_SpecularPower;
 }
 
-const float Material::GetOpacity() const
+const float pgMaterial::GetOpacity() const
 {
 	return m_pProperties->m_Opacity;
 }
 
-void Material::SetOpacity(float Opacity)
+void pgMaterial::SetOpacity(float Opacity)
 {
 	m_pProperties->m_Opacity = Opacity;
 	m_Dirty = true;
 }
 
-void Material::SetSpecularPower(float phongPower)
+void pgMaterial::SetSpecularPower(float phongPower)
 {
 	m_pProperties->m_SpecularPower = phongPower;
 	m_Dirty = true;
 }
 
-const Diligent::float4& Material::GetReflectance() const
+const Diligent::float4& pgMaterial::GetReflectance() const
 {
 	return m_pProperties->m_Reflectance;
 }
 
-void Material::SetReflectance(const Diligent::float4& reflectance)
+void pgMaterial::SetReflectance(const Diligent::float4& reflectance)
 {
 	m_pProperties->m_Reflectance = reflectance;
 	m_Dirty = true;
 }
 
-float Material::GetIndexOfRefraction() const
+float pgMaterial::GetIndexOfRefraction() const
 {
 	return m_pProperties->m_IndexOfRefraction;
 }
 
-void Material::SetIndexOfRefraction(float indexOfRefraction)
+void pgMaterial::SetIndexOfRefraction(float indexOfRefraction)
 {
 	m_pProperties->m_IndexOfRefraction = indexOfRefraction;
 	m_Dirty = true;
 }
 
-float Material::GetBumpIntensity() const
+float pgMaterial::GetBumpIntensity() const
 {
 	return m_pProperties->m_BumpIntensity;
 }
-void Material::SetBumpIntensity(float bumpIntensity)
+void pgMaterial::SetBumpIntensity(float bumpIntensity)
 {
 	m_pProperties->m_BumpIntensity = bumpIntensity;
 }
 
-std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
+std::shared_ptr<pgTexture> pgMaterial::GetTexture(TextureType type) const
 {
 	TextureMap::const_iterator itr = m_Textures.find(type);
 	if (itr != m_Textures.end())
@@ -179,7 +179,7 @@ std::shared_ptr<Texture> Material::GetTexture(TextureType type) const
 	return nullptr;
 }
 
-void Material::SetTexture(TextureType type, std::shared_ptr<Texture> texture)
+void pgMaterial::SetTexture(TextureType type, std::shared_ptr<pgTexture> texture)
 {
 	m_Textures[type] = texture;
 
@@ -230,7 +230,7 @@ void Material::SetTexture(TextureType type, std::shared_ptr<Texture> texture)
 	m_Dirty = true;
 }
 
-bool Material::IsTransparent() const
+bool pgMaterial::IsTransparent() const
 {
 	return (m_pProperties->m_Opacity < 1.0f ||
 		m_pProperties->m_HasOpacityTexture ||
@@ -238,7 +238,7 @@ bool Material::IsTransparent() const
 		m_pProperties->m_AlphaThreshold <= 0.0f); // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
 }
 
-void Material::UpdateConstantBuffer()
+void pgMaterial::UpdateConstantBuffer()
 {
 	//if (m_pConstantBuffer)
 	//{

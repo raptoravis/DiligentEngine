@@ -45,9 +45,9 @@ namespace Diligent
 		virtual const Char* GetSampleName()const override final { return "pgApp"; }
 
 	private:
-		Camera*			m_pCamera;
+		pgCamera*			m_pCamera;
 
 		pgTechnique*	m_pTechnique;
-		RenderEventArgs m_evtArgs;
+		pgRenderEventArgs m_evtArgs;
 	};
 }
