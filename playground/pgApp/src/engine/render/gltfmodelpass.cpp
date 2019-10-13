@@ -295,6 +295,10 @@ void pgGLTFPass::update(pgRenderEventArgs& e) {
 	}
 }
 
+void pgGLTFPass::updateSRB(pgRenderEventArgs& e) {
+	//
+}
+
 void pgGLTFPass::render(pgRenderEventArgs& e) {
 	float4x4 CameraView = e.pCamera->getViewMatrix();
 

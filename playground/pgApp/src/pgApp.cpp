@@ -84,7 +84,7 @@ namespace Diligent
 		m_pTechnique->addPass(pOpaquePass);
 #endif
 
-#if 0
+#if 1
 		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(pci);
 		m_pTechnique->addPass(pGLTFPass);
 #else
