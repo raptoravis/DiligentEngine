@@ -25,7 +25,6 @@ public:
 	virtual std::shared_ptr<pgSceneNode> getRootNode() const;
     virtual bool LoadFromFile( const std::wstring& fileName );
     virtual bool LoadFromString( const std::string& scene, const std::string& format );
-    virtual void Render( pgRenderEventArgs& renderArgs );
 
 	pgSceneAss(const pgSceneCreateInfo& ci);
 	virtual ~pgSceneAss();

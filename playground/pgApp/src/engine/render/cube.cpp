@@ -77,6 +77,8 @@ void Cube::CreateIndexBuffer()
 }
 
 
-void Cube::Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderEventArgs) {
-	pgMesh::Render(sceneNode, renderEventArgs);
+void Cube::render(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
+	assert(e.pPass);
+
+	pgMesh::render(sceneNode, e);
 }

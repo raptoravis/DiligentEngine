@@ -57,8 +57,8 @@ public:
 	virtual ~pgGLTFPass();
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(pgRenderEventArgs& e);
-	virtual void Render(pgRenderEventArgs& e);
+	virtual void update(pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 
 	void UpdateUI();
 

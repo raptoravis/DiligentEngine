@@ -123,7 +123,7 @@ void pgOpaquePass::LoadTexture()
 
 
 // Render a frame
-void pgOpaquePass::Render(pgRenderEventArgs& e)
+void pgOpaquePass::render(pgRenderEventArgs& e)
 {
 	//// Clear the back buffer 
 	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
@@ -144,10 +144,10 @@ void pgOpaquePass::Render(pgRenderEventArgs& e)
 	// makes sure that resources are transitioned to required states.
 	m_pImmediateContext->CommitShaderResources(m_SRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	m_scene->Render(e);
+	m_scene->render(e);
 }
 
-void pgOpaquePass::Update(pgRenderEventArgs& e)
+void pgOpaquePass::update(pgRenderEventArgs& e)
 {
 	const float4x4 view = e.pCamera->getViewMatrix();
 

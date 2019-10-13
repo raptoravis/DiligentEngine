@@ -22,7 +22,7 @@ std::shared_ptr<pgMaterial> pgMesh::GetMaterial() const
 	return m_pMaterial;
 }
 
-void pgMesh::Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderArgs)
+void pgMesh::render(pgSceneNode* sceneNode, pgRenderEventArgs& e)
 {
 	constexpr uint32_t kMaxBuffers = Diligent::MaxBufferSlots;
 
@@ -41,6 +41,8 @@ void pgMesh::Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderArgs)
 
 	m_pImmediateContext->SetVertexBuffers(0, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+	e.pPass->updateSRB(sceneNode, e);
 
 	if (m_pMaterial)
 	{

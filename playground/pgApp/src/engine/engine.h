@@ -155,6 +155,8 @@ public:
 	}
 };
 
+class pgPass;
+
 class pgRenderEventArgs
 {
 public:
@@ -163,8 +165,12 @@ public:
 	float ElapsedTime;
 
 	pgCamera* pCamera;
+
+	pgPass* pPass;
 public:
-	pgRenderEventArgs()	{
+	pgRenderEventArgs() :
+		pPass(0)
+	{
 	}
 
 	void set(void* caller, float currentTime, float elapsedTime, pgCamera* camera) {
@@ -173,7 +179,6 @@ public:
 		CurrTime = currentTime;
 		ElapsedTime = elapsedTime;
 	}
-
 };
 
 class pgTexture : public pgObject
@@ -434,7 +439,7 @@ public:
 	virtual void SetMaterial(std::shared_ptr<pgMaterial> material);
 	virtual std::shared_ptr<pgMaterial> GetMaterial() const;
 
-	virtual void Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderEventArgs);
+	virtual void render(pgSceneNode* sceneNode, pgRenderEventArgs& e);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -470,7 +475,7 @@ public:
 	 * Render meshes associated with this scene node.
 	 * This method will traverse it's children.
 	 */
-	void Render(pgRenderEventArgs& renderEventArgs);
+	void render(pgRenderEventArgs& e);
 
 protected:
 
@@ -533,7 +538,7 @@ public:
 		m_pRootNode = root;
 	}
 
-	virtual void Render(pgRenderEventArgs& renderEventArgs);
+	virtual void render(pgRenderEventArgs& e);
 };
 
 
@@ -571,17 +576,18 @@ public:
 	}
 
 	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
-	void SetEnabled(bool enabled) {
+	void setEnabled(bool enabled) {
 		m_bEnabled = enabled;
 	}
 
-	bool IsEnabled() const {
+	bool isEnabled() const {
 		return m_bEnabled;
 	}
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(pgRenderEventArgs& e) = 0;
-	virtual void Render(pgRenderEventArgs& e) = 0;
+	virtual void update(pgRenderEventArgs& e) = 0;
+	virtual void updateSRB(pgSceneNode* sceneNode, pgRenderEventArgs& e) = 0;
+	virtual void render(pgRenderEventArgs& e) = 0;
 };
 
 class pgTechnique : public pgObject
@@ -596,8 +602,8 @@ public:
 	std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
 	// Render the scene using the passes that have been configured.
-	virtual void Update(pgRenderEventArgs& e);
-	virtual void Render(pgRenderEventArgs& e);
+	virtual void update(pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 
 private:
 	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
@@ -615,6 +621,6 @@ public:
 	virtual ~pgBasePass();
 
 	// Render the pass. This should only be called by the pgTechnique.
-	virtual void Update(pgRenderEventArgs& e);
-	virtual void Render(pgRenderEventArgs& e);
+	virtual void update(pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 };

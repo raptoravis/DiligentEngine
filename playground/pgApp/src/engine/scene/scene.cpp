@@ -153,25 +153,25 @@ void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 	}
 }
 
-void pgSceneNode::Render(pgRenderEventArgs& args)
+void pgSceneNode::render(pgRenderEventArgs& args)
 {
 	// First render all my meshes.
 	for (auto mesh : m_Meshes)
 	{
-		mesh->Render(this, args);
+		mesh->render(this, args);
 	}
 
 	// Now recurse into children
 	for (auto child : m_Children)
 	{
-		child->Render(args);
+		child->render(args);
 	}
 }
 
-void pgScene::Render(pgRenderEventArgs& args)
+void pgScene::render(pgRenderEventArgs& args)
 {
 	if (m_pRootNode)
 	{
-		m_pRootNode->Render(args);
+		m_pRootNode->render(args);
 	}
 }

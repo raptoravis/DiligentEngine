@@ -108,38 +108,39 @@ void pgCubePass::CreatePipelineState()
 }
 
 // Render a frame
-void pgCubePass::Render(pgRenderEventArgs& e)
+void pgCubePass::render(pgRenderEventArgs& e)
 {
-	//// Clear the back buffer 
-	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
-	//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-	{
-		// Map the buffer and write current world-view-projection matrix
-		MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
-		*CBConstants = m_WorldViewProjMatrix.Transpose();
-	}
-
 	// Set the pipeline state
 	m_pImmediateContext->SetPipelineState(m_pPSO);
-	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-	// makes sure that resources are transitioned to required states.
-	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	m_scene->Render(e);
+	m_scene->render(e);
 }
 
-void pgCubePass::Update(pgRenderEventArgs& e)
-{
+void pgCubePass::updateSRB(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
 	const float4x4 view = e.pCamera->getViewMatrix();
 
+	const float4x4 local = sceneNode->GetLocalTransform();
+
 	// Set cube world view matrix
-	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * -1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
+	float4x4 CubeWorldView = local * float4x4::RotationY(static_cast<float>(e.CurrTime) * -1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
 		float4x4::Translation(0.f, 0.0f, 8.0f) * view;
 
 	auto& Proj = e.pCamera->getProjectionMatrix();
 
 	// Compute world-view-projection matrix
-	m_WorldViewProjMatrix = CubeWorldView * Proj;
+	float4x4 worldViewProjMatrix = CubeWorldView * Proj;
+
+	{
+		// Map the buffer and write current world-view-projection matrix
+		MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+		*CBConstants = worldViewProjMatrix.Transpose();
+	}
+
+	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+	// makes sure that resources are transitioned to required states.
+	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+}
+
+void pgCubePass::update(pgRenderEventArgs& e)
+{
 }

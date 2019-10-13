@@ -99,6 +99,6 @@ void CubeTex::CreateIndexBuffer()
 		Indices, 36);
 }
 
-void CubeTex::Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderEventArgs) {
-	pgMesh::Render(sceneNode, renderEventArgs);
+void CubeTex::render(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
+	pgMesh::render(sceneNode, e);
 }

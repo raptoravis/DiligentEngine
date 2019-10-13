@@ -129,10 +129,10 @@ void pgCubeTexPass::CreatePipelineState()
 
 	// Since we are using mutable variable, we must create a shader resource binding object
 	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
-	m_pPSO->CreateShaderResourceBinding(&m_SRB, true);
+	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
 	// Set texture SRV in the SRB
-	m_SRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
 }
 
 void pgCubeTexPass::LoadTexture()
@@ -148,39 +148,40 @@ void pgCubeTexPass::LoadTexture()
 
 
 // Render a frame
-void pgCubeTexPass::Render(pgRenderEventArgs& e)
+void pgCubeTexPass::render(pgRenderEventArgs& e)
 {
-	//// Clear the back buffer 
-	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
-	//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-	{
-		// Map the buffer and write current world-view-projection matrix
-		MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
-		*CBConstants = m_WorldViewProjMatrix.Transpose();
-	}
-
 	// Set the pipeline state
 	m_pImmediateContext->SetPipelineState(m_pPSO);
-	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-	// makes sure that resources are transitioned to required states.
-	m_pImmediateContext->CommitShaderResources(m_SRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	m_scene->Render(e);
+	m_scene->render(e);
 }
 
-void pgCubeTexPass::Update(pgRenderEventArgs& e)
-{
+void pgCubeTexPass::updateSRB(pgSceneNode* sceneNode, pgRenderEventArgs& e) {
 	const float4x4 view = e.pCamera->getViewMatrix();
 
+	const float4x4 local = sceneNode->GetLocalTransform();
+
 	// Set cube world view matrix
-	float4x4 CubeWorldView = float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
+	float4x4 CubeWorldView = local * float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
 		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
 
 	auto& Proj = e.pCamera->getProjectionMatrix();
 
 	// Compute world-view-projection matrix
-	m_WorldViewProjMatrix = CubeWorldView * Proj;
+	float4x4 worldViewProjMatrix = CubeWorldView * Proj;
+
+	{
+		// Map the buffer and write current world-view-projection matrix
+		MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+		*CBConstants = worldViewProjMatrix.Transpose();
+	}
+
+	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+	// makes sure that resources are transitioned to required states.
+	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+}
+
+void pgCubeTexPass::update(pgRenderEventArgs& e)
+{
 }
 

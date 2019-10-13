@@ -544,13 +544,3 @@ std::shared_ptr<pgBuffer> pgSceneAss::CreateFloatVertexBuffer(const float* data,
 std::shared_ptr<pgBuffer> pgSceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count) {
 	return createUIntIndexBuffer(m_pDevice, data, count);
 }
-
-
-void pgSceneAss::Render( pgRenderEventArgs& args )
-{
-    if ( m_pRootNode )
-    {
-        m_pRootNode->Render( args );
-    }
-}
-

@@ -12,5 +12,5 @@ public:
 	CubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
 	virtual ~CubeTex();
 
-	virtual void Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderEventArgs);
+	virtual void render(pgSceneNode* sceneNode, pgRenderEventArgs& e);
 };
