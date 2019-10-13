@@ -9,16 +9,25 @@ using namespace Diligent;
 class pgOpaquePass : public pgBasePass {
 	typedef pgBasePass base;
 
+protected:
 	void CreatePipelineState();
 	void LoadTexture();
 
 	RefCntAutoPtr<IPipelineState>         m_pPSO;
-	RefCntAutoPtr<IBuffer>                m_VSConstants;
+	RefCntAutoPtr<IBuffer>                m_PerObjectConstants;
 	RefCntAutoPtr<IShaderResourceBinding> m_SRB;
+
+	float4x4                              m_WorldViewMatrix;
 	float4x4                              m_WorldViewProjMatrix;
 
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_TextureSRV;
 
+	// PerObject constant buffer data.
+	__declspec(align(16)) struct PerObject
+	{
+		float4x4 ModelViewProjection;
+		float4x4 ModelView;
+	};
 public:
 	pgOpaquePass(const pgPassCreateInfo& ci);
 

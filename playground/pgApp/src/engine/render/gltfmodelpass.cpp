@@ -296,7 +296,7 @@ void pgGLTFPass::Update(pgRenderEventArgs& e) {
 }
 
 void pgGLTFPass::Render(pgRenderEventArgs& e) {
-	float4x4 CameraView = e.pCamera->getTransform();
+	float4x4 CameraView = e.pCamera->getViewMatrix();
 
 	float4x4 CameraWorld = CameraView.Inverse();
 	float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);

@@ -77,6 +77,17 @@ inline std::string ConvertString(const std::wstring& wstring)
 	return converter.to_bytes(wstring);
 }
 
+struct pgCreateInfo {
+	Diligent::IRenderDevice*		device;
+	Diligent::IDeviceContext*		ctx;
+	Diligent::IEngineFactory*		factory;
+
+	Diligent::SwapChainDesc			desc;
+
+	pgCreateInfo() {
+		//
+	}
+};
 
 class pgObject
 {
@@ -86,22 +97,44 @@ public:
 	}
 };
 
+struct pgCameraCreateInfo : public pgCreateInfo {
+	//
+	pgCameraCreateInfo() {
+		//
+	}
+
+	pgCameraCreateInfo(pgCreateInfo& ci)
+		: pgCreateInfo(ci)
+	{
+	}
+};
+
+
 class pgCamera : public pgObject
 {
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
+
+	Diligent::SwapChainDesc								m_desc;
+
 	Diligent::MouseState m_LastMouseState;
 
-	Diligent::float4x4   m_cameraTransform;
-	Diligent::float3 pos;
-	Diligent::float3 look;
+	Diligent::float4x4   m_viewMatrix;
+	Diligent::float4x4   m_projectionMatrix;
+
+	Diligent::float3	pos;
+	Diligent::float3	look;
 
 	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
 
 public:
-	pgCamera();
+	pgCamera(const pgCameraCreateInfo& cci);
 
 	virtual ~pgCamera();
 
 	void reset();
+	void setProjectionMatrix(float NearPlane, float FarPlane);
 
 	void update(Diligent::InputController* pInputController, float ElapsedTime);
 
@@ -113,10 +146,13 @@ public:
 		return look;
 	}
 
-	const Diligent::float4x4& getTransform() const {
-		return m_cameraTransform;
+	const Diligent::float4x4& getViewMatrix() const {
+		return m_viewMatrix;
 	}
 
+	const Diligent::float4x4& getProjectionMatrix() const {
+		return m_projectionMatrix;
+	}
 };
 
 class pgRenderEventArgs
@@ -167,9 +203,17 @@ public:
 
 class pgBuffer : public pgObject
 {
+	const uint32_t m_count;
 public:
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
+	pgBuffer(int count)
+		: m_count(count)
+	{
+	}
 
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
+	uint32_t getCount() const {
+		return m_count;
+	}
 };
 
 // A material class is used to wrap the shaders and to 
@@ -356,6 +400,8 @@ struct pgBufferBinding
 	unsigned int Index;
 };
 
+class pgSceneNode;
+
 // A mesh contains the geometry and materials required to render this mesh.
 class pgMesh : public pgObject
 {
@@ -363,7 +409,6 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		  m_pDevice;
 	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>		  m_pImmediateContext;
 
-private:
 	typedef std::map<pgBufferBinding, std::shared_ptr<pgBuffer> > BufferMap;
 	BufferMap m_VertexBuffers;
 
@@ -389,7 +434,7 @@ public:
 	virtual void SetMaterial(std::shared_ptr<pgMaterial> material);
 	virtual std::shared_ptr<pgMaterial> GetMaterial() const;
 
-	virtual void Render(pgRenderEventArgs& renderEventArgs);
+	virtual void Render(pgSceneNode* sceneNode, pgRenderEventArgs& renderEventArgs);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -449,19 +494,6 @@ private:
 	MeshList m_Meshes;
 };
 
-struct pgCreateInfo {
-	Diligent::IRenderDevice*		device;
-	Diligent::IDeviceContext*		ctx;
-	Diligent::IEngineFactory*		factory;
-
-	Diligent::SwapChainDesc			desc;
-
-	pgCreateInfo() {
-		//
-	}
-};
-
-
 struct pgSceneCreateInfo : public pgCreateInfo {
 	//
 	pgSceneCreateInfo()	{
@@ -490,7 +522,6 @@ public:
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
 		, m_desc(ci.desc)
-
 	{
 		//
 	}

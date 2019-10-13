@@ -132,17 +132,14 @@ void pgCubePass::Render(pgRenderEventArgs& e)
 
 void pgCubePass::Update(pgRenderEventArgs& e)
 {
-	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
-	const float4x4 view = e.pCamera->getTransform();
+	const float4x4 view = e.pCamera->getViewMatrix();
 
 	// Set cube world view matrix
 	float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * -1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
 		float4x4::Translation(0.f, 0.0f, 8.0f) * view;
-	float NearPlane = 0.1f;
-	float FarPlane = 100.f;
-	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
-	// Projection matrix differs between DX and OpenGL
-	auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane, IsGL);
+
+	auto& Proj = e.pCamera->getProjectionMatrix();
+
 	// Compute world-view-projection matrix
 	m_WorldViewProjMatrix = CubeWorldView * Proj;
 }

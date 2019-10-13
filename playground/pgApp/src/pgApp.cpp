@@ -59,23 +59,23 @@ namespace Diligent
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
-		m_pCamera = new pgCamera();
-
-		// technique will clean up passed added in it
-		m_pTechnique = new pgTechnique();
-
 		pgCreateInfo ci;
 		ci.device = m_pDevice;
 		ci.ctx = m_pImmediateContext;
 		ci.factory = m_pEngineFactory;
 		ci.desc = m_pSwapChain->GetDesc();
 
-		pgPassCreateInfo pci {ci};
+		pgCameraCreateInfo cci{ ci };
+		m_pCamera = std::make_shared<pgCamera>(cci);
 
+		// technique will clean up passed added in it
+		m_pTechnique = std::make_shared<pgTechnique>();
+
+		pgPassCreateInfo pci {ci};
 		pgSceneCreateInfo sci {ci};
 
 #if 0
-		std::shared_ptr<SceneAss> sceneAss = std::make_shared<SceneAss>(sci);
+		std::shared_ptr<pgSceneAss> sceneAss = std::make_shared<pgSceneAss>(sci);
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		sceneAss->LoadFromFile(filePath);
 
@@ -117,9 +117,6 @@ namespace Diligent
 
 	pgApp::~pgApp()
 	{
-		delete m_pCamera;
-
-		delete m_pTechnique;
 	}
 
 	// Render a frame
@@ -140,13 +137,13 @@ namespace Diligent
 
 		m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
-		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera);
+		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera.get());
 
 		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
 		//ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			//Quaternion rot = Quaternion(m_cameraTransform);
+			//Quaternion rot = Quaternion(m_viewMatrix);
 			//ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
 			const float3& pos = m_pCamera->getPos();
 			const float3& look = m_pCamera->getLook();
@@ -163,7 +160,7 @@ namespace Diligent
 
 			ImGui::Separator();
 
-			float4x4 camTt = m_pCamera->getTransform();
+			float4x4 camTt = m_pCamera->getViewMatrix();
 
 			//Quaternion rot = mRot2Quat(camTt);
 			Quaternion rot = calculateRotation(camTt);

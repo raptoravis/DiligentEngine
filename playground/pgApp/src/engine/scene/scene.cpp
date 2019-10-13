@@ -158,7 +158,7 @@ void pgSceneNode::Render(pgRenderEventArgs& args)
 	// First render all my meshes.
 	for (auto mesh : m_Meshes)
 	{
-		mesh->Render(args);
+		mesh->Render(this, args);
 	}
 
 	// Now recurse into children

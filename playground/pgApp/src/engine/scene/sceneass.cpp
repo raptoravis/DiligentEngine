@@ -17,7 +17,7 @@
 class ProgressHandler : public Assimp::ProgressHandler
 {
 public:
-	ProgressHandler(SceneAss& scene, const std::wstring& fileName)
+	ProgressHandler(pgSceneAss& scene, const std::wstring& fileName)
 		: m_Scene(scene)
 		, m_FileName(fileName)
 	{}
@@ -28,22 +28,22 @@ public:
 	}
 
 private:
-	SceneAss& m_Scene;
+	pgSceneAss& m_Scene;
 	std::wstring m_FileName;
 };
 
-SceneAss::SceneAss(const pgSceneCreateInfo& ci)
+pgSceneAss::pgSceneAss(const pgSceneCreateInfo& ci)
     : base(ci)
     , m_pRootNode( nullptr )
 {
 	//
 }
 
-SceneAss::~SceneAss()
+pgSceneAss::~pgSceneAss()
 {
 }
 
-bool SceneAss::LoadFromString( const std::string& sceneStr, const std::string& format )
+bool pgSceneAss::LoadFromString( const std::string& sceneStr, const std::string& format )
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
@@ -53,7 +53,7 @@ bool SceneAss::LoadFromString( const std::string& sceneStr, const std::string& f
     importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
     importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
 
-    unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality;
+    uint32_t preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality;
 
     scene = importer.ReadFileFromMemory( sceneStr.data(), sceneStr.size(), preprocessFlags, format.c_str() );
 
@@ -71,12 +71,12 @@ bool SceneAss::LoadFromString( const std::string& sceneStr, const std::string& f
         }
 
         // Import scene materials.
-        for ( unsigned int i = 0; i < scene->mNumMaterials; ++i )
+        for ( uint32_t i = 0; i < scene->mNumMaterials; ++i )
         {
             ImportMaterial( *scene->mMaterials[i], fs::current_path() );
         }
         // Import meshes
-        for ( unsigned int i = 0; i < scene->mNumMeshes; ++i )
+        for ( uint32_t i = 0; i < scene->mNumMeshes; ++i )
         {
             ImportMesh( *scene->mMeshes[i] );
         }
@@ -87,7 +87,7 @@ bool SceneAss::LoadFromString( const std::string& sceneStr, const std::string& f
     return true;
 }
 
-bool SceneAss::LoadFromFile( const std::wstring& fileName )
+bool pgSceneAss::LoadFromFile( const std::wstring& fileName )
 {
     fs::path filePath( fileName );
     fs::path parentPath;
@@ -123,7 +123,7 @@ bool SceneAss::LoadFromFile( const std::wstring& fileName )
         importer.SetPropertyFloat( AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f );
         importer.SetPropertyInteger( AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE );
 
-        unsigned int preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph;
+        uint32_t preprocessFlags = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_OptimizeGraph;
         scene = importer.ReadFile( filePath.string(), preprocessFlags );
 
         if ( scene )
@@ -156,12 +156,12 @@ bool SceneAss::LoadFromFile( const std::wstring& fileName )
         m_Meshes.clear();
 
         // Import scene materials.
-        for ( unsigned int i = 0; i < scene->mNumMaterials; ++i )
+        for ( uint32_t i = 0; i < scene->mNumMaterials; ++i )
         {
             ImportMaterial( *scene->mMaterials[i], parentPath );
         }
         // Import meshes
-        for ( unsigned int i = 0; i < scene->mNumMeshes; ++i )
+        for ( uint32_t i = 0; i < scene->mNumMeshes; ++i )
         {
             ImportMesh( *scene->mMeshes[i] );
         }
@@ -173,7 +173,7 @@ bool SceneAss::LoadFromFile( const std::wstring& fileName )
     return true;
 }
 
-void SceneAss::ImportMaterial( const aiMaterial& material, fs::path parentPath )
+void pgSceneAss::ImportMaterial( const aiMaterial& material, fs::path parentPath )
 {
     aiString materialName;
     aiString aiTexturePath;
@@ -320,7 +320,7 @@ void SceneAss::ImportMaterial( const aiMaterial& material, fs::path parentPath )
     m_Materials.push_back( pMaterial );
 }
 
-void SceneAss::ImportMesh( const aiMesh& mesh )
+void pgSceneAss::ImportMesh( const aiMesh& mesh )
 {
     std::shared_ptr<pgMesh> pMesh = CreateMesh();
 
@@ -348,46 +348,46 @@ void SceneAss::ImportMesh( const aiMesh& mesh )
         pMesh->AddVertexBuffer( pgBufferBinding( "BINORMAL", 0 ), bitangents );
     }
 
-    for ( unsigned int i = 0; mesh.HasVertexColors( i ); ++i )
+    for ( uint32_t i = 0; mesh.HasVertexColors( i ); ++i )
     {
         std::shared_ptr<pgBuffer> colors = CreateFloatVertexBuffer( &( mesh.mColors[i][0].r ), mesh.mNumVertices, sizeof( aiColor4D ) );
         pMesh->AddVertexBuffer( pgBufferBinding( "COLOR", i ), colors );
     }
 
-    for ( unsigned int i = 0; mesh.HasTextureCoords( i ); ++i )
+    for ( uint32_t i = 0; mesh.HasTextureCoords( i ); ++i )
     {
         switch ( mesh.mNumUVComponents[i] )
         {
         case 1: // 1-component texture coordinates (U)
         {
             std::vector<float> texcoods1D( mesh.mNumVertices );
-            for ( unsigned int j = 0; j < mesh.mNumVertices; ++j )
+            for ( uint32_t j = 0; j < mesh.mNumVertices; ++j )
             {
                 texcoods1D[j] = mesh.mTextureCoords[i][j].x;
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( texcoods1D.data(), (unsigned int)texcoods1D.size(), sizeof( float ) );
+            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( texcoods1D.data(), (uint32_t)texcoods1D.size(), sizeof( float ) );
             pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
         case 2: // 2-component texture coordinates (U,V)
         {
             std::vector<aiVector2D> texcoods2D( mesh.mNumVertices );
-            for ( unsigned int j = 0; j < mesh.mNumVertices; ++j )
+            for ( uint32_t j = 0; j < mesh.mNumVertices; ++j )
             {
                 texcoods2D[j] = aiVector2D( mesh.mTextureCoords[i][j].x, mesh.mTextureCoords[i][j].y );
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods2D[0].x ), (unsigned int)texcoods2D.size(), sizeof( aiVector2D ) );
+            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods2D[0].x ), (uint32_t)texcoods2D.size(), sizeof( aiVector2D ) );
             pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
         case 3: // 3-component texture coordinates (U,V,W)
         {
             std::vector<aiVector3D> texcoods3D( mesh.mNumVertices );
-            for ( unsigned int j = 0; j < mesh.mNumVertices; ++j )
+            for ( uint32_t j = 0; j < mesh.mNumVertices; ++j )
             {
                 texcoods3D[j] = mesh.mTextureCoords[i][j];
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods3D[0].x ), (unsigned int)texcoods3D.size(), sizeof( aiVector3D ) );
+            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer( &( texcoods3D[0].x ), (uint32_t)texcoods3D.size(), sizeof( aiVector3D ) );
             pMesh->AddVertexBuffer( pgBufferBinding( "TEXCOORD", i ), texcoords );
         }
         break;
@@ -397,8 +397,8 @@ void SceneAss::ImportMesh( const aiMesh& mesh )
     // Extract the index buffer.
     if ( mesh.HasFaces() )
     {
-        std::vector<unsigned int> indices;
-        for ( unsigned int i = 0; i < mesh.mNumFaces; ++i )
+        std::vector<uint32_t> indices;
+        for ( uint32_t i = 0; i < mesh.mNumFaces; ++i )
         {
             const aiFace& face = mesh.mFaces[i];
             // Only extract triangular faces
@@ -411,7 +411,7 @@ void SceneAss::ImportMesh( const aiMesh& mesh )
         }
         if ( indices.size() > 0 )
         {
-            std::shared_ptr<pgBuffer> indexBuffer = CreateUIntIndexBuffer( indices.data(), (unsigned int)indices.size() );
+            std::shared_ptr<pgBuffer> indexBuffer = CreateUIntIndexBuffer( indices.data(), (uint32_t)indices.size() );
             pMesh->SetIndexBuffer( indexBuffer );
         }
     }
@@ -420,7 +420,7 @@ void SceneAss::ImportMesh( const aiMesh& mesh )
     m_Meshes.push_back( pMesh );
 }
 
-std::shared_ptr<pgSceneNode> SceneAss::ImportSceneNode( std::shared_ptr<pgSceneNode> parent, aiNode* aiNode )
+std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode( std::shared_ptr<pgSceneNode> parent, aiNode* aiNode )
 {
     if ( !aiNode )
     {
@@ -445,7 +445,7 @@ std::shared_ptr<pgSceneNode> SceneAss::ImportSceneNode( std::shared_ptr<pgSceneN
     }
 
     // Add meshes to scene node
-    for ( unsigned int i = 0; i < aiNode->mNumMeshes; ++i )
+    for ( uint32_t i = 0; i < aiNode->mNumMeshes; ++i )
     {
         assert( aiNode->mMeshes[i] < m_Meshes.size() );
 
@@ -454,7 +454,7 @@ std::shared_ptr<pgSceneNode> SceneAss::ImportSceneNode( std::shared_ptr<pgSceneN
     }
 
     // Recursively Import children
-    for ( unsigned int i = 0; i < aiNode->mNumChildren; ++i )
+    for ( uint32_t i = 0; i < aiNode->mNumChildren; ++i )
     {
         std::shared_ptr<pgSceneNode> pChild = ImportSceneNode( pNode, aiNode->mChildren[i] );
         pNode->AddChild( pChild );
@@ -463,12 +463,13 @@ std::shared_ptr<pgSceneNode> SceneAss::ImportSceneNode( std::shared_ptr<pgSceneN
     return pNode;
 }
 
-std::shared_ptr<pgSceneNode> SceneAss::getRootNode() const
+std::shared_ptr<pgSceneNode> pgSceneAss::getRootNode() const
 {
     return m_pRootNode;
 }
 
-std::shared_ptr<pgBuffer> SceneAss::CreateFloatVertexBuffer(const float* data, unsigned int count, unsigned int stride) 
+std::shared_ptr<pgBuffer> pgSceneAss::createFloatVertexBuffer(Diligent::IRenderDevice* device, 
+	const float* data, uint32_t count, uint32_t stride)
 {
 	// Create a vertex buffer that stores cube vertices
 	Diligent::BufferDesc VertBuffDesc;
@@ -481,61 +482,71 @@ std::shared_ptr<pgBuffer> SceneAss::CreateFloatVertexBuffer(const float* data, u
 	VBData.pData = data;
 	VBData.DataSize = stride * count;
 
-	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>();
+	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(count);
 
-	m_pDevice->CreateBuffer(VertBuffDesc, &VBData, &buffer->m_pBuffer);
+	device->CreateBuffer(VertBuffDesc, &VBData, &buffer->m_pBuffer);
 
 	return buffer;
 }
 
-std::shared_ptr<pgBuffer> SceneAss::CreateUIntIndexBuffer(const unsigned int* data, unsigned int count) 
+std::shared_ptr<pgBuffer> pgSceneAss::createUIntIndexBuffer(Diligent::IRenderDevice* device, 
+	const uint32_t* data, uint32_t count)
 {
 	Diligent::BufferDesc IndBuffDesc;
 	IndBuffDesc.Name = "UInt index buffer";
 	IndBuffDesc.Usage = Diligent::USAGE_STATIC;
 	IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-	IndBuffDesc.uiSizeInBytes = sizeof(unsigned int) * count;
+	IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
 
 	Diligent::BufferData IBData;
 	IBData.pData = data;
-	IBData.DataSize = sizeof(unsigned int) * count;
+	IBData.DataSize = sizeof(uint32_t) * count;
 
-	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>();
+	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(count);
 
-	m_pDevice->CreateBuffer(IndBuffDesc, &IBData, &buffer->m_pBuffer);
+	device->CreateBuffer(IndBuffDesc, &IBData, &buffer->m_pBuffer);
 
 	return buffer;
 }
 
-std::shared_ptr<pgMesh> SceneAss::CreateMesh()
+std::shared_ptr<pgMesh> pgSceneAss::CreateMesh()
 {
 	std::shared_ptr<pgMesh> mesh = std::make_shared<pgMesh>(m_pDevice, m_pImmediateContext);
 
 	return mesh;
 }
 
-std::shared_ptr<pgMaterial> SceneAss::CreateMaterial()
+std::shared_ptr<pgMaterial> pgSceneAss::CreateMaterial()
 {
 	std::shared_ptr<pgMaterial> mat = std::make_shared<pgMaterial>(m_pDevice);
 
 	return mat;
 }
 
-std::shared_ptr<pgTexture> SceneAss::CreateTexture(const std::wstring& fileName) 
+std::shared_ptr<pgTexture> pgSceneAss::CreateTexture(const std::wstring& fileName) 
 {
 	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>();
 
 	return tex;
 }
 
-std::shared_ptr<pgTexture> SceneAss::CreateTexture2D(uint16_t width, uint16_t height)
+std::shared_ptr<pgTexture> pgSceneAss::CreateTexture2D(uint16_t width, uint16_t height)
 {
 	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>();
 
 	return tex;
 }
 
-void SceneAss::Render( pgRenderEventArgs& args )
+std::shared_ptr<pgBuffer> pgSceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count, uint32_t stride) {
+	return createFloatVertexBuffer(m_pDevice, data, count, stride);
+}
+
+std::shared_ptr<pgBuffer> pgSceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count) {
+	return createUIntIndexBuffer(m_pDevice, data, count);
+}
+
+
+void pgSceneAss::Render( pgRenderEventArgs& args )
 {
     if ( m_pRootNode )
     {

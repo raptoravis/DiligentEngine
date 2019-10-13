@@ -63,12 +63,12 @@ void pgOpaquePass::CreatePipelineState()
 		// Create dynamic uniform buffer that will store our transformation matrix
 		// Dynamic buffers can be frequently updated by the CPU
 		BufferDesc CBDesc;
-		CBDesc.Name = "VS constants CB";
-		CBDesc.uiSizeInBytes = sizeof(float4x4);
+		CBDesc.Name = "PerObject CB";
+		CBDesc.uiSizeInBytes = sizeof(PerObject);
 		CBDesc.Usage = USAGE_DYNAMIC;
 		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_VSConstants);
+		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_PerObjectConstants);
 	}
 
 	// Create a pixel shader
@@ -104,8 +104,7 @@ void pgOpaquePass::CreatePipelineState()
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
 	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_VSConstants);
-	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(m_VSConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
 
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_SRB, true);
@@ -133,8 +132,10 @@ void pgOpaquePass::Render(pgRenderEventArgs& e)
 
 	{
 		// Map the buffer and write current world-view-projection matrix
-		MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
-		*CBConstants = m_WorldViewProjMatrix.Transpose();
+		MapHelper<PerObject> CBConstants(m_pImmediateContext, m_PerObjectConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+
+		CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
+		CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 	}
 
 	// Set the pipeline state
@@ -148,18 +149,15 @@ void pgOpaquePass::Render(pgRenderEventArgs& e)
 
 void pgOpaquePass::Update(pgRenderEventArgs& e)
 {
-	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
-	const float4x4 view = e.pCamera->getTransform();
+	const float4x4 view = e.pCamera->getViewMatrix();
 
 	// Set cube world view matrix
-	float4x4 CubeWorldView = float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
+	m_WorldViewMatrix = float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
 		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
-	float NearPlane = 0.1f;
-	float FarPlane = 100.f;
-	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
-	// Projection matrix differs between DX and OpenGL
-	auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane, IsGL);
+
+	auto& Proj = e.pCamera->getProjectionMatrix();
+
 	// Compute world-view-projection matrix
-	m_WorldViewProjMatrix = CubeWorldView * Proj;
+	m_WorldViewProjMatrix = m_WorldViewMatrix * Proj;
 }
 

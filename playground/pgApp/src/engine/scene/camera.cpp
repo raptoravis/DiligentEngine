@@ -6,8 +6,14 @@
 //#define ARCBALL_CAMERA_IMPLEMENTATION
 //#include "arcball_camera.h"
 
-pgCamera::pgCamera() {
+pgCamera::pgCamera(const pgCameraCreateInfo& cci) 
+	: m_pDevice(cci.device)
+	, m_pImmediateContext(cci.ctx)
+	, m_pEngineFactory(cci.factory)
+	, m_desc(cci.desc)
+{
 	reset();
+	setProjectionMatrix(0.1f, 100.f);
 }
 
 pgCamera::~pgCamera() {
@@ -21,7 +27,16 @@ void pgCamera::reset() {
 	//look = { 0.0f, 0.0f, 1.0f };
 	//look = { -1.0f, 0.0f, 0.0f };
 
-	m_cameraTransform = Diligent::float4x4::Identity();
+	m_viewMatrix = Diligent::float4x4::Identity();
+}
+
+void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane) {
+	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
+
+	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
+
+	// Projection matrix differs between DX and OpenGL
+	m_projectionMatrix = Diligent::float4x4::Projection(Diligent::PI_F / 4.f, aspectRatio, NearPlane, FarPlane, IsGL);
 }
 
 void pgCamera::update(Diligent::InputController* pInputController, float ElapsedTime) {
@@ -70,7 +85,7 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
 		//int flag = FLYTHROUGH_pgCamera_LEFT_HANDED_BIT;
 		int flag = 0;
 
-		float* view = &m_cameraTransform.m00;
+		float* view = &m_viewMatrix.m00;
 
 		flythrough_camera_update(
 			&pos.x, &look.x, &up.x, view,
@@ -83,7 +98,7 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
 			jump, crouch,
 			flag);
 
-		//m_cameraTransform = m_cameraTransform.Transpose();
+		//m_viewMatrix = m_viewMatrix.Transpose();
 	}
 
 	if ((pInputController->GetKeyState(Diligent::InputKeys::Reset) & Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {

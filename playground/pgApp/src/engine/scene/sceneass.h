@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 // A model base class.
 // Implements a basic model loader using Assimp.
-class SceneAss : public pgScene
+class pgSceneAss : public pgScene
 {
 public:
     typedef pgScene base;
@@ -27,19 +27,24 @@ public:
     virtual bool LoadFromString( const std::string& scene, const std::string& format );
     virtual void Render( pgRenderEventArgs& renderArgs );
 
-	SceneAss(const pgSceneCreateInfo& ci);
-	virtual ~SceneAss();
+	pgSceneAss(const pgSceneCreateInfo& ci);
+	virtual ~pgSceneAss();
+
+	static std::shared_ptr<pgBuffer> createFloatVertexBuffer(Diligent::IRenderDevice* device, 
+		const float* data, uint32_t count, uint32_t stride);
+	static std::shared_ptr<pgBuffer> createUIntIndexBuffer(Diligent::IRenderDevice* device, 
+		const uint32_t* data, uint32_t sizeInBytes);
 
 protected:
     friend class ProgressHandler;
 
-    virtual std::shared_ptr<pgBuffer> CreateFloatVertexBuffer( const float* data, unsigned int count, unsigned int stride );
-    virtual std::shared_ptr<pgBuffer> CreateUIntIndexBuffer( const unsigned int* data, unsigned int sizeInBytes );
+    std::shared_ptr<pgBuffer> CreateFloatVertexBuffer( const float* data, uint32_t count, uint32_t stride );
+    std::shared_ptr<pgBuffer> CreateUIntIndexBuffer( const uint32_t* data, uint32_t count);
 
-    virtual std::shared_ptr<pgMesh> CreateMesh();
-    virtual std::shared_ptr<pgMaterial> CreateMaterial();
-    virtual std::shared_ptr<pgTexture> CreateTexture( const std::wstring& fileName );
-    virtual std::shared_ptr<pgTexture> CreateTexture2D( uint16_t width, uint16_t height );
+    std::shared_ptr<pgMesh> CreateMesh();
+    std::shared_ptr<pgMaterial> CreateMaterial();
+    std::shared_ptr<pgTexture> CreateTexture( const std::wstring& fileName );
+    std::shared_ptr<pgTexture> CreateTexture2D( uint16_t width, uint16_t height );
 
     //virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
 
