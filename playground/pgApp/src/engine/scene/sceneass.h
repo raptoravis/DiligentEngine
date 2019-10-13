@@ -56,8 +56,6 @@ private:
     MaterialList m_Materials;
     MeshList m_Meshes;
 
-    std::shared_ptr<pgSceneNode> m_pRootNode;
-
     void ImportMaterial( const aiMaterial& material, fs::path parentPath );
     void ImportMesh( const aiMesh& mesh );
     std::shared_ptr<pgSceneNode> ImportSceneNode( std::shared_ptr<pgSceneNode> parent, aiNode* aiNode );

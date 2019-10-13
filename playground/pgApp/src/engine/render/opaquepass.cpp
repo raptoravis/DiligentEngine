@@ -85,11 +85,18 @@ void pgOpaquePass::CreatePipelineState()
 	LayoutElement LayoutElems[] =
 	{
 		LayoutElement{0, 0, 3, VT_FLOAT32, False}, //position
-		LayoutElement{1, 0, 3, VT_FLOAT32, False}, //tangent
-		LayoutElement{2, 0, 3, VT_FLOAT32, False}, //binormal
-		LayoutElement{3, 0, 3, VT_FLOAT32, False}, //normal
-		LayoutElement{4, 0, 2, VT_FLOAT32, False}, //tex
+		LayoutElement{0, 1, 3, VT_FLOAT32, False}, //tangent
+		LayoutElement{0, 2, 3, VT_FLOAT32, False}, //binormal
+		LayoutElement{0, 3, 3, VT_FLOAT32, False}, //normal
+		LayoutElement{0, 4, 2, VT_FLOAT32, False}, //tex
 	};
+
+	LayoutElems[0].SemanticName = "POSITION";
+	LayoutElems[1].SemanticName = "TANGENT";
+	LayoutElems[2].SemanticName = "BINORMAL";
+	LayoutElems[3].SemanticName = "NORMAL";
+	LayoutElems[4].SemanticName = "TEXCOORD";
+
 	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
 	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 
@@ -123,12 +130,28 @@ void pgOpaquePass::LoadTexture()
 
 
 // Render a frame
-void pgOpaquePass::render(pgRenderEventArgs& e)
-{
-	//// Clear the back buffer 
-	//const float ClearColor[] = { 0.350f,  0.350f,  0.350f, 1.0f };
-	//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+void pgOpaquePass::render(pgRenderEventArgs& e) {
+	// Set the pipeline state
+	m_pImmediateContext->SetPipelineState(m_pPSO);
+
+	m_scene->render(e);
+}
+
+void pgOpaquePass::update(pgRenderEventArgs& e) {
+	//
+}
+
+void pgOpaquePass::updateSRB(pgRenderEventArgs& e) {
+	const float4x4 view = e.pCamera->getViewMatrix();
+	const float4x4 local = e.pSceneNode->getLocalTransform();
+
+	// Set cube world view matrix
+	m_WorldViewMatrix = local * view;
+
+	auto& Proj = e.pCamera->getProjectionMatrix();
+
+	// Compute world-view-projection matrix
+	m_WorldViewProjMatrix = m_WorldViewMatrix * Proj;
 
 	{
 		// Map the buffer and write current world-view-projection matrix
@@ -138,26 +161,7 @@ void pgOpaquePass::render(pgRenderEventArgs& e)
 		CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 	}
 
-	// Set the pipeline state
-	m_pImmediateContext->SetPipelineState(m_pPSO);
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 	// makes sure that resources are transitioned to required states.
 	m_pImmediateContext->CommitShaderResources(m_SRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-	m_scene->render(e);
 }
-
-void pgOpaquePass::update(pgRenderEventArgs& e)
-{
-	const float4x4 view = e.pCamera->getViewMatrix();
-
-	// Set cube world view matrix
-	m_WorldViewMatrix = float4x4::Scale(0.6f) * float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * float4x4::RotationX(-PI_F * 0.1f) *
-		float4x4::Translation(0.f, 0.0f, 5.0f) * view;
-
-	auto& Proj = e.pCamera->getProjectionMatrix();
-
-	// Compute world-view-projection matrix
-	m_WorldViewProjMatrix = m_WorldViewMatrix * Proj;
-}
-

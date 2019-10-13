@@ -1,6 +1,6 @@
 [submodule "DiligentCore"]
 	path = DiligentCore
-	url = https://github.com/DiligentGraphics/DiligentCore.git
+	url = git@github.com:raptoravis/DiligentCore.git
 [submodule "DiligentTools"]
 	path = DiligentTools
 	url = https://github.com/DiligentGraphics/DiligentTools.git

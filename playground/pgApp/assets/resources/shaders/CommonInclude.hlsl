@@ -140,11 +140,11 @@ struct Frustum
 
 struct AppData
 {
-    float3 position : ATTRIB0;
-    float3 tangent  : ATTRIB1;
-    float3 binormal : ATTRIB2;
-    float3 normal   : ATTRIB3;
-    float2 texCoord : ATTRIB4;
+    float3 position : POSITION;
+    float3 tangent  : TANGENT;
+    float3 binormal : BINORMAL;
+    float3 normal   : NORMAL;
+    float2 texCoord : TEXCOORD0;
 };
 
 cbuffer PerObject : register( b0 )
@@ -181,11 +181,11 @@ sampler LinearClampSampler      : register( s1 );
 
 struct VertexShaderOutput
 {
-    float3 positionVS   : ATTRIB0;    // View space position.
-    float2 texCoord     : ATTRIB1;    // Texture coordinate
-    float3 tangentVS    : ATTRIB2;      // View space tangent.
-    float3 binormalVS   : ATTRIB3;     // View space binormal.
-    float3 normalVS     : ATTRIB4;       // View space normal.
+    float3 positionVS   : TEXCOORD0;    // View space position.
+    float2 texCoord     : TEXCOORD1;    // Texture coordinate
+    float3 tangentVS    : TANGENT;      // View space tangent.
+    float3 binormalVS   : BINORMAL;     // View space binormal.
+    float3 normalVS     : NORMAL;       // View space normal.
     float4 position     : SV_POSITION;  // Clip space position.
 };
 

@@ -79,7 +79,7 @@ void CubeTex::CreateVertexBuffer()
 	std::shared_ptr<pgBuffer> buffer = pgSceneAss::createFloatVertexBuffer(m_pDevice,
 		(const float*)CubeVerts, 24, sizeof(Vertex));
 
-	pgBufferBinding binding{ "POSITION", 0 };
+	pgBufferBinding binding{ "VERTEX", 0 };
 	addVertexBuffer(binding, buffer);
 }
 

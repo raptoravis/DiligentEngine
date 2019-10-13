@@ -34,7 +34,6 @@ private:
 
 pgSceneAss::pgSceneAss(const pgSceneCreateInfo& ci)
     : base(ci)
-    , m_pRootNode( nullptr )
 {
 	//
 }

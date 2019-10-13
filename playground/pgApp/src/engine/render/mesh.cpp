@@ -22,26 +22,52 @@ std::shared_ptr<pgMaterial> pgMesh::getMaterial() const
 	return m_pMaterial;
 }
 
+static uint32_t getSlot(const pgBufferBinding& binding) {
+	if (binding.Name == "POSITION") {
+		return 0;
+	}
+	else if (binding.Name == "VERTEX") {
+		return 0;
+	}
+	else if (binding.Name == "TANGENT") {
+		return 1;
+	}
+	else if (binding.Name == "BINORMAL") {
+		return 2;
+	}
+	else if (binding.Name == "NORMAL") {
+		return 3;
+	}
+	else if (binding.Name == "TEXCOORD") {
+		return 4;
+	}
+	else {
+		assert(0);
+	}
+
+	return 0;
+}
+
 void pgMesh::render(pgRenderEventArgs& e)
 {
 	assert(e.pPass);
 
-	constexpr uint32_t kMaxBuffers = Diligent::MaxBufferSlots;
+	//constexpr uint32_t kMaxBuffers = Diligent::MaxBufferSlots;
 
-	Uint32 offset[kMaxBuffers] = {0};
-	IBuffer *pBuffs[kMaxBuffers] = {0};
-	uint32_t buffs = 0;
-
+	Uint32 offset[] = {0};
+	IBuffer *pBuffs[] = {0};
+	const uint32_t buffs = 1;
+	
 	for (BufferMap::value_type buffer : m_VertexBuffers)
 	{
 		pgBufferBinding binding = buffer.first;
+		uint32_t slot = getSlot(binding);
 
-		pBuffs[buffs++] = buffer.second->m_pBuffer.RawPtr();
+		pBuffs[0] = buffer.second->m_pBuffer.RawPtr();
 
-		assert(buffs <= kMaxBuffers);
+		m_pImmediateContext->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
 	}
 
-	m_pImmediateContext->SetVertexBuffers(0, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 	e.pPass->updateSRB(e);

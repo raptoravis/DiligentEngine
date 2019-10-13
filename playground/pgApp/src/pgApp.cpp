@@ -74,7 +74,9 @@ namespace Diligent
 		pgPassCreateInfo pci {ci};
 		pgSceneCreateInfo sci {ci};
 
-#if 0
+#define PG_USE_TEST 1
+
+#if !PG_USE_TEST
 		std::shared_ptr<pgSceneAss> sceneAss = std::make_shared<pgSceneAss>(sci);
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		sceneAss->LoadFromFile(filePath);
@@ -84,14 +86,14 @@ namespace Diligent
 		m_pTechnique->addPass(pOpaquePass);
 #endif
 
-#if 1
+#if PG_USE_TEST && 0
 		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(pci);
 		m_pTechnique->addPass(pGLTFPass);
 #else
 		//
 #endif
 
-#if 1
+#if PG_USE_TEST
 		std::shared_ptr<Cube> cube = std::make_shared<Cube>(m_pDevice, m_pImmediateContext);
 		std::shared_ptr<CubeTex> cubeTex = std::make_shared<CubeTex>(m_pDevice, m_pImmediateContext);
 

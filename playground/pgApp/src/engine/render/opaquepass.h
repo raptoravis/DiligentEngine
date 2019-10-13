@@ -36,6 +36,6 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
-
+	virtual void updateSRB(pgRenderEventArgs& e);
 };
 
