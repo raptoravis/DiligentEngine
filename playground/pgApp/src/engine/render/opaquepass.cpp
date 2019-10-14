@@ -157,8 +157,10 @@ void pgOpaquePass::updateSRB(pgRenderEventArgs& e) {
 		// Map the buffer and write current world-view-projection matrix
 		MapHelper<PerObject> CBConstants(m_pImmediateContext, m_PerObjectConstants, MAP_WRITE, MAP_FLAG_DISCARD);
 
-		CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
-		CBConstants->ModelView = m_WorldViewMatrix.Transpose();
+		//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
+		//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
+		CBConstants->ModelViewProjection = m_WorldViewProjMatrix;
+		CBConstants->ModelView = m_WorldViewMatrix;
 	}
 
 	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 

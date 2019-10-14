@@ -138,8 +138,16 @@ public:
 
 	void update(Diligent::InputController* pInputController, float ElapsedTime);
 
+	void setPos(const Diligent::float3& p) {
+		pos = p;
+	}
+
 	const Diligent::float3& getPos() const {
 		return pos;
+	}
+
+	void setLook(const Diligent::float3& dir) {
+		look = dir;
 	}
 
 	const Diligent::float3& getLook() const {

@@ -141,7 +141,7 @@ bool pgSceneAss::LoadFromFile( const std::wstring& fileName )
     else
     {
         // If we have a previously loaded scene, delete it.
-        Diligent::float4x4 localTransform( 1 );
+        Diligent::float4x4 localTransform = Diligent::float4x4::Identity();
         if ( m_pRootNode )
         {
             // Save the root nodes local transform

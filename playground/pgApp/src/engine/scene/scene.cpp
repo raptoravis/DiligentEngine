@@ -57,7 +57,7 @@ Diligent::float4x4 pgSceneNode::getInverseWorldTransform() const
 
 Diligent::float4x4 pgSceneNode::GetParentWorldTransform() const
 {
-	Diligent::float4x4 parentTransform(1.0f);
+	Diligent::float4x4 parentTransform = Diligent::float4x4::Identity();
 	if (std::shared_ptr<pgSceneNode> parent = m_pParentNode.lock())
 	{
 		parentTransform = parent->getWorldTransfom();

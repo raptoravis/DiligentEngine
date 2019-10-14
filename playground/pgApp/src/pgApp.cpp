@@ -74,9 +74,11 @@ namespace Diligent
 		pgPassCreateInfo pci {ci};
 		pgSceneCreateInfo sci {ci};
 
-#define PG_USE_TEST 1
+#define PG_USE_TEST 0
 
 #if !PG_USE_TEST
+		m_pCamera->setPos(float3(0, 0, -25));
+
 		std::shared_ptr<pgSceneAss> sceneAss = std::make_shared<pgSceneAss>(sci);
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		sceneAss->LoadFromFile(filePath);

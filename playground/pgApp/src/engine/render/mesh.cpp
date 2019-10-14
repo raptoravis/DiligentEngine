@@ -65,7 +65,7 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 		pBuffs[0] = buffer.second->m_pBuffer.RawPtr();
 
-		m_pImmediateContext->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_RESET);
+		m_pImmediateContext->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_NONE);
 	}
 
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
