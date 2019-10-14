@@ -11,8 +11,10 @@ pgCamera::pgCamera(const pgCameraCreateInfo& cci)
 	, m_pImmediateContext(cci.ctx)
 	, m_pEngineFactory(cci.factory)
 	, m_desc(cci.desc)
+	, _pos(cci.pos)
+	, _look(cci.dir)
 {
-	reset();
+	reset(_pos, _look);
 	setProjectionMatrix(0.1f, 100.f);
 }
 
@@ -20,10 +22,17 @@ pgCamera::~pgCamera() {
 	//
 }
 
-void pgCamera::reset() {
-	pos = { 0.0f, 0.0f, 0.0f };
 
-	look = { 0.0f, 0.0f, -1.0f };
+void pgCamera::reset() {
+	reset(_pos, _look);
+}
+
+void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir) {
+	//pos = { 0.0f, 0.0f, 0.0f };
+	pos = p;
+
+	look = dir;
+	//look = { 0.0f, 0.0f, -1.0f };
 	//look = { 0.0f, 0.0f, 1.0f };
 	//look = { -1.0f, 0.0f, 0.0f };
 

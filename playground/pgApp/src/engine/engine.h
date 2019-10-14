@@ -107,6 +107,9 @@ struct pgCameraCreateInfo : public pgCreateInfo {
 		: pgCreateInfo(ci)
 	{
 	}
+
+	Diligent::float3 pos = {0, 0, 0};
+	Diligent::float3 dir = {0, 0, -1.0f};
 };
 
 
@@ -126,8 +129,12 @@ class pgCamera : public pgObject
 	Diligent::float3	pos;
 	Diligent::float3	look;
 
-	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
+	// original
+	const Diligent::float3	_pos;
+	const Diligent::float3	_look;
 
+	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
+	void reset(const Diligent::float3& p, const Diligent::float3& dir);
 public:
 	pgCamera(const pgCameraCreateInfo& cci);
 
@@ -165,6 +172,7 @@ public:
 
 class pgPass;
 class pgSceneNode;
+class pgMaterial;
 
 class pgRenderEventArgs
 {
@@ -177,6 +185,7 @@ public:
 
 	pgPass*			pPass;
 	pgSceneNode*	pSceneNode;
+	pgMaterial*		pMaterial;
 public:
 	pgRenderEventArgs() :
 		pPass(0)
@@ -294,13 +303,17 @@ public:
 	std::shared_ptr<pgTexture> GetTexture(TextureType ID) const;
 	void SetTexture(TextureType type, std::shared_ptr<pgTexture> texture);
 
+	static uint32_t getConstantBufferSize() {
+		return sizeof(MaterialProperties);
+	}
+
+	void* getConstantBuffer() const {
+		return m_pProperties;
+	}
+
 	// This material defines a transparent material 
 	// if the opacity value is < 1, or there is an opacity map, or the diffuse texture has an alpha channel.
 	bool IsTransparent() const;
-
-private:
-	// If the material properties have changed, update the contents of the constant buffer.
-	void UpdateConstantBuffer();
 
 	__declspec(align(16)) struct MaterialProperties
 	{
@@ -363,6 +376,10 @@ private:
 		Diligent::float2   m_Padding;          // Pad to 16 byte boundary.
 		//-------------------------- ( 16 bytes )
 	};  //--------------------------- ( 16 * 10 = 160 bytes )
+
+private:
+	// If the material properties have changed, update the contents of the constant buffer.
+	void UpdateConstantBuffer();
 
 	// Material properties have to be 16 byte aligned.
 	// To guarantee alignment, we'll use _aligned_malloc to allocate memory

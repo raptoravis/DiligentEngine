@@ -160,7 +160,11 @@ void pgSceneNode::render(pgRenderEventArgs& args)
 	// First render all my meshes.
 	for (auto mesh : m_Meshes)
 	{
+		args.pMaterial = mesh->getMaterial().get();
 		mesh->render(args);
+
+		// clear it
+		args.pMaterial = 0;
 	}
 
 	// Now recurse into children

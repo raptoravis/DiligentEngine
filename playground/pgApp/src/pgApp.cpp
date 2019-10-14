@@ -45,6 +45,8 @@
 
 #include "engine/mat2quat.h"
 
+#define PG_USE_TEST 0
+
 namespace Diligent
 {
 #include "BasicStructures.fxh"
@@ -66,6 +68,9 @@ namespace Diligent
 		ci.desc = m_pSwapChain->GetDesc();
 
 		pgCameraCreateInfo cci{ ci };
+#if !PG_USE_TEST
+		cci.pos = float3(0, 0, -25);
+#endif
 		m_pCamera = std::make_shared<pgCamera>(cci);
 
 		// technique will clean up passed added in it
@@ -74,11 +79,8 @@ namespace Diligent
 		pgPassCreateInfo pci {ci};
 		pgSceneCreateInfo sci {ci};
 
-#define PG_USE_TEST 0
 
 #if !PG_USE_TEST
-		m_pCamera->setPos(float3(0, 0, -25));
-
 		std::shared_ptr<pgSceneAss> sceneAss = std::make_shared<pgSceneAss>(sci);
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		sceneAss->LoadFromFile(filePath);

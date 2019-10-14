@@ -3,6 +3,7 @@
 #include "SampleBase.h"
 
 #include "../engine.h"
+#include "light.h"
 
 using namespace Diligent;
 
@@ -14,13 +15,19 @@ protected:
 	void LoadTexture();
 
 	RefCntAutoPtr<IPipelineState>         m_pPSO;
+
 	RefCntAutoPtr<IBuffer>                m_PerObjectConstants;
-	RefCntAutoPtr<IShaderResourceBinding> m_SRB;
+	RefCntAutoPtr<IBuffer>                m_MaterialConstants;
+
+	RefCntAutoPtr<IBuffer>                m_LightsStructuredBuffer;
+
+	RefCntAutoPtr<IShaderResourceBinding> m_pSRB;
 
 	float4x4                              m_WorldViewMatrix;
 	float4x4                              m_WorldViewProjMatrix;
 
-	Diligent::RefCntAutoPtr<Diligent::ITextureView>           m_TextureSRV;
+	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
+	std::vector<pgLight>								m_Lights;
 
 	// PerObject constant buffer data.
 	__declspec(align(16)) struct PerObject
@@ -28,6 +35,9 @@ protected:
 		float4x4 ModelViewProjection;
 		float4x4 ModelView;
 	};
+
+	void initLightData();
+	void updateLights(pgCamera* pCamera);
 public:
 	pgOpaquePass(const pgPassCreateInfo& ci);
 
