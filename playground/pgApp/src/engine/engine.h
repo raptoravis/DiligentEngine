@@ -265,8 +265,6 @@ public:
 
 	virtual ~pgMaterial();
 
-	virtual void Bind(Diligent::IShader* pShader) const;
-
 	const Diligent::float4& GetDiffuseColor() const;
 	void SetDiffuseColor(const Diligent::float4& diffuse);
 
@@ -378,20 +376,12 @@ public:
 	};  //--------------------------- ( 16 * 10 = 160 bytes )
 
 private:
-	// If the material properties have changed, update the contents of the constant buffer.
-	void UpdateConstantBuffer();
-
 	// Material properties have to be 16 byte aligned.
 	// To guarantee alignment, we'll use _aligned_malloc to allocate memory
 	// for the material properties.
 	MaterialProperties* m_pProperties;
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		  m_RenderDevice;
-
-	// Constant buffer that stores material properties.
-	// This material owns this constant buffer and will delete it 
-	// when the material is destroyed.
-	Diligent::RefCntAutoPtr<Diligent::IBuffer>		  m_pConstantBuffer;
 
 	// Textures are stored by which texture unit (or texture register)
 	// they are bound to.

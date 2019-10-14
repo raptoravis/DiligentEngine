@@ -7,18 +7,6 @@ pgMaterial::pgMaterial(Diligent::IRenderDevice* device)
 	m_pProperties = (MaterialProperties*)_aligned_malloc(sizeof(MaterialProperties), 16);
 	// Construct default material properties.
 	*m_pProperties = MaterialProperties();
-
-	// Initialize the constant buffer.
-	Diligent::BufferDesc VertBuffDesc;
-	VertBuffDesc.Name = "Cube vertex buffer";
-	VertBuffDesc.Usage = Diligent::USAGE_STATIC;
-	VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-	VertBuffDesc.uiSizeInBytes = sizeof(*m_pProperties);
-
-	Diligent::BufferData VBData;
-	VBData.pData = m_pProperties;
-	VBData.DataSize = sizeof(*m_pProperties);
-	m_RenderDevice->CreateBuffer(VertBuffDesc, &VBData, &m_pConstantBuffer);
 }
 
 pgMaterial::~pgMaterial()
@@ -28,36 +16,6 @@ pgMaterial::~pgMaterial()
 		_aligned_free(m_pProperties);
 		m_pProperties = nullptr;
 	}
-}
-
-void pgMaterial::Bind(Diligent::IShader* pShader) const
-{
-	if (!pShader) return;
-
-	if (m_Dirty)
-	{
-		// Make sure the constant buffer associated to this material is updated.
-		pgMaterial* _this = const_cast<pgMaterial*>(this);
-		_this->UpdateConstantBuffer();
-		_this->m_Dirty = false;
-	}
-
-	//for (auto texture : m_Textures)
-	//{
-	//	ITexture* pTexture = texture.second;
-	//	pTexture->Bind((uint32_t)texture.first, pShader->GetType(), ShaderParameter::Type::Texture);
-	//}
-
-	//// If the shader has a parameter called "Material".
-	//ShaderParameter& materialParameter = pShader->GetShaderParameterByName("Material");
-	//if (materialParameter.IsValid())
-	//{
-	//	// Assign this material's constant buffer to it.
-	//	materialParameter.Set<ConstantBuffer>(m_pConstantBuffer);
-	//	// If the shader parameter is modified, they have to be 
-	//	// rebound to update the rendering pipeline.
-	//	materialParameter.Bind();
-	//}
 }
 
 const Diligent::float4& pgMaterial::GetGlobalAmbientColor() const
@@ -238,10 +196,3 @@ bool pgMaterial::IsTransparent() const
 		m_pProperties->m_AlphaThreshold <= 0.0f); // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
 }
 
-void pgMaterial::UpdateConstantBuffer()
-{
-	//if (m_pConstantBuffer)
-	//{
-	//	m_pConstantBuffer->Set(*m_pProperties);
-	//}
-}

@@ -72,10 +72,6 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 	e.pPass->updateSRB(e);
 
-	if (m_pMaterial)
-	{
-	}
-
 	auto count = m_pIndexBuffer->getCount();
 
 	DrawAttribs DrawAttrs;

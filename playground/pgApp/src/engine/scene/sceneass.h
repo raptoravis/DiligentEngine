@@ -47,7 +47,7 @@ protected:
 
     //virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
 
-private:
+protected:
     typedef std::map<std::string, std::shared_ptr<pgMaterial> > MaterialMap;
     typedef std::vector< std::shared_ptr<pgMaterial> > MaterialList;
     typedef std::vector< std::shared_ptr<pgMesh> > MeshList;

@@ -33,6 +33,14 @@ namespace Diligent
 {
 	class pgApp final : public SampleBase
 	{
+		enum class RenderingTechnique
+		{
+			Test, 
+			Forward,
+			Deferred,
+			ForwardPlus,
+			NumTechniques
+		};
 	public:
 		~pgApp();
 		virtual void Initialize(IEngineFactory*   pEngineFactory,
@@ -48,6 +56,11 @@ namespace Diligent
 		std::shared_ptr<pgCamera>		m_pCamera;
 		std::shared_ptr<pgTechnique>	m_pTechnique;
 
-		pgRenderEventArgs m_evtArgs;
+		std::shared_ptr<pgTechnique>	m_pForwardTechnique;
+		std::shared_ptr<pgTechnique>	m_pDeferredTechnique;
+		std::shared_ptr<pgTechnique>	m_pForwardPlusTechnique;
+
+		pgRenderEventArgs				m_evtArgs;
+		RenderingTechnique				m_renderingTechnique = RenderingTechnique::Test;
 	};
 }
