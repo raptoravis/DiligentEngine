@@ -25,11 +25,13 @@
 #include "engine/render/gltfmodelpass.h"
 #include "engine/render/cubepass.h"
 #include "engine/render/cubetexpass.h"
-#include "engine/render/opaquepass.h"
 #include "engine/render/cube.h"
 #include "engine/render/cubetex.h"
 
 #include "engine/scene/sceneass.h"
+
+#include "engine/render/opaquepass.h"
+#include "engine/render/transparentpass.h"
 
 #include "MapHelper.h"
 #include "BasicMath.h"
@@ -110,6 +112,9 @@ namespace Diligent
 			pci.scene = testScene;
 			std::shared_ptr<pgOpaquePass> pOpaquePass = std::make_shared<pgOpaquePass>(pci);
 			m_pForwardTechnique->addPass(pOpaquePass);
+
+			//std::shared_ptr<pgTransparentPass> pTransparentPass = std::make_shared<pgTransparentPass>(pci);
+			//m_pForwardTechnique->addPass(pTransparentPass);
 		}
 
 		if (m_renderingTechnique == RenderingTechnique::Test) {

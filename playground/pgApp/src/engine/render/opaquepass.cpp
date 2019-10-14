@@ -213,7 +213,15 @@ void pgOpaquePass::LoadTexture()
 
 // Render a frame
 void pgOpaquePass::render(pgRenderEventArgs& e) {
+	e.pMeshFilter = [](pgMesh* mesh) -> bool {
+		auto mat = mesh->getMaterial();
+		auto bTransparent = mat->IsTransparent();
+		return !bTransparent;
+	};
+
 	m_scene->render(e);
+
+	e.pMeshFilter = 0;
 }
 
 void pgOpaquePass::update(pgRenderEventArgs& e) {

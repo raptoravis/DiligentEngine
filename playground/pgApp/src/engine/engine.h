@@ -173,13 +173,19 @@ public:
 class pgPass;
 class pgSceneNode;
 class pgMaterial;
+class pgMesh;
+
+// return true if to render
+typedef bool (*filter_mesh_t)(pgMesh* mesh);
 
 class pgRenderEventArgs
 {
 public:
-	void* Caller;
+	void* pCaller;
 	float CurrTime;
 	float ElapsedTime;
+
+	filter_mesh_t	pMeshFilter;
 
 	pgCamera*		pCamera;
 
@@ -187,13 +193,18 @@ public:
 	pgSceneNode*	pSceneNode;
 	pgMaterial*		pMaterial;
 public:
-	pgRenderEventArgs() :
-		pPass(0)
+	pgRenderEventArgs() 
+		: pCaller(0)
+		, pMeshFilter(0)
+		, pCamera(0)
+		, pPass(0)
+		, pSceneNode(0)
+		, pMaterial(0)
 	{
 	}
 
 	void set(void* caller, float currentTime, float elapsedTime, pgCamera* camera) {
-		Caller = caller;
+		pCaller = caller;
 		pCamera = camera;
 		CurrTime = currentTime;
 		ElapsedTime = elapsedTime;
