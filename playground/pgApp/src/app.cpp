@@ -2,6 +2,8 @@
 
 #include "testtechnique.h"
 #include "engine/render/deferredtechnique.h"
+#include "engine/render/forwardtechnique.h"
+#include "engine/render/forwardplustechnique.h"
 
 #include "engine/render/opaquepass.h"
 #include "engine/render/transparentpass.h"
@@ -189,10 +191,9 @@ namespace Diligent
 		pgTechniqueCreateInfo tci{ ci };
 
 		// technique will clean up passed added in it
-		m_pTechnique = std::make_shared<pgTechnique>(tci);
-		m_pForwardTechnique = std::make_shared<pgTechnique>(tci);
+		m_pForwardTechnique = std::make_shared<ForwardTechnique>(tci);
 		m_pDeferredTechnique = std::make_shared<DeferredTechnique>(tci);
-		m_pForwardPlusTechnique = std::make_shared<pgTechnique>(tci);
+		m_pForwardPlusTechnique = std::make_shared<ForwardPlusTechnique>(tci);
 
 		//
 		pgSceneCreateInfo sci{ ci };
@@ -206,32 +207,27 @@ namespace Diligent
 		initBuffers();
 
 		pgPassCreateInfo pci {ci};
+		RenderPassCreateInfo rpci{ pci };
+		rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
+		rpci.MaterialConstants = m_MaterialConstants.RawPtr();
+		rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
+		rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
+		rpci.scene = testScene;
 
-		if (m_renderingTechnique == RenderingTechnique::Forward) {
-			RenderPassCreateInfo rpci{ pci };
-			rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
-			rpci.MaterialConstants = m_MaterialConstants.RawPtr();
-			rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
-			rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
-
-			rpci.scene = testScene;
-			std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(rpci);
-			m_pForwardTechnique->addPass(pOpaquePass);
-
-			std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(rpci);
-			m_pForwardTechnique->addPass(pTransparentPass);
+		//if (m_renderingTechnique == RenderingTechnique::Forward) 
+		{
+			auto forwardTech = (ForwardTechnique*)m_pForwardTechnique.get();
+			forwardTech->init(rpci, m_Lights);
 		}
-		else if (m_renderingTechnique == RenderingTechnique::Deferred) {
-			RenderPassCreateInfo rpci{ pci };
-			rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
-			rpci.MaterialConstants = m_MaterialConstants.RawPtr();
-			rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
-			rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
-
-			rpci.scene = testScene;
-
+		//else if (m_renderingTechnique == RenderingTechnique::Deferred) 
+		{
 			auto deferredTech = (DeferredTechnique*)m_pDeferredTechnique.get();
 			deferredTech->init(rpci, m_Lights);
+		}
+		//else if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
+		{
+			auto fpTech = (ForwardPlusTechnique*)m_pForwardPlusTechnique.get();
+			fpTech->init(rpci, m_Lights);
 		}
 
 		// always init test technique
@@ -325,7 +321,7 @@ namespace Diligent
 			if (m_renderingTechnique == RenderingTechnique::Test) {
 				m_pCamera->reset(float3(0, 0, 0), float3(0, 0, -1));
 			}
-			else if (m_renderingTechnique == RenderingTechnique::Forward) {
+			else {
 				m_pCamera->reset(float3(0, 0, -25), float3(0, 0, -1));
 			}
 		}
