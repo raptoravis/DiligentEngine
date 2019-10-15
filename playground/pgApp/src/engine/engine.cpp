@@ -26,7 +26,64 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
-pgTechnique::pgTechnique()
+
+pgPipeline::pgPipeline(const pgPipelineCreateInfo& ci) 
+	: m_pDevice(ci.device)
+	, m_pSwapChain(ci.swapChain)
+	, m_pImmediateContext(ci.ctx)
+	, m_pEngineFactory(ci.factory)
+	, m_desc(ci.desc)
+{
+	//
+}
+
+pgPipeline::~pgPipeline() {
+	//
+}
+
+//void pgPipeline::update(pgRenderEventArgs& e) {
+//	//
+//}
+//
+//void pgPipeline::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+//	//
+//}
+//void pgPipeline::render(pgRenderEventArgs& e) {
+//	//
+//}
+//
+
+pgBasePass::pgBasePass(const pgPassCreateInfo& ci)
+	: base(ci)
+{
+}
+
+pgBasePass::~pgBasePass()
+{
+}
+
+// Render a frame
+void pgBasePass::render(pgRenderEventArgs& e)
+{
+	m_scene->render(e);
+}
+
+void pgBasePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+	m_pPipeline->updateSRB(e, flag);
+}
+
+void pgBasePass::update(pgRenderEventArgs& e)
+{
+}
+
+
+pgTechnique::pgTechnique(const pgTechniqueCreateInfo& ci)
+		: m_pDevice(ci.device)
+		, m_pSwapChain(ci.swapChain)
+		, m_pImmediateContext(ci.ctx)
+		, m_pEngineFactory(ci.factory)
+		, m_desc(ci.desc)
+
 {}
 
 pgTechnique::~pgTechnique()

@@ -4,13 +4,13 @@
 
 #include "../engine.h"
 
-class Cube : public pgMesh {
+class MeshCubeTex : public pgMesh {
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
 
 public:
-	Cube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
-	virtual ~Cube();
+	MeshCubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
+	virtual ~MeshCubeTex();
 
 	virtual void render(pgRenderEventArgs& e);
 };

@@ -1,0 +1,260 @@
+#pragma once
+
+#include "lightpass.h"
+
+LightPass::LightPass(const LightPassCreateInfo& ci)
+	: base(ci)
+	, m_pColorRTV(ci.ColorRTV)
+	, m_pDSSRV(ci.DSSRV)
+	, m_pDiffuseSRV(ci.DiffuseSRV)
+	, m_pSpecularSRV(ci.SpecularSRV)
+	, m_pNormalSRV(ci.NormalSRV)
+	, m_pLights(ci.Lights)
+{
+	PipelineStateDesc PSODesc;
+
+	CreatePipelineState(ci, PSODesc);
+}
+
+LightPass::~LightPass()
+{
+}
+
+void LightPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
+	// Pipeline state object encompasses configuration of all GPU stages
+
+	// Pipeline state name is used by the engine to report issues.
+	// It is always a good idea to give objects descriptive names.
+	PSODesc.Name = "PSO";
+
+	// This is a graphics pipeline
+	PSODesc.IsComputePipeline = false;
+
+	// This tutorial will render to a single render target
+	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
+	// Set render target format which is the format of the swap chain's color buffer
+	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	// Set depth buffer format which is the format of the swap chain's back buffer
+	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
+	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
+	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	// Cull back faces
+	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
+	// Enable depth testing
+	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
+
+	ShaderCreateInfo ShaderCI;
+	// Tell the system that the shader source code is in HLSL.
+	// For OpenGL, the engine will convert this into GLSL under the hood.
+	ShaderCI.SourceLanguage = SHADER_SOURCE_LANGUAGE_HLSL;
+
+	// OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
+	ShaderCI.UseCombinedTextureSamplers = false;
+
+	// In this tutorial, we will load shaders from file. To be able to do that,
+	// we need to create a shader source stream factory
+	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
+	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
+	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
+	// Create a vertex shader
+	RefCntAutoPtr<IShader> pVS;
+	{
+		ShaderCI.Desc.ShaderType = SHADER_TYPE_VERTEX;
+		ShaderCI.EntryPoint = "VS_main";
+		ShaderCI.Desc.Name = "OpaqueVS";
+		ShaderCI.FilePath = "ForwardRendering.hlsl";
+		m_pDevice->CreateShader(ShaderCI, &pVS);
+	}
+
+	// Create a pixel shader
+	RefCntAutoPtr<IShader> pPS;
+	{
+		ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
+		ShaderCI.EntryPoint = "PS_DeferredLighting";
+		ShaderCI.Desc.Name = "LightPS";
+		ShaderCI.FilePath = "DeferredRendering.hlsl";
+		m_pDevice->CreateShader(ShaderCI, &pPS);
+	}
+
+	// Define vertex shader input layout
+	LayoutElement LayoutElems[] =
+	{
+		LayoutElement{0, 0, 3, VT_FLOAT32, False}, //position
+		LayoutElement{0, 1, 3, VT_FLOAT32, False}, //tangent
+		LayoutElement{0, 2, 3, VT_FLOAT32, False}, //binormal
+		LayoutElement{0, 3, 3, VT_FLOAT32, False}, //normal
+		LayoutElement{0, 4, 2, VT_FLOAT32, False}, //tex
+	};
+
+	LayoutElems[0].SemanticName = "POSITION";
+	LayoutElems[1].SemanticName = "TANGENT";
+	LayoutElems[2].SemanticName = "BINORMAL";
+	LayoutElems[3].SemanticName = "NORMAL";
+	LayoutElems[4].SemanticName = "TEXCOORD";
+
+	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
+	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
+
+	PSODesc.GraphicsPipeline.pVS = pVS;
+	PSODesc.GraphicsPipeline.pPS = pPS;
+
+	// Define variable type that will be used by default
+	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+
+	// Shader variables should typically be mutable, which means they are expected
+	// to change on a per-instance basis
+	ShaderResourceVariableDesc Vars[] =
+	{
+		{SHADER_TYPE_PIXEL, "Lights", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}, 
+		{SHADER_TYPE_PIXEL, "DiffuseTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "SpecularTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "NormalTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "DepthTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+	};
+	PSODesc.ResourceLayout.Variables = Vars;
+	PSODesc.ResourceLayout.NumVariables = _countof(Vars);
+
+	//// Define static sampler for g_Texture. Static samplers should be used whenever possible
+	//StaticSamplerDesc StaticSamplers[] =
+	//{
+	//	{ SHADER_TYPE_PIXEL, "g_Texture", Sam_LinearClamp }
+	//};
+	//RTPSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
+	//RTPSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
+
+	//
+	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
+
+	{
+		BufferDesc CBDesc;
+		CBDesc.Name = "LightParams CB";
+		uint32_t bufferSize = sizeof(LightParams);
+		CBDesc.uiSizeInBytes = bufferSize;
+		CBDesc.Usage = USAGE_DYNAMIC;
+		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
+		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
+		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_LightParamsCB);
+	}
+
+	{
+		BufferDesc CBDesc;
+		CBDesc.Name = "LightParams CB";
+		uint32_t bufferSize = sizeof(ScreenToViewParams);
+		CBDesc.uiSizeInBytes = bufferSize;
+		CBDesc.Usage = USAGE_DYNAMIC;
+		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
+		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
+		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_ScreenToViewParamsCB);
+	}
+
+	// Since we did not explcitly specify the type for 'Constants' variable, default
+	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
+	// change and are bound directly through the pipeline state object.
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(ci.PerObjectConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")->Set(m_ScreenToViewParamsCB);
+
+	// Create a shader resource binding object and bind all static resources in it
+	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
+
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(m_pDiffuseSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(m_pSpecularSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(m_pNormalSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(m_pDSSRV);
+}
+
+bool LightPass::meshFilter(pgMesh* mesh) {
+	auto mat = mesh->getMaterial();
+	auto bTransparent = mat->IsTransparent();
+	return !bTransparent;
+}
+
+
+void LightPass::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam) {
+	{
+		// Map the buffer and write current world-view-projection matrix
+		MapHelper<LightParams> CBConstants(e.pDeviceContext, m_LightParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
+
+		CBConstants->m_LightIndex = lightParam.m_LightIndex;
+	}
+}
+
+void LightPass::updateScreenToViewParams(pgRenderEventArgs& e) {
+	{
+		// Map the buffer and write current world-view-projection matrix
+		MapHelper<ScreenToViewParams> CBConstants(e.pDeviceContext, m_ScreenToViewParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
+
+		auto& Proj = e.pCamera->getProjectionMatrix();
+		//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
+		//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
+		CBConstants->m_InverseProjectionMatrix = Proj.Inverse();
+		CBConstants->m_ScreenDimensions = float2((float)m_desc.Width, (float)m_desc.Height);
+	}
+}
+
+// Render a frame
+void LightPass::render(pgRenderEventArgs& e) {
+	updateScreenToViewParams(e);
+#if 0
+	if (m_pLights) {
+		LightParams	lightParams;
+
+		lightParams.m_LightIndex = 0;
+
+		for (const pgLight& light : *m_pLights) {
+			if (light.m_Enabled) {
+				m_pCurrentLight = &light;
+
+				// Update the constant buffer for the per-light data.
+				updateLightParams(lightParams);
+
+				// Clear the stencil buffer for the next light
+				m_LightPipeline0->GetRenderTarget()->Clear(ClearFlags::Stencil, glm::vec4(0), 1.0f, 1);
+				// The other pipelines should have the same render target.. so no need to clear it 3 times.
+
+				switch (light.m_Type)
+				{
+				case Light::LightType::Point:
+					RenderSubPass(e, m_pPointLightScene, m_LightPipeline0);
+					RenderSubPass(e, m_pPointLightScene, m_LightPipeline1);
+					break;
+				case Light::LightType::Spot:
+					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline0);
+					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline1);
+					break;
+				case Light::LightType::Directional:
+					RenderSubPass(e, m_pDirectionalLightScene, m_DirectionalLightPipeline);
+					break;
+				}
+			}
+			lightParams.m_LightIndex++;
+		}
+	}
+#endif
+	m_scene->render(e);
+}
+
+#if 0
+void LightPass::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<Scene> scene, std::shared_ptr<PipelineState> pipeline)
+{
+	e.PipelineState = pipeline.get();
+
+	// Update the pass's render event args.
+	SetRenderEventArgs(e);
+
+	pipeline->Bind();
+
+	scene->Accept(*this);
+
+	pipeline->UnBind();
+}
+#endif
+
+void LightPass::update(pgRenderEventArgs& e) {
+	//
+}
+
+void LightPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+	base::updateSRB(e, flag);
+}

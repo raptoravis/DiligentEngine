@@ -80,6 +80,7 @@ inline std::string ConvertString(const std::wstring& wstring)
 struct pgCreateInfo {
 	Diligent::IRenderDevice*		device;
 	Diligent::IDeviceContext*		ctx;
+	Diligent::ISwapChain*			swapChain;
 	Diligent::IEngineFactory*		factory;
 
 	Diligent::SwapChainDesc			desc;
@@ -553,6 +554,7 @@ class pgScene : public pgObject {
 protected:
 	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
 	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
 	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
 
 	Diligent::SwapChainDesc								m_desc;
@@ -563,6 +565,7 @@ public:
 		: m_pDevice(ci.device)
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
+		, m_pSwapChain(ci.swapChain)
 		, m_desc(ci.desc)
 	{
 		//
@@ -578,12 +581,47 @@ public:
 	virtual void render(pgRenderEventArgs& e);
 };
 
+struct pgPipelineCreateInfo : public pgCreateInfo {
+	pgPipelineCreateInfo()
+	{}
+	pgPipelineCreateInfo(pgCreateInfo& ci)
+		: pgCreateInfo(ci)
+	{
+	}
+};
+
+
+class pgPipeline : public pgObject {
+protected:
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
+	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
+
+	Diligent::SwapChainDesc								m_desc;
+
+	Diligent::RefCntAutoPtr<Diligent::IPipelineState>			m_pPSO;
+	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>	m_pSRB;
+
+public:
+	pgPipeline(const pgPipelineCreateInfo& ci);
+	virtual ~pgPipeline();
+
+	//virtual void update(pgRenderEventArgs& e);
+	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) = 0;
+	//virtual void render(pgRenderEventArgs& e);
+};
+
 
 struct pgPassCreateInfo : public pgCreateInfo {
 	std::shared_ptr<pgScene>		scene;
+	std::shared_ptr<pgPipeline>		pipeline;
 
-	pgPassCreateInfo() : scene(0)
+	pgPassCreateInfo() 
+		: scene(0)
+		, pipeline(0)
 	{}
+
 	pgPassCreateInfo(pgCreateInfo& ci) 
 		: pgCreateInfo(ci) 
 	{
@@ -596,18 +634,22 @@ class pgPass : public pgObject
 protected:
 	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
 	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
 	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
 
 	Diligent::SwapChainDesc								m_desc;
 	std::shared_ptr<pgScene>							m_scene;
 
+	std::shared_ptr<pgPipeline>							m_pPipeline;
 public:
 	pgPass(const pgPassCreateInfo& ci) 
 		: m_bEnabled(true)
 		, m_pDevice(ci.device)
+		, m_pSwapChain(ci.swapChain)
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
 		, m_desc(ci.desc)
+		, m_pPipeline(ci.pipeline)
 		, m_scene(ci.scene)
 	{
 	}
@@ -633,10 +675,42 @@ public:
 
 };
 
+class pgBasePass : public pgPass {
+	typedef pgPass base;
+
+public:
+	pgBasePass(const pgPassCreateInfo& ci);
+	virtual ~pgBasePass();
+
+	// Render the pass. This should only be called by the pgTechnique.
+	virtual void update(pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
+	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
+};
+
+struct pgTechniqueCreateInfo : public pgCreateInfo {
+
+	pgTechniqueCreateInfo()
+	{}
+
+	pgTechniqueCreateInfo(pgCreateInfo& ci)
+		: pgCreateInfo(ci)
+	{
+	}
+};
+
+
 class pgTechnique : public pgObject
 {
+protected:
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
+	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
+	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
+
+	Diligent::SwapChainDesc								m_desc;
 public:
-	pgTechnique();
+	pgTechnique(const pgTechniqueCreateInfo& ci);
 	virtual ~pgTechnique();
 
 	// Add a pass to the technique. The ID of the added pass is returned
@@ -644,10 +718,10 @@ public:
 	unsigned int addPass(std::shared_ptr<pgPass> pass);
 	std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
-	void update(pgRenderEventArgs& e);
+	virtual void update(pgRenderEventArgs& e);
 
 	// Render the scene using the passes that have been configured.
-	void render(pgRenderEventArgs& e);
+	virtual void render(pgRenderEventArgs& e);
 
 private:
 	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;

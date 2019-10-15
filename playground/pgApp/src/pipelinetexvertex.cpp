@@ -1,25 +1,26 @@
-#pragma once
+#include "pipelinetexvertex.h"
 
-#include "cubepass.h"
+using namespace Diligent;
 
-pgCubePass::pgCubePass(const pgPassCreateInfo& ci)
+PipelineTexVertex::PipelineTexVertex(const pgPipelineCreateInfo& ci) 
 	: base(ci)
 {
-	CreatePipelineState();
+	LoadTexture();
+	CreatePipelineState(ci);
 }
 
-pgCubePass::~pgCubePass()
-{
+PipelineTexVertex::~PipelineTexVertex() {
+
 }
 
-void pgCubePass::CreatePipelineState()
+void PipelineTexVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	PipelineStateDesc PSODesc;
 	// Pipeline state name is used by the engine to report issues.
 	// It is always a good idea to give objects descriptive names.
-	PSODesc.Name = "Cube PSO";
+	PSODesc.Name = "CubeTex PSO";
 
 	// This is a graphics pipeline
 	PSODesc.IsComputePipeline = false;
@@ -34,6 +35,13 @@ void pgCubePass::CreatePipelineState()
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
 	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
+
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
+
 	// Enable depth testing
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
 
@@ -45,8 +53,7 @@ void pgCubePass::CreatePipelineState()
 	// OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
 	ShaderCI.UseCombinedTextureSamplers = true;
 
-	// In this tutorial, we will load shaders from file. To be able to do that,
-	// we need to create a shader source stream factory
+	// Create a shader source stream factory to load shaders from files.
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
 	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory(nullptr, &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
@@ -56,17 +63,11 @@ void pgCubePass::CreatePipelineState()
 		ShaderCI.Desc.ShaderType = SHADER_TYPE_VERTEX;
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = "Cube VS";
-		ShaderCI.FilePath = "cube.vsh";
+		ShaderCI.FilePath = "cubetex.vsh";
 		m_pDevice->CreateShader(ShaderCI, &pVS);
 		// Create dynamic uniform buffer that will store our transformation matrix
 		// Dynamic buffers can be frequently updated by the CPU
-		BufferDesc CBDesc;
-		CBDesc.Name = "VS constants CB";
-		CBDesc.uiSizeInBytes = sizeof(float4x4);
-		CBDesc.Usage = USAGE_DYNAMIC;
-		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_VSConstants);
+		CreateUniformBuffer(m_pDevice, sizeof(float4x4), "VS constants CB", &m_VSConstants);
 	}
 
 	// Create a pixel shader
@@ -75,7 +76,7 @@ void pgCubePass::CreatePipelineState()
 		ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = "Cube PS";
-		ShaderCI.FilePath = "cube.psh";
+		ShaderCI.FilePath = "cubetex.psh";
 		m_pDevice->CreateShader(ShaderCI, &pPS);
 	}
 
@@ -84,46 +85,74 @@ void pgCubePass::CreatePipelineState()
 	{
 		// Attribute 0 - vertex position
 		LayoutElement{0, 0, 3, VT_FLOAT32, False},
-		// Attribute 1 - vertex color
-		LayoutElement{1, 0, 4, VT_FLOAT32, False}
+		// Attribute 1 - texture coordinates
+		LayoutElement{1, 0, 2, VT_FLOAT32, False}
 	};
-	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
-	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 
 	PSODesc.GraphicsPipeline.pVS = pVS;
 	PSODesc.GraphicsPipeline.pPS = pPS;
+	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
+	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
+	// Shader variables should typically be mutable, which means they are expected
+	// to change on a per-instance basis
+	ShaderResourceVariableDesc Vars[] =
+	{
+		{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+	};
+	PSODesc.ResourceLayout.Variables = Vars;
+	PSODesc.ResourceLayout.NumVariables = _countof(Vars);
+
+	// Define static sampler for g_Texture. Static samplers should be used whenever possible
+	SamplerDesc SamLinearClampDesc
+	{
+		FILTER_TYPE_LINEAR, FILTER_TYPE_LINEAR, FILTER_TYPE_LINEAR,
+		TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP
+	};
+	StaticSamplerDesc StaticSamplers[] =
+	{
+		{SHADER_TYPE_PIXEL, "g_Texture", SamLinearClampDesc}
+	};
+	PSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
+	PSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
+
 	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
-	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
-	// change and are bound directly through the pipeline state object.
+	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables 
+	// never change and are bound directly through the pipeline state object.
 	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
 
-	// Create a shader resource binding object and bind all static resources in it
+	// Since we are using mutable variable, we must create a shader resource binding object
+	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
+
+	// Set texture SRV in the SRB
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
 }
 
-// Render a frame
-void pgCubePass::render(pgRenderEventArgs& e)
+void PipelineTexVertex::LoadTexture()
 {
-	// Set the pipeline state
-	m_pImmediateContext->SetPipelineState(m_pPSO);
-
-	m_scene->render(e);
+	TextureLoadInfo loadInfo;
+	loadInfo.IsSRGB = false;
+	RefCntAutoPtr<ITexture> Tex;
+	//CreateTextureFromFile("DGLogo.png", loadInfo, m_pDevice, &Tex);
+	CreateTextureFromFile("apple-logo.png", loadInfo, m_pDevice, &Tex);
+	// Get shader resource view from the texture
+	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 }
 
-void pgCubePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PipelineTexVertex::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
 		const float4x4 view = e.pCamera->getViewMatrix();
 
 		const float4x4 local = e.pSceneNode->getLocalTransform();
 
 		// Set cube world view matrix
-		float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * -1.0f) * local * view;
+		float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * local * view;
 
 		auto& Proj = e.pCamera->getProjectionMatrix();
 
@@ -136,12 +165,10 @@ void pgCubePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 			*CBConstants = worldViewProjMatrix.Transpose();
 		}
 
+		m_pImmediateContext->SetPipelineState(m_pPSO);
+
 		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 		// makes sure that resources are transitioned to required states.
 		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
-}
-
-void pgCubePass::update(pgRenderEventArgs& e)
-{
 }

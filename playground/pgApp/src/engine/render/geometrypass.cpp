@@ -1,21 +1,25 @@
 #pragma once
 
-#include "../app.h"
-#include "renderpass.h"
+#include "geometrypass.h"
 
-pgRenderPass::pgRenderPass(const RenderPassCreateInfo& ci)
+GeometryPass::GeometryPass(const GeometryPassCreateInfo& ci)
 	: base(ci)
+	, m_pColorRTV(ci.ColorRTV)
+	, m_pDSRTV(ci.DSRTV)
+	, m_pDiffuseRTV(ci.DiffuseRTV)
+	, m_pSpecularRTV(ci.SpecularRTV)
+	, m_pNormalRTV(ci.NormalRTV)
 {
-	//LoadTexture();
+	PipelineStateDesc PSODesc;
 
-	//CreatePipelineState(ci);
+	CreatePipelineState(ci, PSODesc);
 }
 
-pgRenderPass::~pgRenderPass()
-{
+GeometryPass::~GeometryPass() {
+	//
 }
 
-void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void GeometryPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -26,9 +30,12 @@ void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineS
 	PSODesc.IsComputePipeline = false;
 
 	// This tutorial will render to a single render target
-	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
+	PSODesc.GraphicsPipeline.NumRenderTargets = 3;
 	// Set render target format which is the format of the swap chain's color buffer
 	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[1] = TEX_FORMAT_RGBA8_UNORM;
+	PSODesc.GraphicsPipeline.RTVFormats[2] = TEX_FORMAT_RGBA32_FLOAT;
+
 	// Set depth buffer format which is the format of the swap chain's back buffer
 	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
@@ -65,9 +72,9 @@ void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineS
 	RefCntAutoPtr<IShader> pPS;
 	{
 		ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
-		ShaderCI.EntryPoint = "PS_main";
-		ShaderCI.Desc.Name = "OpaquePS";
-		ShaderCI.FilePath = "ForwardRendering.hlsl";
+		ShaderCI.EntryPoint = "PS_Geometry";
+		ShaderCI.Desc.Name = "GeometryPS";
+		ShaderCI.FilePath = "DeferredRendering.hlsl";
 		m_pDevice->CreateShader(ShaderCI, &pPS);
 	}
 
@@ -126,39 +133,35 @@ void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineS
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
+	// no light used
+	//m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
 }
 
-void pgRenderPass::LoadTexture()
-{
-	TextureLoadInfo loadInfo;
-	loadInfo.IsSRGB = false;
-	RefCntAutoPtr<ITexture> Tex;
-	//CreateTextureFromFile("DGLogo.png", loadInfo, m_pDevice, &Tex);
-	CreateTextureFromFile("apple-logo.png", loadInfo, m_pDevice, &Tex);
-	// Get shader resource view from the texture
-	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
+bool GeometryPass::meshFilter(pgMesh* mesh) {
+	auto mat = mesh->getMaterial();
+	auto bTransparent = mat->IsTransparent();
+	return !bTransparent;
 }
-
 
 // Render a frame
-void pgRenderPass::render(pgRenderEventArgs& e) {
+void GeometryPass::render(pgRenderEventArgs& e) {
+	// Clear the offscreen render target and depth buffer
+	const float ClearColor[] = { 0.f,  0.f,  0.f, 1.0f };
+	ITextureView* rtvs[] = { m_pColorRTV, m_pDiffuseRTV, m_pSpecularRTV, m_pNormalRTV };
+	m_pImmediateContext->SetRenderTargets(4, rtvs, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	for (int i = 0; i < 4; ++i) {
+		auto rtv = rtvs[i];
+		m_pImmediateContext->ClearRenderTarget(rtv, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+	m_pImmediateContext->ClearDepthStencil(m_pDSRTV, CLEAR_DEPTH_FLAG, 1.0f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
 	m_scene->render(e);
 }
 
-void pgRenderPass::update(pgRenderEventArgs& e) {
+void GeometryPass::update(pgRenderEventArgs& e) {
 	//
 }
 
-void pgRenderPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	e.pApp->updateSRB(e, flag);
-
-	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
-		// Set the pipeline state
-		m_pImmediateContext->SetPipelineState(m_pPSO);
-
-		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-		// makes sure that resources are transitioned to required states.
-		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
+void GeometryPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+	base::updateSRB(e, flag);
 }

@@ -1,20 +1,20 @@
-#include "cube.h"
+#include "meshcube.h"
 #include "../scene/sceneass.h"
 
 using namespace Diligent;
 
-Cube::Cube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
+MeshCube::MeshCube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
 	: pgMesh(device, ctx)
 {
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 }
 
-Cube::~Cube() {
+MeshCube::~MeshCube() {
 	//
 }
 
-void Cube::CreateVertexBuffer()
+void MeshCube::CreateVertexBuffer()
 {
 	// Layout of this structure matches the one we defined in the pipeline state
 	struct Vertex
@@ -23,7 +23,7 @@ void Cube::CreateVertexBuffer()
 		float4 color;
 	};
 
-	// Cube vertices
+	// MeshCube vertices
 
 	//      (-1,+1,+1)________________(+1,+1,+1)
 	//               /|              /|
@@ -40,7 +40,7 @@ void Cube::CreateVertexBuffer()
 	//        (-1,-1,-1)       (+1,-1,-1)
 	//
 
-	const Vertex CubeVerts[8] =
+	const Vertex MeshCubeVerts[8] =
 	{
 		{float3(-1,-1,-1), float4(1,0,0,1)},
 		{float3(-1,+1,-1), float4(0,1,0,1)},
@@ -54,13 +54,13 @@ void Cube::CreateVertexBuffer()
 	};
 
 	std::shared_ptr<pgBuffer> buffer = pgSceneAss::createFloatVertexBuffer(m_pDevice, 
-		(const float*)CubeVerts, 8, sizeof(Vertex));
+		(const float*)MeshCubeVerts, 8, sizeof(Vertex));
 
 	pgBufferBinding binding{"VERTEX", 0};
 	addVertexBuffer(binding, buffer);
 }
 
-void Cube::CreateIndexBuffer()
+void MeshCube::CreateIndexBuffer()
 {
 	const Uint32 Indices[] =
 	{
@@ -77,6 +77,6 @@ void Cube::CreateIndexBuffer()
 }
 
 
-void Cube::render(pgRenderEventArgs& e) {
+void MeshCube::render(pgRenderEventArgs& e) {
 	pgMesh::render(e);
 }

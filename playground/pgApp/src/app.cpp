@@ -1,33 +1,7 @@
-/*     
- *  
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF ANY PROPRIETARY RIGHTS.
- *
- *  In no event and under no legal theory, whether in tort (including negligence), 
- *  contract, or otherwise, unless required by applicable law (such as deliberate 
- *  and grossly negligent acts) or agreed to in writing, shall any Contributor be
- *  liable for any damages, including any direct, indirect, special, incidental, 
- *  or consequential damages of any character arising as a result of this License or 
- *  out of the use or inability to use the software (including but not limited to damages 
- *  for loss of goodwill, work stoppage, computer failure or malfunction, or any and 
- *  all other commercial damages or losses), even if such Contributor has been advised 
- *  of the possibility of such damages.
- */
-
 #include "app.h"
 
-#include "engine/render/gltfmodelpass.h"
-#include "engine/render/cubepass.h"
-#include "engine/render/cubetexpass.h"
-#include "engine/render/cube.h"
-#include "engine/render/cubetex.h"
+#include "testtechnique.h"
+#include "engine/render/deferredtechnique.h"
 
 #include "engine/render/opaquepass.h"
 #include "engine/render/transparentpass.h"
@@ -197,79 +171,72 @@ namespace Diligent
 		ci.device = m_pDevice;
 		ci.ctx = m_pImmediateContext;
 		ci.factory = m_pEngineFactory;
+		ci.swapChain = m_pSwapChain;
 		ci.desc = m_pSwapChain->GetDesc();
 
 		pgCameraCreateInfo cci{ ci };
 
+		//m_renderingTechnique = RenderingTechnique::Deferred;
 		m_renderingTechnique = RenderingTechnique::Forward;
 		//m_renderingTechnique = RenderingTechnique::Test;
 
-		if (m_renderingTechnique == RenderingTechnique::Forward) {
+		if (m_renderingTechnique != RenderingTechnique::Test) {
 			cci.pos = float3(0, 0, -25);
 		}
 
 		m_pCamera = std::make_shared<pgCamera>(cci);
 
-		// technique will clean up passed added in it
-		m_pTechnique = std::make_shared<pgTechnique>();
-		m_pForwardTechnique = std::make_shared<pgTechnique>();
-		m_pDeferredTechnique = std::make_shared<pgTechnique>();
-		m_pForwardPlusTechnique = std::make_shared<pgTechnique>();
+		pgTechniqueCreateInfo tci{ ci };
 
-		pgPassCreateInfo pci {ci};
+		// technique will clean up passed added in it
+		m_pTechnique = std::make_shared<pgTechnique>(tci);
+		m_pForwardTechnique = std::make_shared<pgTechnique>(tci);
+		m_pDeferredTechnique = std::make_shared<DeferredTechnique>(tci);
+		m_pForwardPlusTechnique = std::make_shared<pgTechnique>(tci);
+
+		//
 		pgSceneCreateInfo sci{ ci };
 
+		std::shared_ptr<TestScene> testScene = std::make_shared<TestScene>(sci);
+		std::wstring filePath = L"resources/models/test/test_scene.nff";
+		testScene->LoadFromFile(filePath);
+		testScene->customMesh();
+
+		initLightData();
+		initBuffers();
+
+		pgPassCreateInfo pci {ci};
+
 		if (m_renderingTechnique == RenderingTechnique::Forward) {
-			std::shared_ptr<TestScene> testScene = std::make_shared<TestScene>(sci);
-			std::wstring filePath = L"resources/models/test/test_scene.nff";
-			testScene->LoadFromFile(filePath);
-			testScene->customMesh();
+			RenderPassCreateInfo rpci{ pci };
+			rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
+			rpci.MaterialConstants = m_MaterialConstants.RawPtr();
+			rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
+			rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
 
-			initLightData();
-			initBuffers();
-
-			RenderPassCreateInfo bpci{ pci };
-			bpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
-			bpci.MaterialConstants = m_MaterialConstants.RawPtr();
-			bpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
-			bpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
-
-			bpci.scene = testScene;
-			std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(bpci);
+			rpci.scene = testScene;
+			std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(rpci);
 			m_pForwardTechnique->addPass(pOpaquePass);
 
-			std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(bpci);
+			std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(rpci);
 			m_pForwardTechnique->addPass(pTransparentPass);
+		}
+		else if (m_renderingTechnique == RenderingTechnique::Deferred) {
+			RenderPassCreateInfo rpci{ pci };
+			rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
+			rpci.MaterialConstants = m_MaterialConstants.RawPtr();
+			rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
+			rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
+
+			rpci.scene = testScene;
+
+			auto deferredTech = (DeferredTechnique*)m_pDeferredTechnique.get();
+			deferredTech->init(rpci, m_Lights);
 		}
 
 		// always init test technique
 		{
-#if 0
-			std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(pci);
-			m_pTechnique->addPass(pGLTFPass);
-#endif
-			std::shared_ptr<Cube> cube = std::make_shared<Cube>(m_pDevice, m_pImmediateContext);
-			std::shared_ptr<CubeTex> cubeTex = std::make_shared<CubeTex>(m_pDevice, m_pImmediateContext);
-
-			float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) *float4x4::Translation(0.f, 0.0f, 8.0f);
-			std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>(trans1);
-			root1->addMesh(cube);
-			std::shared_ptr<pgScene> sceneCube = std::make_shared<pgScene>(sci);
-			sceneCube->setRootNode(root1);
-
-			float4x4 trans2 = float4x4::Scale(0.6f) * float4x4::RotationX(-PI_F * 0.1f) *float4x4::Translation(0.f, 0.0f, 5.0f);
-			std::shared_ptr<pgSceneNode> root2 = std::make_shared<pgSceneNode>(trans2);
-			root2->addMesh(cubeTex);
-			std::shared_ptr<pgScene> sceneCubeTex = std::make_shared<pgScene>(sci);
-			sceneCubeTex->setRootNode(root2);
-
-			pci.scene = sceneCube;
-			std::shared_ptr<pgCubePass> pCubePass = std::make_shared<pgCubePass>(pci);
-			m_pTechnique->addPass(pCubePass);
-
-			pci.scene = sceneCubeTex;
-			std::shared_ptr<pgCubeTexPass> pCubeTexPass = std::make_shared<pgCubeTexPass>(pci);
-			m_pTechnique->addPass(pCubeTexPass);
+			m_pTechnique = std::make_shared<TestTechnique>(tci);
 		}
 	}
 

@@ -1,21 +1,21 @@
 
-#include "cubetex.h"
+#include "meshcubetex.h"
 #include "../scene/sceneass.h"
 
 using namespace Diligent;
 
-CubeTex::CubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
+MeshCubeTex::MeshCubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
 	: pgMesh(device, ctx)
 {
 	CreateVertexBuffer();
 	CreateIndexBuffer();
 }
 
-CubeTex::~CubeTex() {
+MeshCubeTex::~MeshCubeTex() {
 	//
 }
 
-void CubeTex::CreateVertexBuffer()
+void MeshCubeTex::CreateVertexBuffer()
 {
 	// Layout of this structure matches the one we defined in the pipeline state
 	struct Vertex
@@ -83,7 +83,7 @@ void CubeTex::CreateVertexBuffer()
 	addVertexBuffer(binding, buffer);
 }
 
-void CubeTex::CreateIndexBuffer()
+void MeshCubeTex::CreateIndexBuffer()
 {
 	Uint32 Indices[] =
 	{
@@ -99,6 +99,6 @@ void CubeTex::CreateIndexBuffer()
 		Indices, 36);
 }
 
-void CubeTex::render(pgRenderEventArgs& e) {
+void MeshCubeTex::render(pgRenderEventArgs& e) {
 	pgMesh::render(e);
 }
