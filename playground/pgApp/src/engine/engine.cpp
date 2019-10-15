@@ -94,6 +94,7 @@ void pgTechnique::render(pgRenderEventArgs& e)
 		{
 			// set the pass
 			e.pPass = pass.get();
+			e.pPass->updateSRB(e, pgUpdateSRB_Flag::pgUpdateSRB_Pass);
 
 			pass->render(e);
 

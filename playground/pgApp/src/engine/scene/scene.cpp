@@ -1,4 +1,5 @@
 #include "../engine.h"
+#include "../app.h"
 
 pgSceneNode::pgSceneNode(const Diligent::float4x4& localTransform)
 	: m_LocalTransform(localTransform)
@@ -161,6 +162,8 @@ void pgSceneNode::render(pgRenderEventArgs& e) {
 		bool renderIt = e.pPass->meshFilter(mesh.get());
 		if (renderIt) {
 			e.pMaterial = mesh->getMaterial().get();
+			e.pPass->updateSRB(e, pgUpdateSRB_Flag::pgUpdateSRB_Material);
+
 			mesh->render(e);
 
 			// clear it

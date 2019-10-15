@@ -54,9 +54,7 @@ namespace Diligent
 		virtual void Update(double CurrTime, double ElapsedTime)override final;
 		virtual const Char* GetSampleName()const override final { return "TestApp"; }
 
-		virtual void updateSRB_Object(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
-		virtual void updateSRB_Material(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
-		virtual void updateSRB_Lights(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
+		virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
 
 	private:
 		void initLightData();

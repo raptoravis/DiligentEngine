@@ -295,7 +295,7 @@ void pgGLTFPass::update(pgRenderEventArgs& e) {
 	}
 }
 
-void pgGLTFPass::updateSRB(pgRenderEventArgs& e) {
+void pgGLTFPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	//
 }
 

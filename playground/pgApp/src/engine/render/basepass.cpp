@@ -6,9 +6,9 @@
 BasePass::BasePass(const BasePassCreateInfo& ci)
 	: base(ci)
 {
-	LoadTexture();
+	//LoadTexture();
 
-	CreatePipelineState(ci);
+	//CreatePipelineState(ci);
 }
 
 BasePass::~BasePass()
@@ -22,7 +22,7 @@ void BasePass::CreatePipelineState(const BasePassCreateInfo& ci)
 	PipelineStateDesc PSODesc;
 	// Pipeline state name is used by the engine to report issues.
 	// It is always a good idea to give objects descriptive names.
-	PSODesc.Name = "Cube PSO";
+	PSODesc.Name = "PSO";
 
 	// This is a graphics pipeline
 	PSODesc.IsComputePipeline = false;
@@ -143,15 +143,15 @@ void BasePass::update(pgRenderEventArgs& e) {
 	//
 }
 
-void BasePass::updateSRB(pgRenderEventArgs& e) {
-	e.pApp->updateSRB_Object(e, m_pImmediateContext.RawPtr());
-	e.pApp->updateSRB_Material(e, m_pImmediateContext.RawPtr());
-	e.pApp->updateSRB_Lights(e, m_pImmediateContext.RawPtr());
+void BasePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+	e.pApp->updateSRB(e, flag);
 
-	// Set the pipeline state
-	m_pImmediateContext->SetPipelineState(m_pPSO);
+	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
+		// Set the pipeline state
+		m_pImmediateContext->SetPipelineState(m_pPSO);
 
-	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-	// makes sure that resources are transitioned to required states.
-	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+		// makes sure that resources are transitioned to required states.
+		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
 }

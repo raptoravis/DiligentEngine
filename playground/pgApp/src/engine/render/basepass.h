@@ -37,9 +37,13 @@ protected:
 	void CreatePipelineState(const BasePassCreateInfo& ci);
 	void LoadTexture();
 
-	RefCntAutoPtr<IPipelineState>			m_pPSO;
+	RefCntAutoPtr<IPipelineState>         m_pPSO;
+	RefCntAutoPtr<IShaderResourceBinding> m_pSRB;
 
-	RefCntAutoPtr<IShaderResourceBinding>	m_pSRB;
+	RefCntAutoPtr<IBuffer>                m_PerObjectConstants;
+	RefCntAutoPtr<IBuffer>                m_MaterialConstants;
+
+	RefCntAutoPtr<IBuffer>                m_LightsStructuredBuffer;
 
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
 public:
@@ -50,6 +54,6 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
-	virtual void updateSRB(pgRenderEventArgs& e);
+	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
 };
 

@@ -1,4 +1,5 @@
 #include "../engine.h"
+#include "../app.h"
 
 using namespace Diligent;
 
@@ -70,7 +71,7 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	e.pPass->updateSRB(e);
+	e.pPass->updateSRB(e, pgUpdateSRB_Flag::pgUpdateSRB_Object);
 
 	auto count = m_pIndexBuffer->getCount();
 

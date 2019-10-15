@@ -137,8 +137,8 @@ namespace Diligent
 		}
 	}
 
-	void TestApp::updateSRB_Object(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx) {
-		{
+	void TestApp::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
 			const float4x4 view = e.pCamera->getViewMatrix();
 			const float4x4 local = e.pSceneNode->getLocalTransform();
 
@@ -149,19 +149,17 @@ namespace Diligent
 			float4x4 worldViewProjMatrix = worldViewMatrix * Proj;
 
 			// Map the buffer and write current world-view-projection matrix
-			MapHelper<PerObject> CBConstants(ctx, m_PerObjectConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+			MapHelper<PerObject> CBConstants(e.pDeviceContext, m_PerObjectConstants, MAP_WRITE, MAP_FLAG_DISCARD);
 
 			//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
 			//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 			CBConstants->ModelViewProjection = worldViewProjMatrix;
 			CBConstants->ModelView = worldViewMatrix;
 		}
-	}
 
-	void TestApp::updateSRB_Material(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx) {
-		{
+		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Material) {
 			// Map the buffer and write current world-view-projection matrix
-			MapHelper<pgMaterial::MaterialProperties> CBConstants(ctx, m_MaterialConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+			MapHelper<pgMaterial::MaterialProperties> CBConstants(e.pDeviceContext, m_MaterialConstants, MAP_WRITE, MAP_FLAG_DISCARD);
 
 			auto matProperties = e.pMaterial->getConstantBuffer();
 
@@ -169,10 +167,8 @@ namespace Diligent
 			//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 			memcpy((void*)&CBConstants->m_GlobalAmbient, matProperties, sizeof(pgMaterial::MaterialProperties));
 		}
-	}
 
-	void TestApp::updateSRB_Lights(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx) {
-		{
+		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Pass) {
 			const float4x4 viewMatrix = e.pCamera->getViewMatrix();
 
 			// Update the viewspace vectors of the light.
@@ -186,7 +182,7 @@ namespace Diligent
 
 			{
 				// Map the buffer and write current world-view-projection matrix
-				MapHelper<pgLight> lightBuffer(m_pImmediateContext, m_LightsStructuredBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
+				MapHelper<pgLight> lightBuffer(e.pDeviceContext, m_LightsStructuredBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
 
 				memcpy(&lightBuffer->m_PositionWS, m_Lights.data(), sizeof(pgLight) * m_Lights.size());
 			}
@@ -242,8 +238,8 @@ namespace Diligent
 			std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(bpci);
 			m_pForwardTechnique->addPass(pOpaquePass);
 
-			//std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(bpci);
-			//m_pForwardTechnique->addPass(pTransparentPass);
+			std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(bpci);
+			m_pForwardTechnique->addPass(pTransparentPass);
 		}
 
 		// always init test technique
@@ -313,7 +309,7 @@ namespace Diligent
 
 		m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
-		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pCamera.get());
+		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pImmediateContext.RawPtr(), m_pCamera.get());
 
 		int technique = (int)m_renderingTechnique;
 

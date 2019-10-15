@@ -176,13 +176,25 @@ class pgSceneNode;
 class pgMaterial;
 class pgMesh;
 
+enum pgUpdateSRB_Flag : int {
+	pgUpdateSRB_None = 0, 
+	pgUpdateSRB_Material = 1, 
+	pgUpdateSRB_Object = 2,
+	pgUpdateSRB_Pass = 4,
+	pgUpdateSRB_User1 = 8, 
+	pgUpdateSRB_User2 = 16, 
+	pgUpdateSRB_User3 = 32, 
+	pgUpdateSRB_User4 = 64
+};
+
 class pgRenderEventArgs
 {
 public:
 	pgApp*						pApp;
 	float						CurrTime;
 	float						ElapsedTime;
-
+	
+	Diligent::IDeviceContext*	pDeviceContext;
 	pgCamera*					pCamera;
 
 	pgPass*						pPass;
@@ -191,6 +203,7 @@ public:
 public:
 	pgRenderEventArgs() 
 		: pApp(0)
+		, pDeviceContext(0)
 		, pCamera(0)
 		, pPass(0)
 		, pSceneNode(0)
@@ -198,8 +211,9 @@ public:
 	{
 	}
 
-	void set(pgApp* caller, float currentTime, float elapsedTime, pgCamera* camera) {
+	void set(pgApp* caller, float currentTime, float elapsedTime, Diligent::IDeviceContext* ctx, pgCamera* camera) {
 		pApp = caller;
+		pDeviceContext = ctx;
 		pCamera = camera;
 		CurrTime = currentTime;
 		ElapsedTime = elapsedTime;
@@ -609,7 +623,7 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e) = 0;
-	virtual void updateSRB(pgRenderEventArgs& e) = 0;
+	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) = 0;
 	virtual void render(pgRenderEventArgs& e) = 0;
 
 	// return true if to render
