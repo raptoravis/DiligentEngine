@@ -34,7 +34,7 @@ class pgRenderPass : public pgPass {
 	typedef pgPass base;
 
 protected:
-	void CreatePipelineState(const RenderPassCreateInfo& ci);
+	void CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc);
 	void LoadTexture();
 
 	RefCntAutoPtr<IPipelineState>         m_pPSO;

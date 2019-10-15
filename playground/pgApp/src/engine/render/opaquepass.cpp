@@ -5,7 +5,9 @@
 OpaquePass::OpaquePass(const RenderPassCreateInfo& ci)
 	: base(ci)
 {
-	CreatePipelineState(ci);
+	PipelineStateDesc PSODesc;
+
+	CreatePipelineState(ci, PSODesc);
 }
 
 OpaquePass::~OpaquePass()

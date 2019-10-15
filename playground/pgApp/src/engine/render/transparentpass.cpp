@@ -5,7 +5,15 @@
 TransparentPass::TransparentPass(const RenderPassCreateInfo& ci)
 	: base(ci)
 {
-	CreatePipelineState(ci);
+	PipelineStateDesc PSODesc;
+
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
+	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
+
+	CreatePipelineState(ci, PSODesc);
 }
 
 TransparentPass::~TransparentPass()

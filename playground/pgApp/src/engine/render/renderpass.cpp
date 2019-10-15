@@ -15,11 +15,9 @@ pgRenderPass::~pgRenderPass()
 {
 }
 
-void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci)
-{
+void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
-	PipelineStateDesc PSODesc;
 	// Pipeline state name is used by the engine to report issues.
 	// It is always a good idea to give objects descriptive names.
 	PSODesc.Name = "PSO";
@@ -107,6 +105,7 @@ void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci)
 	PSODesc.ResourceLayout.Variables = Vars;
 	PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 
+	//
 	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
