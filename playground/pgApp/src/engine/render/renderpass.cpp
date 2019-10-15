@@ -155,10 +155,15 @@ void pgRenderPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 
 	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
 		// Set the pipeline state
-		m_pImmediateContext->SetPipelineState(m_pPSO);
+		if (m_pPipeline) {
+			m_pPipeline->updateSRB(e, flag);
+		}
+		else {
+			m_pImmediateContext->SetPipelineState(m_pPSO);
 
-		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-		// makes sure that resources are transitioned to required states.
-		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+			// makes sure that resources are transitioned to required states.
+			m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
 	}
 }

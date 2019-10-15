@@ -53,9 +53,26 @@ void DeferredTechnique::createGBuffers() {
 	m_pNormalSRV = pNormalTex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 
 	m_pColorRTV = m_pSwapChain->GetCurrentBackBufferRTV();
-	m_pDSRTV = m_pSwapChain->GetDepthBufferDSV();
+	//m_pDSRTV = m_pSwapChain->GetDepthBufferDSV();
 
-	m_pDSSRV = 0;
+	// Create depth buffer
+	TextureDesc DepthBufferDesc;
+	DepthBufferDesc.Name = "Main depth buffer";
+	DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
+	DepthBufferDesc.Width = m_desc.Width;
+	DepthBufferDesc.Height = m_desc.Height;
+	DepthBufferDesc.MipLevels = 1;
+	DepthBufferDesc.ArraySize = 1;
+	DepthBufferDesc.Format = m_desc.DepthBufferFormat;
+	DepthBufferDesc.SampleCount = m_desc.SamplesCount;
+	DepthBufferDesc.Usage = USAGE_DEFAULT;
+	DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
+	DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
+	DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
+
+	m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &m_pDepthBuffer);
+	m_pDSRTV = m_pDepthBuffer->GetDefaultView(TEXTURE_VIEW_DEPTH_STENCIL);
+	m_pDSSRV = m_pDepthBuffer->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 }
 
 

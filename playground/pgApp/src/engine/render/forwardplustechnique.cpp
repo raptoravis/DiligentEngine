@@ -23,8 +23,8 @@ void ForwardPlusTechnique::render(pgRenderEventArgs& e) {
 
 
 void ForwardPlusTechnique::init(const RenderPassCreateInfo& rpci, const std::vector<pgLight>& lights) {
-
-	std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(rpci);
+	OpaquePassCreateInfo opci{ rpci };
+	std::shared_ptr<OpaquePass> pOpaquePass = std::make_shared<OpaquePass>(opci);
 	addPass(pOpaquePass);
 
 	std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(rpci);

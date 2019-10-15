@@ -9,13 +9,26 @@
 
 using namespace Diligent;
 
+struct OpaquePassCreateInfo : public RenderPassCreateInfo {
+	//
+	OpaquePassCreateInfo() {
+		//
+	}
+
+	OpaquePassCreateInfo(const RenderPassCreateInfo& ci)
+		: RenderPassCreateInfo(ci)
+	{
+	}
+};
+
+
 class OpaquePass : public pgRenderPass {
 	typedef pgRenderPass base;
 
 protected:
 	//void CreatePipelineState(const RenderPassCreateInfo& ci);
 public:
-	OpaquePass(const RenderPassCreateInfo& ci);
+	OpaquePass(const OpaquePassCreateInfo& ci);
 
 	virtual ~OpaquePass();
 

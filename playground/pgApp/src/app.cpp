@@ -178,8 +178,8 @@ namespace Diligent
 
 		pgCameraCreateInfo cci{ ci };
 
-		//m_renderingTechnique = RenderingTechnique::Deferred;
-		m_renderingTechnique = RenderingTechnique::Forward;
+		m_renderingTechnique = RenderingTechnique::Deferred;
+		//m_renderingTechnique = RenderingTechnique::Forward;
 		//m_renderingTechnique = RenderingTechnique::Test;
 
 		if (m_renderingTechnique != RenderingTechnique::Test) {

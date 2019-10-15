@@ -2,12 +2,14 @@
 
 #include "OpaquePass.h"
 
-OpaquePass::OpaquePass(const RenderPassCreateInfo& ci)
+OpaquePass::OpaquePass(const OpaquePassCreateInfo& ci)
 	: base(ci)
 {
-	PipelineStateDesc PSODesc;
+	if (!m_pPipeline) {
+		PipelineStateDesc PSODesc;
 
-	CreatePipelineState(ci, PSODesc);
+		CreatePipelineState(ci, PSODesc);
+	}
 }
 
 OpaquePass::~OpaquePass()

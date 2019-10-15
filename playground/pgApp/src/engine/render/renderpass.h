@@ -15,7 +15,8 @@ __declspec(align(16)) struct PerObject
 
 struct RenderPassCreateInfo : public pgPassCreateInfo {
 	//
-	RenderPassCreateInfo() {
+	RenderPassCreateInfo() 
+	{
 		//
 	}
 

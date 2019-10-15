@@ -14,13 +14,14 @@ class DeferredTechnique : public pgTechnique {
 	void createGBuffers();
 
 	RefCntAutoPtr<ITextureView>           m_pColorRTV;
-	RefCntAutoPtr<ITextureView>           m_pDSRTV;
 
 	RefCntAutoPtr<ITextureView>           m_pDiffuseRTV;
 	RefCntAutoPtr<ITextureView>           m_pSpecularRTV;
 	RefCntAutoPtr<ITextureView>           m_pNormalRTV;
 
 	//
+	RefCntAutoPtr<ITexture>				  m_pDepthBuffer;
+	RefCntAutoPtr<ITextureView>           m_pDSRTV;
 	RefCntAutoPtr<ITextureView>           m_pDSSRV;
 
 	RefCntAutoPtr<ITextureView>           m_pDiffuseSRV;
