@@ -1,20 +1,21 @@
 #pragma once
 
-#include "TransparentPass.h"
+#include "../app.h"
+#include "basepass.h"
 
-TransparentPass::TransparentPass(const BasePassCreateInfo& ci)
+BasePass::BasePass(const BasePassCreateInfo& ci)
 	: base(ci)
 {
 	LoadTexture();
 
-	CreatePipelineState();
+	CreatePipelineState(ci);
 }
 
-TransparentPass::~TransparentPass()
+BasePass::~BasePass()
 {
 }
 
-void TransparentPass::CreatePipelineState()
+void BasePass::CreatePipelineState(const BasePassCreateInfo& ci)
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
@@ -60,17 +61,6 @@ void TransparentPass::CreatePipelineState()
 		ShaderCI.Desc.Name = "OpaqueVS";
 		ShaderCI.FilePath = "ForwardRendering.hlsl";
 		m_pDevice->CreateShader(ShaderCI, &pVS);
-	}
-
-	{
-		BufferDesc CBDesc;
-		CBDesc.Name = "Material CB";
-		uint32_t bufferSize = pgMaterial::getConstantBufferSize();
-		CBDesc.uiSizeInBytes = bufferSize;
-		CBDesc.Usage = USAGE_DYNAMIC;
-		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_MaterialConstants);
 	}
 
 	// Create a pixel shader
@@ -122,15 +112,17 @@ void TransparentPass::CreatePipelineState()
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
 	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(m_MaterialConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(ci.PerObjectConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(ci.MaterialConstants);
 	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(pLightsBufferSRV);
 
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
+
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
 }
 
-void TransparentPass::LoadTexture()
+void BasePass::LoadTexture()
 {
 	TextureLoadInfo loadInfo;
 	loadInfo.IsSRGB = false;
@@ -141,21 +133,25 @@ void TransparentPass::LoadTexture()
 	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 }
 
-bool TransparentPass::meshFilter(pgMesh* mesh) {
-	auto mat = mesh->getMaterial();
-	auto bTransparent = mat->IsTransparent();
-	return bTransparent;
-}
 
 // Render a frame
-void TransparentPass::render(pgRenderEventArgs& e) {
+void BasePass::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
-void TransparentPass::update(pgRenderEventArgs& e) {
+void BasePass::update(pgRenderEventArgs& e) {
 	//
 }
 
-void TransparentPass::updateSRB(pgRenderEventArgs& e) {
-	base::updateSRB(e);
+void BasePass::updateSRB(pgRenderEventArgs& e) {
+	e.pApp->updateSRB_Object(e, m_pImmediateContext.RawPtr());
+	e.pApp->updateSRB_Material(e, m_pImmediateContext.RawPtr());
+	e.pApp->updateSRB_Lights(e, m_pImmediateContext.RawPtr());
+
+	// Set the pipeline state
+	m_pImmediateContext->SetPipelineState(m_pPSO);
+
+	// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+	// makes sure that resources are transitioned to required states.
+	m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }

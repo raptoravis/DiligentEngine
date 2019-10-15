@@ -153,13 +153,12 @@ void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 	}
 }
 
-void pgSceneNode::render(pgRenderEventArgs& e)
-{
+void pgSceneNode::render(pgRenderEventArgs& e) {
 	e.pSceneNode = this;
 
 	// First render all my meshes.
 	for (auto mesh : m_Meshes) {
-		bool renderIt = !e.pMeshFilter || (e.pMeshFilter)(mesh.get());
+		bool renderIt = e.pPass->meshFilter(mesh.get());
 		if (renderIt) {
 			e.pMaterial = mesh->getMaterial().get();
 			mesh->render(e);

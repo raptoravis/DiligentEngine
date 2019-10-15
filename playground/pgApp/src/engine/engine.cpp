@@ -45,6 +45,10 @@ void pgBasePass::render(pgRenderEventArgs& e)
 {
 }
 
+bool pgBasePass::meshFilter(pgMesh* mesh) {
+	return true;
+}
+
 pgTechnique::pgTechnique()
 {}
 

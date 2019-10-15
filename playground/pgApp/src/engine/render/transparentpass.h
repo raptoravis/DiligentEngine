@@ -3,12 +3,14 @@
 #include "SampleBase.h"
 
 #include "../engine.h"
+
+#include "basepass.h"
 #include "light.h"
 
 using namespace Diligent;
 
-class pgTransparentPass : public pgBasePass {
-	typedef pgBasePass base;
+class TransparentPass : public BasePass {
+	typedef BasePass base;
 
 protected:
 	void CreatePipelineState();
@@ -29,13 +31,15 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
 	std::vector<pgLight>								m_Lights;
 public:
-	pgTransparentPass(const pgPassCreateInfo& ci);
+	TransparentPass(const BasePassCreateInfo& ci);
 
-	virtual ~pgTransparentPass();
+	virtual ~TransparentPass();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
 	virtual void updateSRB(pgRenderEventArgs& e);
+
+	virtual bool meshFilter(pgMesh* mesh);
 };
 

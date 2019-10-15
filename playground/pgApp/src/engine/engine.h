@@ -134,13 +134,13 @@ class pgCamera : public pgObject
 	const Diligent::float3	_look;
 
 	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
-	void reset(const Diligent::float3& p, const Diligent::float3& dir);
 public:
 	pgCamera(const pgCameraCreateInfo& cci);
 
 	virtual ~pgCamera();
 
 	void reset();
+	void reset(const Diligent::float3& p, const Diligent::float3& dir);
 	void setProjectionMatrix(float NearPlane, float FarPlane);
 
 	void update(Diligent::InputController* pInputController, float ElapsedTime);
@@ -170,32 +170,27 @@ public:
 	}
 };
 
+class pgApp;
 class pgPass;
 class pgSceneNode;
 class pgMaterial;
 class pgMesh;
 
-// return true if to render
-typedef bool (*filter_mesh_t)(pgMesh* mesh);
-
 class pgRenderEventArgs
 {
 public:
-	void* pCaller;
-	float CurrTime;
-	float ElapsedTime;
+	pgApp*						pApp;
+	float						CurrTime;
+	float						ElapsedTime;
 
-	filter_mesh_t	pMeshFilter;
+	pgCamera*					pCamera;
 
-	pgCamera*		pCamera;
-
-	pgPass*			pPass;
-	pgSceneNode*	pSceneNode;
-	pgMaterial*		pMaterial;
+	pgPass*						pPass;
+	pgSceneNode*				pSceneNode;
+	pgMaterial*					pMaterial;
 public:
 	pgRenderEventArgs() 
-		: pCaller(0)
-		, pMeshFilter(0)
+		: pApp(0)
 		, pCamera(0)
 		, pPass(0)
 		, pSceneNode(0)
@@ -203,8 +198,8 @@ public:
 	{
 	}
 
-	void set(void* caller, float currentTime, float elapsedTime, pgCamera* camera) {
-		pCaller = caller;
+	void set(pgApp* caller, float currentTime, float elapsedTime, pgCamera* camera) {
+		pApp = caller;
 		pCamera = camera;
 		CurrTime = currentTime;
 		ElapsedTime = elapsedTime;
@@ -616,6 +611,10 @@ public:
 	virtual void update(pgRenderEventArgs& e) = 0;
 	virtual void updateSRB(pgRenderEventArgs& e) = 0;
 	virtual void render(pgRenderEventArgs& e) = 0;
+
+	// return true if to render
+	virtual bool meshFilter(pgMesh* mesh) = 0;
+
 };
 
 class pgTechnique : public pgObject
@@ -652,4 +651,5 @@ public:
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
+	virtual bool meshFilter(pgMesh* mesh);
 };

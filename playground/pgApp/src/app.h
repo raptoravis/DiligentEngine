@@ -27,13 +27,13 @@
 #include "SampleBase.h"
 #include "BasicMath.h"
 
-#include "engine/engine.h"
+#include "engine/app.h"
 
 namespace Diligent
 {
-	class pgApp final : public SampleBase
+	class TestApp final : public pgApp
 	{
-		enum class RenderingTechnique
+		enum class RenderingTechnique : int
 		{
 			Test, 
 			Forward,
@@ -42,25 +42,40 @@ namespace Diligent
 			NumTechniques
 		};
 	public:
-		~pgApp();
+		virtual ~TestApp();
+
 		virtual void Initialize(IEngineFactory*   pEngineFactory,
 			IRenderDevice*    pDevice,
 			IDeviceContext**  ppContexts,
 			Uint32            NumDeferredCtx,
-			ISwapChain*       pSwapChain)override final;
+			ISwapChain*       pSwapChain) override final;
+
 		virtual void Render()override final;
 		virtual void Update(double CurrTime, double ElapsedTime)override final;
-		virtual const Char* GetSampleName()const override final { return "pgApp"; }
+		virtual const Char* GetSampleName()const override final { return "TestApp"; }
+
+		virtual void updateSRB_Object(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
+		virtual void updateSRB_Material(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
+		virtual void updateSRB_Lights(pgRenderEventArgs& e, Diligent::IDeviceContext* ctx);
 
 	private:
-		std::shared_ptr<pgCamera>		m_pCamera;
+		void initLightData();
+		void initBuffers();
+
+	private:
+		std::vector<pgLight>								m_Lights;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer>			m_PerObjectConstants;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_MaterialConstants;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_LightsStructuredBuffer;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView>		m_LightsBufferSRV;
+
+		// 
 		std::shared_ptr<pgTechnique>	m_pTechnique;
 
 		std::shared_ptr<pgTechnique>	m_pForwardTechnique;
 		std::shared_ptr<pgTechnique>	m_pDeferredTechnique;
 		std::shared_ptr<pgTechnique>	m_pForwardPlusTechnique;
 
-		pgRenderEventArgs				m_evtArgs;
 		RenderingTechnique				m_renderingTechnique = RenderingTechnique::Test;
 	};
 }
