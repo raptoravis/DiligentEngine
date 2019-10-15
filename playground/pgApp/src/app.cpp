@@ -228,7 +228,7 @@ namespace Diligent
 			initLightData();
 			initBuffers();
 
-			BasePassCreateInfo bpci{ pci };
+			RenderPassCreateInfo bpci{ pci };
 			bpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
 			bpci.MaterialConstants = m_MaterialConstants.RawPtr();
 			bpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();

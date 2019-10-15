@@ -26,29 +26,6 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
-
-pgBasePass::pgBasePass(const pgPassCreateInfo& ci)
-	: base(ci)
-{
-}
-
-pgBasePass::~pgBasePass()
-{
-}
-
-
-void pgBasePass::update(pgRenderEventArgs& e)
-{
-}
-
-void pgBasePass::render(pgRenderEventArgs& e)
-{
-}
-
-bool pgBasePass::meshFilter(pgMesh* mesh) {
-	return true;
-}
-
 pgTechnique::pgTechnique()
 {}
 

@@ -627,7 +627,9 @@ public:
 	virtual void render(pgRenderEventArgs& e) = 0;
 
 	// return true if to render
-	virtual bool meshFilter(pgMesh* mesh) = 0;
+	virtual bool meshFilter(pgMesh* mesh) {
+		return true;
+	}
 
 };
 
@@ -653,17 +655,3 @@ private:
 
 };
 
-// Base pass provides implementations for functions used by most passes.
-class pgBasePass : public pgPass
-{
-public:
-	typedef pgPass base;
-
-	pgBasePass(const pgPassCreateInfo& ci);
-	virtual ~pgBasePass();
-
-	// Render the pass. This should only be called by the pgTechnique.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
-	virtual bool meshFilter(pgMesh* mesh);
-};

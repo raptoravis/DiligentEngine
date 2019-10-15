@@ -13,13 +13,13 @@ __declspec(align(16)) struct PerObject
 	float4x4 ModelView;
 };
 
-struct BasePassCreateInfo : public pgPassCreateInfo {
+struct RenderPassCreateInfo : public pgPassCreateInfo {
 	//
-	BasePassCreateInfo() {
+	RenderPassCreateInfo() {
 		//
 	}
 
-	BasePassCreateInfo(pgPassCreateInfo& ci)
+	RenderPassCreateInfo(pgPassCreateInfo& ci)
 		: pgPassCreateInfo(ci)
 	{
 	}
@@ -30,11 +30,11 @@ struct BasePassCreateInfo : public pgPassCreateInfo {
 	Diligent::IBufferView*	LightsBufferSRV;
 };
 
-class BasePass : public pgBasePass {
-	typedef pgBasePass base;
+class pgRenderPass : public pgPass {
+	typedef pgPass base;
 
 protected:
-	void CreatePipelineState(const BasePassCreateInfo& ci);
+	void CreatePipelineState(const RenderPassCreateInfo& ci);
 	void LoadTexture();
 
 	RefCntAutoPtr<IPipelineState>         m_pPSO;
@@ -47,9 +47,9 @@ protected:
 
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
 public:
-	BasePass(const BasePassCreateInfo& ci);
+	pgRenderPass(const RenderPassCreateInfo& ci);
 
-	virtual ~BasePass();
+	virtual ~pgRenderPass();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

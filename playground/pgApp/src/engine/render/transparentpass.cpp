@@ -2,7 +2,7 @@
 
 #include "TransparentPass.h"
 
-TransparentPass::TransparentPass(const BasePassCreateInfo& ci)
+TransparentPass::TransparentPass(const RenderPassCreateInfo& ci)
 	: base(ci)
 {
 	CreatePipelineState(ci);

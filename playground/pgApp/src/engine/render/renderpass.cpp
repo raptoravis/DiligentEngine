@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../app.h"
-#include "basepass.h"
+#include "renderpass.h"
 
-BasePass::BasePass(const BasePassCreateInfo& ci)
+pgRenderPass::pgRenderPass(const RenderPassCreateInfo& ci)
 	: base(ci)
 {
 	//LoadTexture();
@@ -11,11 +11,11 @@ BasePass::BasePass(const BasePassCreateInfo& ci)
 	//CreatePipelineState(ci);
 }
 
-BasePass::~BasePass()
+pgRenderPass::~pgRenderPass()
 {
 }
 
-void BasePass::CreatePipelineState(const BasePassCreateInfo& ci)
+void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci)
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
@@ -122,7 +122,7 @@ void BasePass::CreatePipelineState(const BasePassCreateInfo& ci)
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
 }
 
-void BasePass::LoadTexture()
+void pgRenderPass::LoadTexture()
 {
 	TextureLoadInfo loadInfo;
 	loadInfo.IsSRGB = false;
@@ -135,15 +135,15 @@ void BasePass::LoadTexture()
 
 
 // Render a frame
-void BasePass::render(pgRenderEventArgs& e) {
+void pgRenderPass::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
-void BasePass::update(pgRenderEventArgs& e) {
+void pgRenderPass::update(pgRenderEventArgs& e) {
 	//
 }
 
-void BasePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void pgRenderPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	e.pApp->updateSRB(e, flag);
 
 	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {

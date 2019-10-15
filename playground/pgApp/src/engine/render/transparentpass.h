@@ -4,18 +4,18 @@
 
 #include "../engine.h"
 
-#include "basepass.h"
+#include "renderpass.h"
 #include "light.h"
 
 using namespace Diligent;
 
-class TransparentPass : public BasePass {
-	typedef BasePass base;
+class TransparentPass : public pgRenderPass {
+	typedef pgRenderPass base;
 
 protected:
-	//void CreatePipelineState(const BasePassCreateInfo& ci);
+	//void CreatePipelineState(const RenderPassCreateInfo& ci);
 public:
-	TransparentPass(const BasePassCreateInfo& ci);
+	TransparentPass(const RenderPassCreateInfo& ci);
 
 	virtual ~TransparentPass();
 

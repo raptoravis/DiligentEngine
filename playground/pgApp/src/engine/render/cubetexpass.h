@@ -6,8 +6,8 @@
 
 using namespace Diligent;
 
-class pgCubeTexPass : public pgBasePass {
-	typedef pgBasePass base;
+class pgCubeTexPass : public pgPass {
+	typedef pgPass base;
 
 	void CreatePipelineState();
 	void LoadTexture();

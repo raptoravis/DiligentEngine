@@ -2,7 +2,7 @@
 
 #include "OpaquePass.h"
 
-OpaquePass::OpaquePass(const BasePassCreateInfo& ci)
+OpaquePass::OpaquePass(const RenderPassCreateInfo& ci)
 	: base(ci)
 {
 	CreatePipelineState(ci);

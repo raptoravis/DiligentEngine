@@ -6,8 +6,8 @@
 
 using namespace Diligent;
 
-class pgCubePass : public pgBasePass {
-	typedef pgBasePass base;
+class pgCubePass : public pgPass {
+	typedef pgPass base;
 
 	void CreatePipelineState();
 

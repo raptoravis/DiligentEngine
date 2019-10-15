@@ -8,8 +8,8 @@
 
 using namespace Diligent;
 
-class pgGLTFPass : public pgBasePass {
-	typedef pgBasePass base;
+class pgGLTFPass : public pgPass {
+	typedef pgPass base;
 
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_EnvMapPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_EnvMapSRB;
