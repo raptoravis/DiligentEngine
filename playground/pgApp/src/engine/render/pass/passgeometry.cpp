@@ -149,6 +149,6 @@ void PassGeometry::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassGeometry::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	base::updateSRB(e, flag);
+void PassGeometry::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::bind(e, flag);
 }

@@ -27,5 +27,5 @@ void PassCopyTexture::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassCopyTexture::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassCopyTexture::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }

@@ -30,5 +30,5 @@ void PassClearRT::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassClearRT::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassClearRT::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }

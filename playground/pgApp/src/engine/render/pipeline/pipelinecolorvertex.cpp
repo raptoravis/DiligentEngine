@@ -107,8 +107,8 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 }
 
-void PipelineColorVertex::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
+void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	if (flag & pgBindFlag::pgBindFlag_Object) {
 		const float4x4 view = e.pCamera->getViewMatrix();
 
 		const float4x4 local = e.pSceneNode->getLocalTransform();

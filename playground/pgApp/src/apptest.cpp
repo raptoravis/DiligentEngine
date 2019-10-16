@@ -110,8 +110,8 @@ namespace Diligent
 		}
 	}
 
-	void AppTest::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
+	void AppTest::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+		if (flag & pgBindFlag::pgBindFlag_Object) {
 			const float4x4 view = e.pCamera->getViewMatrix();
 			const float4x4 local = e.pSceneNode->getLocalTransform();
 
@@ -130,7 +130,7 @@ namespace Diligent
 			CBConstants->ModelView = worldViewMatrix;
 		}
 
-		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Material) {
+		if (flag & pgBindFlag::pgBindFlag_Material) {
 			// Map the buffer and write current world-view-projection matrix
 			MapHelper<pgMaterial::MaterialProperties> CBConstants(e.pDeviceContext, m_MaterialConstants, MAP_WRITE, MAP_FLAG_DISCARD);
 
@@ -141,7 +141,7 @@ namespace Diligent
 			memcpy((void*)&CBConstants->m_GlobalAmbient, matProperties, sizeof(pgMaterial::MaterialProperties));
 		}
 
-		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Pass) {
+		if (flag & pgBindFlag::pgBindFlag_Pass) {
 			const float4x4 viewMatrix = e.pCamera->getViewMatrix();
 
 			// Update the viewspace vectors of the light.
@@ -197,7 +197,8 @@ namespace Diligent
 			DepthBufferDesc.Height = ci.desc.Height;
 			DepthBufferDesc.MipLevels = 1;
 			DepthBufferDesc.ArraySize = 1;
-			DepthBufferDesc.Format = ci.desc.DepthBufferFormat;
+			//DepthBufferDesc.Format = ci.desc.DepthBufferFormat;
+			DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
 			DepthBufferDesc.SampleCount = ci.desc.SamplesCount;
 			DepthBufferDesc.Usage = USAGE_DEFAULT;
 			DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;

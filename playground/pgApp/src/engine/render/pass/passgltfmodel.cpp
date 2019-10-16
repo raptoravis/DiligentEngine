@@ -295,7 +295,7 @@ void PassGltf::update(pgRenderEventArgs& e) {
 	}
 }
 
-void PassGltf::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassGltf::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
 

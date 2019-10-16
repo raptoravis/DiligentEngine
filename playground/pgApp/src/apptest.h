@@ -31,7 +31,7 @@ namespace Diligent
 		virtual void Update(double CurrTime, double ElapsedTime)override final;
 		virtual const Char* GetSampleName()const override final { return "AppTest"; }
 
-		virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
+		virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 
 	private:
 		void initLightData();

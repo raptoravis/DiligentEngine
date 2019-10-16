@@ -29,6 +29,6 @@ void PassOpaque::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassOpaque::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	base::updateSRB(e, flag);
+void PassOpaque::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::bind(e, flag);
 }

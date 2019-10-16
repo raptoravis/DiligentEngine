@@ -145,8 +145,8 @@ void PipelineTexVertex::LoadTexture()
 	m_TextureSRV = Tex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 }
 
-void PipelineTexVertex::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
+void PipelineTexVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	if (flag & pgBindFlag::pgBindFlag_Object) {
 		const float4x4 view = e.pCamera->getViewMatrix();
 
 		const float4x4 local = e.pSceneNode->getLocalTransform();

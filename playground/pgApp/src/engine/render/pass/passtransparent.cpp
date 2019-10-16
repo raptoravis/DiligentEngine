@@ -35,6 +35,6 @@ void PassTransparent::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassTransparent::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	base::updateSRB(e, flag);
+void PassTransparent::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::bind(e, flag);
 }

@@ -90,7 +90,7 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 
 		if (dsv) {
 			m_pImmediateContext->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
-				1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+				depth, stencil, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 	}
 }

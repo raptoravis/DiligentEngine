@@ -1,4 +1,6 @@
 #include "engine.h"
+#include "./app.h"
+
 #include <windows.h>
 
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function, const std::string& message)
@@ -48,17 +50,22 @@ void pgPipeline::setRenderTarget() {
 	}
 }
 
-//void pgPipeline::update(pgRenderEventArgs& e) {
-//	//
-//}
-//
-//void pgPipeline::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-//	//
-//}
-//void pgPipeline::render(pgRenderEventArgs& e) {
-//	//
-//}
-//
+void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	if (flag & pgBindFlag::pgBindFlag_Pipeline) {
+		this->setRenderTarget();
+	}
+
+	e.pApp->bind(e, flag);
+
+	if (flag & pgBindFlag::pgBindFlag_Pipeline) {
+		// Set the pipeline state
+		m_pImmediateContext->SetPipelineState(m_pPSO);
+
+		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+		// makes sure that resources are transitioned to required states.
+		m_pImmediateContext->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+}
 
 pgPassPilpeline::pgPassPilpeline(const pgPassPipelineCreateInfo& ci)
 	: base(ci)
@@ -74,13 +81,13 @@ pgPassPilpeline::~pgPassPilpeline()
 // Render a frame
 void pgPassPilpeline::render(pgRenderEventArgs& e)
 {
-	m_pPipeline->setRenderTarget();
+	m_pPipeline->bind(e, pgBindFlag_Pipeline);
 
 	m_scene->render(e);
 }
 
-void pgPassPilpeline::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	m_pPipeline->updateSRB(e, flag);
+void pgPassPilpeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	m_pPipeline->bind(e, flag);
 }
 
 void pgPassPilpeline::update(pgRenderEventArgs& e)
@@ -140,7 +147,7 @@ void pgTechnique::render(pgRenderEventArgs& e)
 		{
 			// set the pass
 			e.pPass = pass.get();
-			e.pPass->updateSRB(e, pgUpdateSRB_Flag::pgUpdateSRB_Pass);
+			e.pPass->bind(e, pgBindFlag::pgBindFlag_Pass);
 
 			pass->render(e);
 

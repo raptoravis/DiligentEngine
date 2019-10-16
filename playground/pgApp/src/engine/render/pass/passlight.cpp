@@ -249,7 +249,7 @@ void PassLight::render(pgRenderEventArgs& e) {
 
 void PassLight::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 {
-	pipeline->setRenderTarget();
+	pipeline->bind(e, pgBindFlag::pgBindFlag_Pipeline);
 
 	scene->render(e);
 }
@@ -258,6 +258,6 @@ void PassLight::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassLight::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	base::updateSRB(e, flag);
+void PassLight::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::bind(e, flag);
 }

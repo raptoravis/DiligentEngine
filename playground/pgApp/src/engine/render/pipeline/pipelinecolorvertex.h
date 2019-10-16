@@ -15,7 +15,7 @@ public:
 	virtual ~PipelineColorVertex();
 
 	//virtual void update(pgRenderEventArgs& e);
-	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	//virtual void render(pgRenderEventArgs& e);
 
 };

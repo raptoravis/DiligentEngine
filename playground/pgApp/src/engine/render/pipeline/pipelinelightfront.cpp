@@ -35,6 +35,7 @@ void PipelineLightFront::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	// Cull back faces
 	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
 	PSODesc.GraphicsPipeline.RasterizerDesc.DepthClipEnable = True;
+	//PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
 
 	// Enable depth testing
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
@@ -140,6 +141,8 @@ void PipelineLightFront::CreatePipelineState(const pgPipelineCreateInfo& ci)
 }
 
 
-void PipelineLightFront::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PipelineLightFront::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	m_pImmediateContext->SetStencilRef(1);
+
+	base::bind(e, flag);
 }

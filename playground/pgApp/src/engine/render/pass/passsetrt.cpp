@@ -22,5 +22,5 @@ void PassSetRT::update(pgRenderEventArgs& e) {
 	//
 }
 
-void PassSetRT::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassSetRT::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }

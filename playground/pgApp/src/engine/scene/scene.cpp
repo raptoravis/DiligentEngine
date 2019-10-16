@@ -162,7 +162,7 @@ void pgSceneNode::render(pgRenderEventArgs& e) {
 		bool renderIt = e.pPass->meshFilter(mesh.get());
 		if (renderIt) {
 			e.pMaterial = mesh->getMaterial().get();
-			e.pPass->updateSRB(e, pgUpdateSRB_Flag::pgUpdateSRB_Material);
+			e.pPass->bind(e, pgBindFlag::pgBindFlag_Material);
 
 			mesh->render(e);
 

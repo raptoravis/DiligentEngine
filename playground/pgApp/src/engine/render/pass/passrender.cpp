@@ -150,10 +150,10 @@ void pgPassRender::update(pgRenderEventArgs& e) {
 	//
 }
 
-void pgPassRender::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
-	e.pApp->updateSRB(e, flag);
+void pgPassRender::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	e.pApp->bind(e, flag);
 
-	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
+	if (flag & pgBindFlag::pgBindFlag_Object) {
 		// Set the pipeline state
 		m_pImmediateContext->SetPipelineState(m_pPSO);
 

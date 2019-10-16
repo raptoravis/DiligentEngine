@@ -141,6 +141,8 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 }
 
 
-void PipelineLightDir::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PipelineLightDir::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	m_pImmediateContext->SetStencilRef(1);
+
+	base::bind(e, flag);
 }

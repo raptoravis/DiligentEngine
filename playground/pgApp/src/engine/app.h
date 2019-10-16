@@ -25,5 +25,5 @@ public:
 	virtual void Update(double CurrTime, double ElapsedTime) override ;
 	virtual const Diligent::Char* GetSampleName()const override { return "pgApp"; }
 
-	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) = 0;
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag) = 0;
 };
