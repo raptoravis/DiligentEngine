@@ -1,8 +1,8 @@
 #include "TestTechnique.h"
 
-#include "engine/render/gltfmodelpass.h"
-#include "engine/render/meshcube.h"
-#include "engine/render/meshcubetex.h"
+#include "engine/render/pass/passgltfmodel.h"
+#include "engine/render/mesh/meshcube.h"
+#include "engine/render/mesh/meshcubetex.h"
 
 #include "pipelinecolorvertex.h"
 #include "pipelinetexvertex.h"

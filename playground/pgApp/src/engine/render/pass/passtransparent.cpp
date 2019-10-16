@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TransparentPass.h"
+#include "passtransparent.h"
 
 TransparentPass::TransparentPass(const RenderPassCreateInfo& ci)
 	: base(ci)

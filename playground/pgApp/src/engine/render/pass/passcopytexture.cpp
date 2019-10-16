@@ -1,5 +1,5 @@
-#include "../app.h"
-#include "copytextpass.h"
+#include "../../app.h"
+#include "passcopytexture.h"
 
 CopyTexturePass::CopyTexturePass(const CopyTexturePassCreateInfo& ci)
 	: base(ci)

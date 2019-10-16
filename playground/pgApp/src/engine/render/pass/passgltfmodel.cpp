@@ -3,7 +3,7 @@
 #include <cmath>
 #include <array>
 
-#include "gltfmodelpass.h"
+#include "passgltfmodel.h"
 
 using namespace Diligent;
 

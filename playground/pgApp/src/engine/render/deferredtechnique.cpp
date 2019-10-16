@@ -1,9 +1,8 @@
 #include "deferredtechnique.h"
 
-#include "opaquepass.h"
-#include "transparentpass.h"
-#include "geometrypass.h"
-#include "lightpass.h"
+#include "pass/passtransparent.h"
+#include "pass/passgeometry.h"
+#include "pass/passlight.h"
 
 DeferredTechnique::DeferredTechnique(const pgTechniqueCreateInfo& ci)
 	: base(ci)

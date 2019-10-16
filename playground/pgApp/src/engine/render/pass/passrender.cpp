@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../app.h"
-#include "renderpass.h"
+#include "../../app.h"
+#include "passrender.h"
 
 pgRenderPass::pgRenderPass(const RenderPassCreateInfo& ci)
 	: base(ci)

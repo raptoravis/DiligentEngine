@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OpaquePass.h"
+#include "passopaque.h"
 
 OpaquePass::OpaquePass(const OpaquePassCreateInfo& ci)
 	: base(ci)

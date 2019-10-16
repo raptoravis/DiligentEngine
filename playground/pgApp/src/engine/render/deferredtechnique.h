@@ -3,7 +3,7 @@
 #include "SampleBase.h"
 
 #include "../engine.h"
-#include "renderpass.h"
+#include "pass/passrender.h"
 #include "light.h"
 
 using namespace Diligent;

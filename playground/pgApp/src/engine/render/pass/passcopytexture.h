@@ -2,7 +2,7 @@
 
 #include "SampleBase.h"
 
-#include "../engine.h"
+#include "../../engine.h"
 
 struct CopyTexturePassCreateInfo : public pgPassCreateInfo {
 	CopyTexturePassCreateInfo() {

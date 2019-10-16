@@ -1,7 +1,7 @@
 #include "forwardplustechnique.h"
 
-#include "opaquepass.h"
-#include "transparentpass.h"
+#include "pass/passopaque.h"
+#include "pass/passtransparent.h"
 
 ForwardPlusTechnique::ForwardPlusTechnique(const pgTechniqueCreateInfo& ci)
 	: base(ci)

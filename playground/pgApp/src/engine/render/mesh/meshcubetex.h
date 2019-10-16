@@ -2,7 +2,7 @@
 
 #include "SampleBase.h"
 
-#include "../engine.h"
+#include "../../engine.h"
 
 class MeshCubeTex : public pgMesh {
 	void CreateVertexBuffer();

@@ -5,9 +5,6 @@
 #include "engine/render/forwardtechnique.h"
 #include "engine/render/forwardplustechnique.h"
 
-#include "engine/render/opaquepass.h"
-#include "engine/render/transparentpass.h"
-
 #include "MapHelper.h"
 #include "BasicMath.h"
 #include "GraphicsUtilities.h"

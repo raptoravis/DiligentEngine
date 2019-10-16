@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lightpass.h"
+#include "passlight.h"
 
 LightPass::LightPass(const LightPassCreateInfo& ci)
 	: base(ci)

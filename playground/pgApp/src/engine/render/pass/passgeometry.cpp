@@ -1,6 +1,4 @@
-#pragma once
-
-#include "geometrypass.h"
+#include "passgeometry.h"
 
 GeometryPass::GeometryPass(const GeometryPassCreateInfo& ci)
 	: base(ci)
