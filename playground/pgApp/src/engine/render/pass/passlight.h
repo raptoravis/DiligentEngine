@@ -9,14 +9,9 @@
 
 using namespace Diligent;
 
-struct LightPassCreateInfo : public RenderPassCreateInfo {
-	//
-	LightPassCreateInfo() {
-		//
-	}
-
-	LightPassCreateInfo(const RenderPassCreateInfo& ci)
-		: RenderPassCreateInfo(ci)
+struct LightPassCreateInfo : public pgPassRenderCreateInfo {
+	LightPassCreateInfo(const pgPassRenderCreateInfo& ci)
+		: pgPassRenderCreateInfo(ci)
 	{
 	}
 
@@ -26,6 +21,10 @@ struct LightPassCreateInfo : public RenderPassCreateInfo {
 	ITextureView*           DiffuseSRV;
 	ITextureView*           SpecularSRV;
 	ITextureView*           NormalSRV;
+
+	std::shared_ptr<pgPipeline> front;
+	std::shared_ptr<pgPipeline> back;
+	std::shared_ptr<pgPipeline> dir;
 
 	const std::vector<pgLight>*	Lights;
 
@@ -44,29 +43,41 @@ __declspec(align(16)) struct LightParams
 	uint32_t padding[3];
 };
 
-class LightPass : public pgRenderPass {
-	typedef pgRenderPass base;
+class PassLight : public pgPassRender {
+	typedef pgPassRender base;
 
 protected:
-	void CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc);
+	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
 
-	RefCntAutoPtr<ITextureView>           m_pColorRTV;
-	RefCntAutoPtr<ITextureView>           m_pDSSRV;
+	RefCntAutoPtr<ITextureView>			m_pColorRTV;
+	RefCntAutoPtr<ITextureView>			m_pDSSRV;
 
-	RefCntAutoPtr<ITextureView>           m_pDiffuseSRV;
-	RefCntAutoPtr<ITextureView>           m_pSpecularSRV;
-	RefCntAutoPtr<ITextureView>           m_pNormalSRV;
-	const std::vector<pgLight>*			  m_pLights;
+	RefCntAutoPtr<ITextureView>         m_pDiffuseSRV;
+	RefCntAutoPtr<ITextureView>         m_pSpecularSRV;
+	RefCntAutoPtr<ITextureView>         m_pNormalSRV;
+	const std::vector<pgLight>*			m_pLights;
 
 	RefCntAutoPtr<IBuffer>				m_LightParamsCB;
 	RefCntAutoPtr<IBuffer>				m_ScreenToViewParamsCB;
 
+	std::shared_ptr<pgPipeline>			m_LightPipeline0;
+	std::shared_ptr<pgPipeline>			m_LightPipeline1;
+	std::shared_ptr<pgPipeline>			m_DirectionalLightPipeline;
+
+	std::shared_ptr<pgScene>			m_pPointLightScene;
+	std::shared_ptr<pgScene>			m_pSpotLightScene;
+	std::shared_ptr<pgScene>			m_pDirectionalLightScene;
+
+	const pgLight*						m_pCurrentLight;
+
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam);
 	void updateScreenToViewParams(pgRenderEventArgs& e);
-public:
-	LightPass(const LightPassCreateInfo& ci);
 
-	virtual ~LightPass();
+	void RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+public:
+	PassLight(const LightPassCreateInfo& ci);
+
+	virtual ~PassLight();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

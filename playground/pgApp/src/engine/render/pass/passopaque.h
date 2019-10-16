@@ -9,28 +9,23 @@
 
 using namespace Diligent;
 
-struct OpaquePassCreateInfo : public RenderPassCreateInfo {
-	//
-	OpaquePassCreateInfo() {
-		//
-	}
-
-	OpaquePassCreateInfo(const RenderPassCreateInfo& ci)
-		: RenderPassCreateInfo(ci)
+struct OpaquePassCreateInfo : public pgPassRenderCreateInfo {
+	OpaquePassCreateInfo(const pgPassRenderCreateInfo& ci)
+		: pgPassRenderCreateInfo(ci)
 	{
 	}
 };
 
 
-class OpaquePass : public pgRenderPass {
-	typedef pgRenderPass base;
+class PassOpaque : public pgPassRender {
+	typedef pgPassRender base;
 
 protected:
-	//void CreatePipelineState(const RenderPassCreateInfo& ci);
+	//void CreatePipelineState(const pgPassRenderCreateInfo& ci);
 public:
-	OpaquePass(const OpaquePassCreateInfo& ci);
+	PassOpaque(const OpaquePassCreateInfo& ci);
 
-	virtual ~OpaquePass();
+	virtual ~PassOpaque();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

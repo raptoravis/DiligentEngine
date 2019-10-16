@@ -9,14 +9,9 @@
 
 using namespace Diligent;
 
-struct GeometryPassCreateInfo : public RenderPassCreateInfo {
-	//
-	GeometryPassCreateInfo() {
-		//
-	}
-
-	GeometryPassCreateInfo(const RenderPassCreateInfo& ci)
-		: RenderPassCreateInfo(ci)
+struct GeometryPassCreateInfo : public pgPassRenderCreateInfo {
+	GeometryPassCreateInfo(const pgPassRenderCreateInfo& ci)
+		: pgPassRenderCreateInfo(ci)
 	{
 	}
 
@@ -29,11 +24,11 @@ struct GeometryPassCreateInfo : public RenderPassCreateInfo {
 };
 
 
-class GeometryPass : public pgRenderPass {
-	typedef pgRenderPass base;
+class PassGeometry : public pgPassRender {
+	typedef pgPassRender base;
 
 protected:
-	void CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc);
+	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
 
 	RefCntAutoPtr<ITextureView>           m_pColorRTV;
 	RefCntAutoPtr<ITextureView>           m_pDSRTV;
@@ -43,9 +38,9 @@ protected:
 	RefCntAutoPtr<ITextureView>           m_pNormalRTV;
 
 public:
-	GeometryPass(const GeometryPassCreateInfo& ci);
+	PassGeometry(const GeometryPassCreateInfo& ci);
 
-	virtual ~GeometryPass();
+	virtual ~PassGeometry();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

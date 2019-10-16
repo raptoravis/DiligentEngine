@@ -1,8 +1,9 @@
 #pragma once
 
 #include "passlight.h"
+#include "../../scene/sceneass.h"
 
-LightPass::LightPass(const LightPassCreateInfo& ci)
+PassLight::PassLight(const LightPassCreateInfo& ci)
 	: base(ci)
 	, m_pColorRTV(ci.ColorRTV)
 	, m_pDSSRV(ci.DSSRV)
@@ -10,17 +11,26 @@ LightPass::LightPass(const LightPassCreateInfo& ci)
 	, m_pSpecularSRV(ci.SpecularSRV)
 	, m_pNormalSRV(ci.NormalSRV)
 	, m_pLights(ci.Lights)
+	, m_LightPipeline0(ci.front)
+	, m_LightPipeline1(ci.back)
+	, m_DirectionalLightPipeline(ci.dir)
 {
 	PipelineStateDesc PSODesc;
 
 	CreatePipelineState(ci, PSODesc);
+
+	pgSceneCreateInfo sci{*(pgCreateInfo*)&ci};
+
+	m_pPointLightScene = pgSceneAss::CreateSphere(sci, 1.0f);
+	m_pSpotLightScene = pgSceneAss::CreateCylinder(sci, 0.0f, 1.0f, 1.0f, float3(0, 0, 1));
+	m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(sci, -1, 1, -1, 1, -1);
 }
 
-LightPass::~LightPass()
+PassLight::~PassLight()
 {
 }
 
-void LightPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -164,14 +174,14 @@ void LightPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStat
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(m_pDSSRV);
 }
 
-bool LightPass::meshFilter(pgMesh* mesh) {
+bool PassLight::meshFilter(pgMesh* mesh) {
 	auto mat = mesh->getMaterial();
 	auto bTransparent = mat->IsTransparent();
 	return !bTransparent;
 }
 
 
-void LightPass::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam) {
+void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam) {
 	{
 		// Map the buffer and write current world-view-projection matrix
 		MapHelper<LightParams> CBConstants(e.pDeviceContext, m_LightParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
@@ -180,7 +190,7 @@ void LightPass::updateLightParams(pgRenderEventArgs& e, const LightParams& light
 	}
 }
 
-void LightPass::updateScreenToViewParams(pgRenderEventArgs& e) {
+void PassLight::updateScreenToViewParams(pgRenderEventArgs& e) {
 	{
 		// Map the buffer and write current world-view-projection matrix
 		MapHelper<ScreenToViewParams> CBConstants(e.pDeviceContext, m_ScreenToViewParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
@@ -194,9 +204,9 @@ void LightPass::updateScreenToViewParams(pgRenderEventArgs& e) {
 }
 
 // Render a frame
-void LightPass::render(pgRenderEventArgs& e) {
+void PassLight::render(pgRenderEventArgs& e) {
 	updateScreenToViewParams(e);
-#if 0
+
 	if (m_pLights) {
 		LightParams	lightParams;
 
@@ -207,23 +217,23 @@ void LightPass::render(pgRenderEventArgs& e) {
 				m_pCurrentLight = &light;
 
 				// Update the constant buffer for the per-light data.
-				updateLightParams(lightParams);
+				updateLightParams(e, lightParams);
 
 				// Clear the stencil buffer for the next light
-				m_LightPipeline0->GetRenderTarget()->Clear(ClearFlags::Stencil, glm::vec4(0), 1.0f, 1);
+				//m_LightPipeline0->GetRenderTarget()->Clear(ClearFlags::Stencil, glm::vec4(0), 1.0f, 1);
 				// The other pipelines should have the same render target.. so no need to clear it 3 times.
 
 				switch (light.m_Type)
 				{
-				case Light::LightType::Point:
+				case pgLight::LightType::Point:
 					RenderSubPass(e, m_pPointLightScene, m_LightPipeline0);
 					RenderSubPass(e, m_pPointLightScene, m_LightPipeline1);
 					break;
-				case Light::LightType::Spot:
+				case pgLight::LightType::Spot:
 					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline0);
 					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline1);
 					break;
-				case Light::LightType::Directional:
+				case pgLight::LightType::Directional:
 					RenderSubPass(e, m_pDirectionalLightScene, m_DirectionalLightPipeline);
 					break;
 				}
@@ -231,30 +241,19 @@ void LightPass::render(pgRenderEventArgs& e) {
 			lightParams.m_LightIndex++;
 		}
 	}
-#endif
+
 	m_scene->render(e);
 }
 
-#if 0
-void LightPass::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<Scene> scene, std::shared_ptr<PipelineState> pipeline)
+void PassLight::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 {
-	e.PipelineState = pipeline.get();
-
-	// Update the pass's render event args.
-	SetRenderEventArgs(e);
-
-	pipeline->Bind();
-
-	scene->Accept(*this);
-
-	pipeline->UnBind();
+	scene->render(e);
 }
-#endif
 
-void LightPass::update(pgRenderEventArgs& e) {
+void PassLight::update(pgRenderEventArgs& e) {
 	//
 }
 
-void LightPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassLight::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	base::updateSRB(e, flag);
 }

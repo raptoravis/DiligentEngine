@@ -8,14 +8,14 @@
 
 using namespace Diligent;
 
-class ForwardTechnique : public pgTechnique {
+class TechniqueForward : public pgTechnique {
 	typedef pgTechnique base;
 
 public:
-	ForwardTechnique(const pgTechniqueCreateInfo& ci);
-	virtual ~ForwardTechnique();
+	TechniqueForward(const pgTechniqueCreateInfo& ci);
+	virtual ~TechniqueForward();
 
-	void init(const RenderPassCreateInfo& ci, const std::vector<pgLight>& lights);
+	void init(const pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);
 
 	virtual void update(pgRenderEventArgs& e);
 

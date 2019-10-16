@@ -8,7 +8,7 @@
 
 namespace Diligent
 {
-	class TestApp final : public pgApp
+	class AppTest final : public pgApp
 	{
 		enum class RenderingTechnique : int
 		{
@@ -19,7 +19,7 @@ namespace Diligent
 			NumTechniques
 		};
 	public:
-		virtual ~TestApp();
+		virtual ~AppTest();
 
 		virtual void Initialize(IEngineFactory*   pEngineFactory,
 			IRenderDevice*    pDevice,
@@ -29,7 +29,7 @@ namespace Diligent
 
 		virtual void Render()override final;
 		virtual void Update(double CurrTime, double ElapsedTime)override final;
-		virtual const Char* GetSampleName()const override final { return "TestApp"; }
+		virtual const Char* GetSampleName()const override final { return "AppTest"; }
 
 		virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag);
 

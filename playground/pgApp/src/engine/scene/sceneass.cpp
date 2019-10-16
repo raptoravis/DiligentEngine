@@ -543,3 +543,374 @@ std::shared_ptr<pgBuffer> pgSceneAss::CreateFloatVertexBuffer(const float* data,
 std::shared_ptr<pgBuffer> pgSceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count) {
 	return createUIntIndexBuffer(m_pDevice, data, count);
 }
+
+std::shared_ptr<pgSceneAss> pgSceneAss::CreateScene(const pgSceneCreateInfo& ci) {
+	std::shared_ptr<pgSceneAss> pScene = std::make_shared<pgSceneAss>(ci);
+
+	return pScene;
+}
+
+void pgSceneAss::DestroyScene(std::shared_ptr<pgScene> scene)
+{
+	//SceneList::iterator iter = std::find(m_Scenes.begin(), m_Scenes.end(), scene);
+	//if (iter != m_Scenes.end())
+	//{
+	//	m_Scenes.erase(iter);
+	//}
+}
+
+Diligent::Quaternion RotationFromTwoVectors(const Diligent::float3& u, const Diligent::float3& v)
+{
+	float normUV = sqrt(Diligent::dot(u, u) * Diligent::dot(v, v));
+	float real = normUV + Diligent::dot(u, v);
+
+	Diligent::float3 vec;
+
+	if (real < 1.e-6f * normUV)
+	{
+		/* If u and v are exactly opposite, rotate 180 degrees
+		 * around an arbitrary orthogonal axis. Axis normalisation
+		 * can happen later, when we normalise the quaternion.
+		 */
+		real = 0.0f;
+		vec = (abs(u.x) > abs(u.z)) ? Diligent::float3(-u.y, u.x, 0.0f) : Diligent::float3(0.0f, -u.z, u.y);
+	}
+	else
+	{
+		/* Otherwise, build quaternion the standard way. */
+		vec = Diligent::cross(u, v);
+	}
+
+	return Diligent::normalize(Diligent::Quaternion(vec.x, vec.y, vec.z, real));
+}
+
+
+std::shared_ptr<pgScene> pgSceneAss::CreatePlane(const pgSceneCreateInfo& ci, float size, const Diligent::float3& N)
+{
+	float halfSize = size * 0.5f;
+	Diligent::float3 p[4];
+	// Crate the 4 points of the plane aligned to the X,Z plane.
+	// Vertex winding is assuming a right-handed coordinate system 
+	// (counter-clockwise winding order for front-facing polygons)
+	p[0] = Diligent::float3(halfSize, 0, halfSize);
+	p[1] = Diligent::float3(-halfSize, 0, halfSize);
+	p[2] = Diligent::float3(-halfSize, 0, -halfSize);
+	p[3] = Diligent::float3(halfSize, 0, -halfSize);
+
+	// Rotate the plane vertices in the direction of the surface normal.
+	Diligent::Quaternion rot = RotationFromTwoVectors(Diligent::float3(0, 1, 0), N);
+	Diligent::float4x4 mat = rot.ToMatrix();
+
+	for (int i = 0; i < 4; i++)
+	{
+		p[i] = p[i] * mat;
+	}
+
+	// Now create the plane polygon from the transformed vertices.
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+
+	std::stringstream ss;
+
+	// Create a white diffuse material for the plane.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	// Create a 4-point polygon
+	ss << "p 4" << std::endl;
+	for (int i = 0; i < 4; i++)
+	{
+		ss << p[i].x << " " << p[i].y << " " << p[i].z << std::endl;
+	}
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(const pgSceneCreateInfo& ci, float left, float right, float bottom, float top, float z)
+{
+	Diligent::float3 p[4]; // Vertex position
+	Diligent::float3 n[4]; // Vertex normal (required for texture patch polygons)
+	Diligent::float2 t[4]; // Texture coordinates
+	// Winding order is assumed to be right-handed. Front-facing polygons have
+	// a counter-clockwise winding order.
+	// Assimp flips the winding order of vertices.. Don't ask me why. To account for this,
+	// the vertices are loaded in reverse order :)
+	p[0] = Diligent::float3(right, bottom, z);   n[0] = Diligent::float3(0, 0, 1);    t[0] = Diligent::float2(1, 0);
+	p[1] = Diligent::float3(left, bottom, z);    n[1] = Diligent::float3(0, 0, 1);    t[1] = Diligent::float2(0, 0);
+	p[2] = Diligent::float3(left, top, z);       n[2] = Diligent::float3(0, 0, 1);    t[2] = Diligent::float2(0, 1);
+	p[3] = Diligent::float3(right, top, z);      n[3] = Diligent::float3(0, 0, 1);    t[3] = Diligent::float2(1, 1);
+
+	// Now create the quad.
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+
+	std::stringstream ss;
+
+	// Create a white diffuse material for the quad.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	// Create a 4-point textured polygon patch
+	ss << "tpp 4" << std::endl;
+	for (int i = 0; i < 4; i++)
+	{
+		// px py pz nx ny nz tu tv
+		ss << p[i].x << " " << p[i].y << " " << p[i].z << " " << n[i].x << " " << n[i].y << " " << n[i].z << " " << t[i].x << " " << t[i].y << std::endl;
+	}
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateSphere(const pgSceneCreateInfo& ci, float radius, float tesselation)
+{
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::stringstream ss;
+	// Create a white diffuse material for the sphere.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	// tess tesselation
+	ss << "tess " << tesselation << std::endl;
+	// s x y z radius
+	ss << "s 0 0 0 " << radius << std::endl;
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateCube(const pgSceneCreateInfo& ci, float size)
+{
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::stringstream ss;
+
+	// Create a white diffuse material for the cube.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	// hex x y z size
+	ss << "hex 0 0 0 " << size;
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(const pgSceneCreateInfo& ci, float baseRadius, float apexRadius, float height, const Diligent::float3& axis)
+{
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::stringstream ss;
+
+	// Create a white diffuse material for the cylinder.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << baseRadius << std::endl;
+
+	Diligent::float3 apex = axis * height;
+	// apex.x apex.y apex.z apexRadius
+	ss << apex.x << " " << apex.y << " " << apex.z << " " << apexRadius << std::endl;
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+}
+
+std::shared_ptr <pgScene> pgSceneAss::CreateCone(const pgSceneCreateInfo& ci, float baseRadius, float height)
+{
+	// A cone is just a cylinder with a 0 size apex.
+	return CreateCylinder(ci, baseRadius, 0, height);
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const pgSceneCreateInfo& ci, const Diligent::float3& tail, const Diligent::float3& head, float radius)
+{
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::stringstream ss;
+
+	Diligent::float3 dir = head - tail;
+	Diligent::float3 apex = head + (dir * 0.5f);
+
+	// Create a white diffuse material for the arrow.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 1 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder for the arrow body.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << tail.x << " " << tail.y << " " << tail.z << " " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << head.x << " " << head.y << " " << head.z << " " << radius << std::endl;
+
+	// Create a cone for the arrow head.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << head.x << " " << head.y << " " << head.z << " " << radius * 2.0f << std::endl;
+
+	// apex.x apex.y apex.z apexRadius
+	ss << apex.x << " " << apex.y << " " << apex.z << " 0" << std::endl;
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+
+}
+
+std::shared_ptr<pgScene> pgSceneAss::CreateAxis(const pgSceneCreateInfo& ci, float radius, float length)
+{
+	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::stringstream ss;
+
+	// Create a red material for the +X axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 0 0 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the +X axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << length << " 0 0 " << radius << std::endl;
+
+	// Create a cone for the +X axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << length << " 0 0 " << radius * 2.0f << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << length * 1.5f << " 0 0 0" << std::endl;
+
+	// Create a green material for the +Y axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 0 1 0 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the +Y axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 " << length << " 0 " << radius << std::endl;
+
+	// Create a cone for the +Y axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 " << length << " 0 " << radius * 2.0f << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 " << length * 1.5f << " 0 0" << std::endl;
+
+	// Create a blue material for the +Z axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 0 0 1 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the +Z axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 0 " << length << " " << radius << std::endl;
+
+	// Create a cone for the +Z axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 " << length << " " << radius * 2.0f << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 0 " << length * 1.5f << " 0" << std::endl;
+
+	// Create a cyan material for the -X axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 0 1 1 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the -X axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << -length << " 0 0 " << radius << std::endl;
+
+	// Create a cone for the -X axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << -length << " 0 0 " << radius * 2.0f << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << -length * 1.5f << " 0 0 0" << std::endl;
+
+	// Create a yellow material for the -Y axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 0 1 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the -Y axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 " << -length << " 0 " << radius << std::endl;
+
+	// Create a cone for the -Y axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 " << -length << " 0 0" << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 " << -length * 1.5f << " 0 " << radius * 2.0f << std::endl;
+
+	// Create a magenta material for the -Z axis.
+	// f red green blue Kd Ks Shine transmittance indexOfRefraction
+	ss << "f 1 1 0 1 0 0 0 0" << std::endl;
+
+	// Create a cylinder aligned to the -Z axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 0 " << radius << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 0 " << -length << " " << radius << std::endl;
+
+	// Create a cone for the -Z axis.
+	ss << "c" << std::endl;
+	// base.x base.y base.z baseRadius
+	ss << "0 0 " << -length << " " << radius * 2.0f << std::endl;
+	// apex.x apex.y apex.z apexRadius
+	ss << "0 0 " << -length * 1.5f << " 0" << std::endl;
+
+	if (scene->LoadFromString(ss.str(), "nff"))
+	{
+		return scene;
+	}
+
+	// An error occurred while loading the scene.
+	DestroyScene(scene);
+	return nullptr;
+
+}
+

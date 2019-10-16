@@ -5,9 +5,6 @@
 #include "../../engine.h"
 
 struct CopyTexturePassCreateInfo : public pgPassCreateInfo {
-	CopyTexturePassCreateInfo() {
-	}
-
 	CopyTexturePassCreateInfo(const pgPassCreateInfo& ci)
 		: pgPassCreateInfo(ci)
 	{
@@ -17,15 +14,15 @@ struct CopyTexturePassCreateInfo : public pgPassCreateInfo {
 	Diligent::ITexture* srcTexture;
 };
 
-class CopyTexturePass : public pgPass {
+class PassCopyTexture : public pgPass {
 	typedef pgPass base;
 
 	Diligent::RefCntAutoPtr<Diligent::ITexture>         m_dstTexture;
 	Diligent::RefCntAutoPtr<Diligent::ITexture>         m_srcTexture;
 
 public:
-	CopyTexturePass(const CopyTexturePassCreateInfo& ci);
-	virtual ~CopyTexturePass();
+	PassCopyTexture(const CopyTexturePassCreateInfo& ci);
+	virtual ~PassCopyTexture();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

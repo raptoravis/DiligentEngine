@@ -1,9 +1,9 @@
-#include "app.h"
+#include "apptest.h"
 
-#include "testtechnique.h"
-#include "engine/render/deferredtechnique.h"
-#include "engine/render/forwardtechnique.h"
-#include "engine/render/forwardplustechnique.h"
+#include "techniquetest.h"
+#include "engine/render/techniquedeferred.h"
+#include "engine/render/techniqueforward.h"
+#include "engine/render/techniqueforwardplus.h"
 
 #include "MapHelper.h"
 #include "BasicMath.h"
@@ -19,7 +19,7 @@
 
 #include "engine/mat2quat.h"
 
-#include "testscene.h"
+#include "scenetest.h"
 
 namespace Diligent
 {
@@ -28,10 +28,10 @@ namespace Diligent
 
 	SampleBase* CreateSample()
 	{
-		return new TestApp();
+		return new AppTest();
 	}
 
-	void TestApp::initLightData() {
+	void AppTest::initLightData() {
 		pgLight light1;
 
 		light1.m_PositionVS = { -0.535466492f, -1.40531516f, 0.451306254f, 1.00000000f };
@@ -64,7 +64,7 @@ namespace Diligent
 		m_Lights.push_back(light2);
 	}
 
-	void TestApp::initBuffers() {
+	void AppTest::initBuffers() {
 		{
 			// Create dynamic uniform buffer that will store our transformation matrix
 			// Dynamic buffers can be frequently updated by the CPU
@@ -110,7 +110,7 @@ namespace Diligent
 		}
 	}
 
-	void TestApp::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+	void AppTest::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 		if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
 			const float4x4 view = e.pCamera->getViewMatrix();
 			const float4x4 local = e.pSceneNode->getLocalTransform();
@@ -162,7 +162,7 @@ namespace Diligent
 		}
 	}
 
-	void TestApp::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, IDeviceContext** ppContexts, Uint32 NumDeferredCtx, ISwapChain* pSwapChain)
+	void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, IDeviceContext** ppContexts, Uint32 NumDeferredCtx, ISwapChain* pSwapChain)
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
@@ -188,14 +188,14 @@ namespace Diligent
 		pgTechniqueCreateInfo tci{ ci };
 
 		// technique will clean up passed added in it
-		m_pForwardTechnique = std::make_shared<ForwardTechnique>(tci);
-		m_pDeferredTechnique = std::make_shared<DeferredTechnique>(tci);
-		m_pForwardPlusTechnique = std::make_shared<ForwardPlusTechnique>(tci);
+		m_pForwardTechnique = std::make_shared<TechniqueForward>(tci);
+		m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(tci);
+		m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(tci);
 
 		//
 		pgSceneCreateInfo sci{ ci };
 
-		std::shared_ptr<TestScene> testScene = std::make_shared<TestScene>(sci);
+		std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>(sci);
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		testScene->LoadFromFile(filePath);
 		testScene->customMesh();
@@ -204,7 +204,7 @@ namespace Diligent
 		initBuffers();
 
 		pgPassCreateInfo pci {ci};
-		RenderPassCreateInfo rpci{ pci };
+		pgPassRenderCreateInfo rpci{ pci };
 		rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
 		rpci.MaterialConstants = m_MaterialConstants.RawPtr();
 		rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
@@ -213,32 +213,32 @@ namespace Diligent
 
 		//if (m_renderingTechnique == RenderingTechnique::Forward) 
 		{
-			auto forwardTech = (ForwardTechnique*)m_pForwardTechnique.get();
+			auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
 			forwardTech->init(rpci, m_Lights);
 		}
 		//else if (m_renderingTechnique == RenderingTechnique::Deferred) 
 		{
-			auto deferredTech = (DeferredTechnique*)m_pDeferredTechnique.get();
+			auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
 			deferredTech->init(rpci, m_Lights);
 		}
 		//else if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
 		{
-			auto fpTech = (ForwardPlusTechnique*)m_pForwardPlusTechnique.get();
+			auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 			fpTech->init(rpci, m_Lights);
 		}
 
 		// always init test technique
 		{
-			m_pTechnique = std::make_shared<TestTechnique>(tci);
+			m_pTechnique = std::make_shared<TechniqueTest>(tci);
 		}
 	}
 
-	TestApp::~TestApp()
+	AppTest::~AppTest()
 	{
 	}
 
 	// Render a frame
-	void TestApp::Render()
+	void AppTest::Render()
 	{
 		// Clear the back buffer 
 		const float ClearColor[] = { 0.032f,  0.032f,  0.032f, 1.0f };
@@ -263,7 +263,7 @@ namespace Diligent
 	}
 
 
-	void TestApp::Update(double CurrTime, double ElapsedTime)
+	void AppTest::Update(double CurrTime, double ElapsedTime)
 	{
 		SampleBase::Update(CurrTime, ElapsedTime);
 

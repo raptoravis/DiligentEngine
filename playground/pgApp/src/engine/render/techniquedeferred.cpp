@@ -1,20 +1,25 @@
-#include "deferredtechnique.h"
+#include "techniquedeferred.h"
 
 #include "pass/passtransparent.h"
 #include "pass/passgeometry.h"
 #include "pass/passlight.h"
 
-DeferredTechnique::DeferredTechnique(const pgTechniqueCreateInfo& ci)
+#include "pipeline/pipelinelightfront.h"
+#include "pipeline/pipelinelightback.h"
+#include "pipeline/pipelinelightdir.h"
+
+
+TechniqueDeferred::TechniqueDeferred(const pgTechniqueCreateInfo& ci)
 	: base(ci)
 {
 	createGBuffers();
 }
 
-DeferredTechnique::~DeferredTechnique() {
+TechniqueDeferred::~TechniqueDeferred() {
 
 }
 
-void DeferredTechnique::createGBuffers() {
+void TechniqueDeferred::createGBuffers() {
 	// Create window-size offscreen render target
 	TextureDesc RTColorDesc;
 	RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
@@ -75,17 +80,17 @@ void DeferredTechnique::createGBuffers() {
 }
 
 
-void DeferredTechnique::update(pgRenderEventArgs& e) {
+void TechniqueDeferred::update(pgRenderEventArgs& e) {
 	base::update(e);
 }
 
 // Render the scene using the passes that have been configured.
-void DeferredTechnique::render(pgRenderEventArgs& e) {
+void TechniqueDeferred::render(pgRenderEventArgs& e) {
 	base::render(e);
 }
 
 
-void DeferredTechnique::init(const RenderPassCreateInfo& rpci, const std::vector<pgLight>& lights) {
+void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vector<pgLight>& lights) {
 	GeometryPassCreateInfo gpci{ rpci };
 	gpci.ColorRTV = m_pColorRTV;
 	gpci.DSRTV = m_pDSRTV;
@@ -93,8 +98,14 @@ void DeferredTechnique::init(const RenderPassCreateInfo& rpci, const std::vector
 	gpci.SpecularRTV = m_pSpecularRTV;
 	gpci.NormalRTV = m_pNormalRTV;
 
-	std::shared_ptr<GeometryPass> pGeometryPass = std::make_shared<GeometryPass>(gpci);
+	std::shared_ptr<PassGeometry> pGeometryPass = std::make_shared<PassGeometry>(gpci);
 	addPass(pGeometryPass);
+
+	pgPipelineCreateInfo plci { *(pgCreateInfo*)&rpci};
+
+	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(plci);
+	std::shared_ptr<pgPipeline>			pBack = std::make_shared<PipelineLightBack>(plci);
+	std::shared_ptr<pgPipeline>			pDir = std::make_shared<PipelineLightDir>(plci);
 
 	LightPassCreateInfo lpci{ rpci };
 	lpci.ColorRTV = m_pColorRTV;
@@ -103,10 +114,13 @@ void DeferredTechnique::init(const RenderPassCreateInfo& rpci, const std::vector
 	lpci.SpecularSRV = m_pSpecularSRV;
 	lpci.NormalSRV = m_pNormalSRV;
 	lpci.Lights = &lights;
+	lpci.front = pFront;
+	lpci.back = pBack;
+	lpci.dir = pDir;
 
-	std::shared_ptr<LightPass> pLightPass = std::make_shared<LightPass>(lpci);
+	std::shared_ptr<PassLight> pLightPass = std::make_shared<PassLight>(lpci);
 	addPass(pLightPass);
 
-	std::shared_ptr<TransparentPass> pTransparentPass = std::make_shared<TransparentPass>(rpci);
+	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(rpci);
 	addPass(pTransparentPass);
 }

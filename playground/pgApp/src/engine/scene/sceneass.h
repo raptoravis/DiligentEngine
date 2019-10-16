@@ -34,6 +34,21 @@ public:
 	static std::shared_ptr<pgBuffer> createUIntIndexBuffer(Diligent::IRenderDevice* device, 
 		const uint32_t* data, uint32_t sizeInBytes);
 
+	static std::shared_ptr<pgSceneAss> CreateScene(const pgSceneCreateInfo& ci);
+	static std::shared_ptr<pgScene> CreatePlane(const pgSceneCreateInfo& ci, float size, const Diligent::float3& N = Diligent::float3(0, 1, 0));
+	static std::shared_ptr<pgScene> CreateScreenQuad(const pgSceneCreateInfo& ci, float left = -1.0f, float right = 1.0f,
+		float bottom = -1.0f, float top = 1.0f, 
+		float z = 0.0f);
+	static std::shared_ptr<pgScene> CreateSphere(const pgSceneCreateInfo& ci, float radius, float tesselation = 4);
+	static std::shared_ptr<pgScene> CreateCube(const pgSceneCreateInfo& ci, float size);
+	static std::shared_ptr<pgScene> CreateCylinder(const pgSceneCreateInfo& ci, float baseRadius, float apexRadius, float height,
+		const Diligent::float3& axis = Diligent::float3(0, 1, 0));
+	static std::shared_ptr<pgScene> CreateCone(const pgSceneCreateInfo& ci, float baseRadius, float height);
+	static std::shared_ptr<pgScene> CreateArrow(const pgSceneCreateInfo& ci, const Diligent::float3& tail = Diligent::float3(0, 0, 0),
+		const Diligent::float3& head = Diligent::float3(0, 0, 1), float radius = 0.05f);
+	static std::shared_ptr<pgScene> CreateAxis(const pgSceneCreateInfo& ci, float radius = 0.05f, float length = 0.5f);
+	static void DestroyScene(std::shared_ptr<pgScene> scene);
+
 protected:
     friend class ProgressHandler;
 

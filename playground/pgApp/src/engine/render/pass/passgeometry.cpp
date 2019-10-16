@@ -1,6 +1,6 @@
 #include "passgeometry.h"
 
-GeometryPass::GeometryPass(const GeometryPassCreateInfo& ci)
+PassGeometry::PassGeometry(const GeometryPassCreateInfo& ci)
 	: base(ci)
 	, m_pColorRTV(ci.ColorRTV)
 	, m_pDSRTV(ci.DSRTV)
@@ -13,11 +13,11 @@ GeometryPass::GeometryPass(const GeometryPassCreateInfo& ci)
 	CreatePipelineState(ci, PSODesc);
 }
 
-GeometryPass::~GeometryPass() {
+PassGeometry::~PassGeometry() {
 	//
 }
 
-void GeometryPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -135,14 +135,14 @@ void GeometryPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineS
 	//m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
 }
 
-bool GeometryPass::meshFilter(pgMesh* mesh) {
+bool PassGeometry::meshFilter(pgMesh* mesh) {
 	auto mat = mesh->getMaterial();
 	auto bTransparent = mat->IsTransparent();
 	return !bTransparent;
 }
 
 // Render a frame
-void GeometryPass::render(pgRenderEventArgs& e) {
+void PassGeometry::render(pgRenderEventArgs& e) {
 	// Clear the offscreen render target and depth buffer
 	const float ClearColor[] = { 0.f,  0.f,  0.f, 1.0f };
 	ITextureView* rtvs[] = { m_pColorRTV, m_pDiffuseRTV, m_pSpecularRTV, m_pNormalRTV };
@@ -156,10 +156,10 @@ void GeometryPass::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
-void GeometryPass::update(pgRenderEventArgs& e) {
+void PassGeometry::update(pgRenderEventArgs& e) {
 	//
 }
 
-void GeometryPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassGeometry::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	base::updateSRB(e, flag);
 }

@@ -8,7 +8,7 @@
 
 using namespace Diligent;
 
-class DeferredTechnique : public pgTechnique {
+class TechniqueDeferred : public pgTechnique {
 	typedef pgTechnique base;
 
 	void createGBuffers();
@@ -29,10 +29,10 @@ class DeferredTechnique : public pgTechnique {
 	RefCntAutoPtr<ITextureView>           m_pNormalSRV;
 
 public:
-	DeferredTechnique(const pgTechniqueCreateInfo& ci);
-	virtual ~DeferredTechnique();
+	TechniqueDeferred(const pgTechniqueCreateInfo& ci);
+	virtual ~TechniqueDeferred();
 
-	void init(const RenderPassCreateInfo& ci, const std::vector<pgLight>& lights);
+	void init(const pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);
 
 	virtual void update(pgRenderEventArgs& e);
 

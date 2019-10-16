@@ -9,15 +9,15 @@
 
 using namespace Diligent;
 
-class TransparentPass : public pgRenderPass {
-	typedef pgRenderPass base;
+class PassTransparent : public pgPassRender {
+	typedef pgPassRender base;
 
 protected:
-	//void CreatePipelineState(const RenderPassCreateInfo& ci);
+	//void CreatePipelineState(const pgPassRenderCreateInfo& ci);
 public:
-	TransparentPass(const RenderPassCreateInfo& ci);
+	PassTransparent(const pgPassRenderCreateInfo& ci);
 
-	virtual ~TransparentPass();
+	virtual ~PassTransparent();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

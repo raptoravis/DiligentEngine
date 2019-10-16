@@ -1,7 +1,7 @@
-#include "testscene.h"
+#include "scenetest.h"
 
 
-void TestScene::customMesh() {
+void SceneTest::customMesh() {
 	if (m_Meshes.size() > 0) {
 		auto mesh = m_Meshes[0];
 		auto mat = mesh->getMaterial();

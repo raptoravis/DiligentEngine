@@ -53,26 +53,27 @@ pgPipeline::~pgPipeline() {
 //}
 //
 
-pgBasePass::pgBasePass(const pgPassCreateInfo& ci)
+pgPassPilpeline::pgPassPilpeline(const pgPassPipelineCreateInfo& ci)
 	: base(ci)
+	, m_pPipeline(ci.pipeline)
 {
 }
 
-pgBasePass::~pgBasePass()
+pgPassPilpeline::~pgPassPilpeline()
 {
 }
 
 // Render a frame
-void pgBasePass::render(pgRenderEventArgs& e)
+void pgPassPilpeline::render(pgRenderEventArgs& e)
 {
 	m_scene->render(e);
 }
 
-void pgBasePass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void pgPassPilpeline::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	m_pPipeline->updateSRB(e, flag);
 }
 
-void pgBasePass::update(pgRenderEventArgs& e)
+void pgPassPilpeline::update(pgRenderEventArgs& e)
 {
 }
 

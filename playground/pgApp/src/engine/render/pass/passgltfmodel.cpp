@@ -26,7 +26,7 @@ namespace
 }
 
 
-const std::pair<const char*, const char*> pgGLTFPass::GLTFModels[] =
+const std::pair<const char*, const char*> PassGltf::GLTFModels[] =
 {
 	{"Sponza",				"models/Sponza/Sponza.gltf"},
 	{"VirtualCity",			"models/VirtualCity/VC.gltf"},
@@ -39,7 +39,7 @@ const std::pair<const char*, const char*> pgGLTFPass::GLTFModels[] =
 	{"Normal Tangent Test", "models/NormalTangentTest/NormalTangentTest.gltf"}
 };
 
-void pgGLTFPass::LoadModel(const char* Path)
+void PassGltf::LoadModel(const char* Path)
 {
 	if (m_Model)
 	{
@@ -69,7 +69,7 @@ void pgGLTFPass::LoadModel(const char* Path)
 }
 
 
-pgGLTFPass::pgGLTFPass(const pgPassCreateInfo& ci)
+PassGltf::PassGltf(const pgPassCreateInfo& ci)
 	: base(ci)
 {
 	RefCntAutoPtr<ITexture> EnvironmentMap;
@@ -109,11 +109,11 @@ pgGLTFPass::pgGLTFPass(const pgPassCreateInfo& ci)
 	LoadModel(GLTFModels[m_SelectedModel].second);
 }
 
-pgGLTFPass::~pgGLTFPass()
+PassGltf::~PassGltf()
 {
 }
 
-void pgGLTFPass::UpdateUI()
+void PassGltf::UpdateUI()
 {
 	{
 		ImGui::SameLine();
@@ -193,7 +193,7 @@ void pgGLTFPass::UpdateUI()
 	}
 }
 
-void pgGLTFPass::CreateEnvMapPSO()
+void PassGltf::CreateEnvMapPSO()
 {
 	ShaderCreateInfo ShaderCI;
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
@@ -254,7 +254,7 @@ void pgGLTFPass::CreateEnvMapPSO()
 	CreateEnvMapSRB();
 }
 
-void pgGLTFPass::CreateEnvMapSRB()
+void PassGltf::CreateEnvMapSRB()
 {
 	if (m_BackgroundMode != BackgroundMode::None)
 	{
@@ -283,7 +283,7 @@ void pgGLTFPass::CreateEnvMapSRB()
 }
 
 
-void pgGLTFPass::update(pgRenderEventArgs& e) {
+void PassGltf::update(pgRenderEventArgs& e) {
 	UpdateUI();
 
 	if (!m_Model->Animations.empty() && m_PlayAnimation)
@@ -295,11 +295,11 @@ void pgGLTFPass::update(pgRenderEventArgs& e) {
 	}
 }
 
-void pgGLTFPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassGltf::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	//
 }
 
-void pgGLTFPass::render(pgRenderEventArgs& e) {
+void PassGltf::render(pgRenderEventArgs& e) {
 	float4x4 CameraView = e.pCamera->getViewMatrix();
 
 	float4x4 CameraWorld = CameraView.Inverse();

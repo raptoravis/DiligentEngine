@@ -99,11 +99,6 @@ public:
 };
 
 struct pgCameraCreateInfo : public pgCreateInfo {
-	//
-	pgCameraCreateInfo() {
-		//
-	}
-
 	pgCameraCreateInfo(pgCreateInfo& ci)
 		: pgCreateInfo(ci)
 	{
@@ -538,11 +533,6 @@ private:
 };
 
 struct pgSceneCreateInfo : public pgCreateInfo {
-	//
-	pgSceneCreateInfo()	{
-		//
-	}
-
 	pgSceneCreateInfo(pgCreateInfo& ci)
 		: pgCreateInfo(ci)
 	{
@@ -582,8 +572,6 @@ public:
 };
 
 struct pgPipelineCreateInfo : public pgCreateInfo {
-	pgPipelineCreateInfo()
-	{}
 	pgPipelineCreateInfo(pgCreateInfo& ci)
 		: pgCreateInfo(ci)
 	{
@@ -614,18 +602,13 @@ public:
 
 
 struct pgPassCreateInfo : public pgCreateInfo {
-	std::shared_ptr<pgScene>		scene;
-	std::shared_ptr<pgPipeline>		pipeline;
-
-	pgPassCreateInfo() 
-		: scene(0)
-		, pipeline(0)
-	{}
-
-	pgPassCreateInfo(pgCreateInfo& ci) 
+	pgPassCreateInfo(const pgCreateInfo& ci) 
 		: pgCreateInfo(ci) 
+		, scene(0)
 	{
 	}
+
+	std::shared_ptr<pgScene>		scene;
 };
 
 class pgPass : public pgObject
@@ -639,8 +622,6 @@ protected:
 
 	Diligent::SwapChainDesc								m_desc;
 	std::shared_ptr<pgScene>							m_scene;
-
-	std::shared_ptr<pgPipeline>							m_pPipeline;
 public:
 	pgPass(const pgPassCreateInfo& ci) 
 		: m_bEnabled(true)
@@ -649,7 +630,6 @@ public:
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
 		, m_desc(ci.desc)
-		, m_pPipeline(ci.pipeline)
 		, m_scene(ci.scene)
 	{
 	}
@@ -675,12 +655,22 @@ public:
 
 };
 
-class pgBasePass : public pgPass {
-	typedef pgPass base;
+struct pgPassPipelineCreateInfo : public pgPassCreateInfo {
+	pgPassPipelineCreateInfo(const pgPassCreateInfo& ci)
+		: pgPassCreateInfo(ci)
+	{
+	}
 
+	std::shared_ptr<pgPipeline>		pipeline;
+};
+
+class pgPassPilpeline : public pgPass {
+	typedef pgPass base;
+protected:
+	std::shared_ptr<pgPipeline>			m_pPipeline;
 public:
-	pgBasePass(const pgPassCreateInfo& ci);
-	virtual ~pgBasePass();
+	pgPassPilpeline(const pgPassPipelineCreateInfo& ci);
+	virtual ~pgPassPilpeline();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
@@ -689,10 +679,6 @@ public:
 };
 
 struct pgTechniqueCreateInfo : public pgCreateInfo {
-
-	pgTechniqueCreateInfo()
-	{}
-
 	pgTechniqueCreateInfo(pgCreateInfo& ci)
 		: pgCreateInfo(ci)
 	{

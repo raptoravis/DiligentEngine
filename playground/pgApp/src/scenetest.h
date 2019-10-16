@@ -4,9 +4,9 @@
 #include "engine/scene/sceneass.h"
 #include "engine/render/light.h"
 
-class TestScene : public pgSceneAss {
+class SceneTest : public pgSceneAss {
 public:
-	TestScene(const pgSceneCreateInfo& sci)
+	SceneTest(const pgSceneCreateInfo& sci)
 		: pgSceneAss(sci)
 	{
 	}

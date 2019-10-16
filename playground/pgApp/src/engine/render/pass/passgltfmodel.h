@@ -8,7 +8,7 @@
 
 using namespace Diligent;
 
-class pgGLTFPass : public pgPass {
+class PassGltf : public pgPass {
 	typedef pgPass base;
 
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>         m_EnvMapPSO;
@@ -52,9 +52,9 @@ class pgGLTFPass : public pgPass {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
 public:
-	pgGLTFPass(const pgPassCreateInfo& ci);
+	PassGltf(const pgPassCreateInfo& ci);
 
-	virtual ~pgGLTFPass();
+	virtual ~PassGltf();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

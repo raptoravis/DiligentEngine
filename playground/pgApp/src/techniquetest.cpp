@@ -1,13 +1,13 @@
-#include "TestTechnique.h"
+#include "techniquetest.h"
 
 #include "engine/render/pass/passgltfmodel.h"
 #include "engine/render/mesh/meshcube.h"
 #include "engine/render/mesh/meshcubetex.h"
 
-#include "pipelinecolorvertex.h"
-#include "pipelinetexvertex.h"
+#include "engine/render/pipeline/pipelinecolorvertex.h"
+#include "engine/render/pipeline/pipelinetexvertex.h"
 
-TestTechnique::TestTechnique(const pgTechniqueCreateInfo& ci)
+TechniqueTest::TechniqueTest(const pgTechniqueCreateInfo& ci)
 	: base(ci)
 {
 	pgPassCreateInfo pci{ *(pgCreateInfo*)&ci };
@@ -15,7 +15,7 @@ TestTechnique::TestTechnique(const pgTechniqueCreateInfo& ci)
 
 	bool bTestGltf = false;
 	if (bTestGltf) {
-		std::shared_ptr<pgGLTFPass> pGLTFPass = std::make_shared<pgGLTFPass>(pci);
+		std::shared_ptr<PassGltf> pGLTFPass = std::make_shared<PassGltf>(pci);
 		addPass(pGLTFPass);
 	}
 
@@ -39,27 +39,29 @@ TestTechnique::TestTechnique(const pgTechniqueCreateInfo& ci)
 		std::shared_ptr<PipelineColorVertex> pipelineColorVertex = std::make_shared<PipelineColorVertex>(plci);
 		std::shared_ptr<PipelineTexVertex> pipelineTexVertex = std::make_shared<PipelineTexVertex>(plci);
 
-		pci.scene = sceneCube;
-		pci.pipeline = pipelineColorVertex;
-		std::shared_ptr<pgBasePass> pCubePass = std::make_shared<pgBasePass>(pci);
+		pgPassPipelineCreateInfo ppci{ pci };
+
+		ppci.scene = sceneCube;
+		ppci.pipeline = pipelineColorVertex;
+		std::shared_ptr<pgPassPilpeline> pCubePass = std::make_shared<pgPassPilpeline>(ppci);
 		addPass(pCubePass);
 
-		pci.scene = sceneCubeTex;
-		pci.pipeline = pipelineTexVertex;
-		std::shared_ptr<pgBasePass> pCubeTexPass = std::make_shared<pgBasePass>(pci);
+		ppci.scene = sceneCubeTex;
+		ppci.pipeline = pipelineTexVertex;
+		std::shared_ptr<pgPassPilpeline> pCubeTexPass = std::make_shared<pgPassPilpeline>(ppci);
 		addPass(pCubeTexPass);
 	}
 }
 
-TestTechnique::~TestTechnique() {
+TechniqueTest::~TechniqueTest() {
 
 }
 
-void TestTechnique::update(pgRenderEventArgs& e) {
+void TechniqueTest::update(pgRenderEventArgs& e) {
 	base::update(e);
 }
 
 // Render the scene using the passes that have been configured.
-void TestTechnique::render(pgRenderEventArgs& e) {
+void TechniqueTest::render(pgRenderEventArgs& e) {
 	base::render(e);
 }

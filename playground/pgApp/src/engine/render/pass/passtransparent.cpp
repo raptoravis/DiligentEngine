@@ -2,7 +2,7 @@
 
 #include "passtransparent.h"
 
-TransparentPass::TransparentPass(const RenderPassCreateInfo& ci)
+PassTransparent::PassTransparent(const pgPassRenderCreateInfo& ci)
 	: base(ci)
 {
 	PipelineStateDesc PSODesc;
@@ -16,25 +16,25 @@ TransparentPass::TransparentPass(const RenderPassCreateInfo& ci)
 	CreatePipelineState(ci, PSODesc);
 }
 
-TransparentPass::~TransparentPass()
+PassTransparent::~PassTransparent()
 {
 }
 
-bool TransparentPass::meshFilter(pgMesh* mesh) {
+bool PassTransparent::meshFilter(pgMesh* mesh) {
 	auto mat = mesh->getMaterial();
 	auto bTransparent = mat->IsTransparent();
 	return bTransparent;
 }
 
 // Render a frame
-void TransparentPass::render(pgRenderEventArgs& e) {
+void PassTransparent::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
-void TransparentPass::update(pgRenderEventArgs& e) {
+void PassTransparent::update(pgRenderEventArgs& e) {
 	//
 }
 
-void TransparentPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void PassTransparent::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	base::updateSRB(e, flag);
 }

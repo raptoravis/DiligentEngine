@@ -6,12 +6,12 @@
 
 using namespace Diligent;
 
-class TestTechnique : public pgTechnique {
+class TechniqueTest : public pgTechnique {
 	typedef pgTechnique base;
 
 public:
-	TestTechnique(const pgTechniqueCreateInfo& ci);
-	virtual ~TestTechnique();
+	TechniqueTest(const pgTechniqueCreateInfo& ci);
+	virtual ~TechniqueTest();
 
 	virtual void update(pgRenderEventArgs& e);
 

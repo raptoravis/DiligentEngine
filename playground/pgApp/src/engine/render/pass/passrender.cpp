@@ -3,7 +3,7 @@
 #include "../../app.h"
 #include "passrender.h"
 
-pgRenderPass::pgRenderPass(const RenderPassCreateInfo& ci)
+pgPassRender::pgPassRender(const pgPassRenderCreateInfo& ci)
 	: base(ci)
 {
 	//LoadTexture();
@@ -11,11 +11,11 @@ pgRenderPass::pgRenderPass(const RenderPassCreateInfo& ci)
 	//CreatePipelineState(ci);
 }
 
-pgRenderPass::~pgRenderPass()
+pgPassRender::~pgPassRender()
 {
 }
 
-void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void pgPassRender::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -129,7 +129,7 @@ void pgRenderPass::CreatePipelineState(const RenderPassCreateInfo& ci, PipelineS
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
 }
 
-void pgRenderPass::LoadTexture()
+void pgPassRender::LoadTexture()
 {
 	TextureLoadInfo loadInfo;
 	loadInfo.IsSRGB = false;
@@ -142,28 +142,23 @@ void pgRenderPass::LoadTexture()
 
 
 // Render a frame
-void pgRenderPass::render(pgRenderEventArgs& e) {
+void pgPassRender::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
-void pgRenderPass::update(pgRenderEventArgs& e) {
+void pgPassRender::update(pgRenderEventArgs& e) {
 	//
 }
 
-void pgRenderPass::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
+void pgPassRender::updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) {
 	e.pApp->updateSRB(e, flag);
 
 	if (flag & pgUpdateSRB_Flag::pgUpdateSRB_Object) {
 		// Set the pipeline state
-		if (m_pPipeline) {
-			m_pPipeline->updateSRB(e, flag);
-		}
-		else {
-			m_pImmediateContext->SetPipelineState(m_pPSO);
+		m_pImmediateContext->SetPipelineState(m_pPSO);
 
-			// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-			// makes sure that resources are transitioned to required states.
-			m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		}
+		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+		// makes sure that resources are transitioned to required states.
+		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 }
