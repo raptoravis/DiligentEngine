@@ -15,12 +15,7 @@ struct GeometryPassCreateInfo : public pgPassRenderCreateInfo {
 	{
 	}
 
-	ITextureView*           ColorRTV;
-	ITextureView*           DSRTV;
-
-	ITextureView*           DiffuseRTV;
-	ITextureView*           SpecularRTV;
-	ITextureView*           NormalRTV;
+	std::shared_ptr<pgRenderTarget> rt;
 };
 
 
@@ -30,12 +25,7 @@ class PassGeometry : public pgPassRender {
 protected:
 	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
 
-	RefCntAutoPtr<ITextureView>           m_pColorRTV;
-	RefCntAutoPtr<ITextureView>           m_pDSRTV;
-
-	RefCntAutoPtr<ITextureView>           m_pDiffuseRTV;
-	RefCntAutoPtr<ITextureView>           m_pSpecularRTV;
-	RefCntAutoPtr<ITextureView>           m_pNormalRTV;
+	std::shared_ptr<pgRenderTarget> m_pGBufferRT;
 
 public:
 	PassGeometry(const GeometryPassCreateInfo& ci);

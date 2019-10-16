@@ -5,11 +5,7 @@
 
 PassLight::PassLight(const LightPassCreateInfo& ci)
 	: base(ci)
-	, m_pColorRTV(ci.ColorRTV)
-	, m_pDSSRV(ci.DSSRV)
-	, m_pDiffuseSRV(ci.DiffuseSRV)
-	, m_pSpecularSRV(ci.SpecularSRV)
-	, m_pNormalSRV(ci.NormalSRV)
+	, m_pGBufferRT(ci.rt)
 	, m_pLights(ci.Lights)
 	, m_LightPipeline0(ci.front)
 	, m_LightPipeline1(ci.back)
@@ -168,10 +164,17 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(m_pDiffuseSRV);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(m_pSpecularSRV);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(m_pNormalSRV);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(m_pDSSRV);
+	auto diffuseTex = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getTexture());
+
+	auto specularTex = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(specularTex->getTexture());
+
+	auto normalTex = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(normalTex->getTexture());
+
+	auto depthTex = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(depthTex->getTexture());
 }
 
 bool PassLight::meshFilter(pgMesh* mesh) {
@@ -220,7 +223,8 @@ void PassLight::render(pgRenderEventArgs& e) {
 				updateLightParams(e, lightParams);
 
 				// Clear the stencil buffer for the next light
-				//m_LightPipeline0->GetRenderTarget()->Clear(ClearFlags::Stencil, glm::vec4(0), 1.0f, 1);
+				m_LightPipeline0->getRenderTarget()->Clear(pgClearFlags::Stencil, 
+					Diligent::float4(0,0,0,0), 1.0f, 1);
 				// The other pipelines should have the same render target.. so no need to clear it 3 times.
 
 				switch (light.m_Type)
@@ -241,12 +245,12 @@ void PassLight::render(pgRenderEventArgs& e) {
 			lightParams.m_LightIndex++;
 		}
 	}
-
-	m_scene->render(e);
 }
 
 void PassLight::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 {
+	pipeline->setRenderTarget();
+
 	scene->render(e);
 }
 

@@ -94,3 +94,13 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 		}
 	}
 }
+
+void pgTexture::Copy(pgTexture* dstTexture) {
+	Diligent::CopyTextureAttribs CopyAttribs(this->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+		dstTexture->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	CopyAttribs.SrcMipLevel = 0;
+	CopyAttribs.DstMipLevel = 0;
+	CopyAttribs.DstSlice = 0;
+
+	m_pImmediateContext->CopyTexture(CopyAttribs);
+}

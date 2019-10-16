@@ -284,6 +284,7 @@ public:
 	Diligent::ITextureView* GetUnorderedAccessView();
 
 	void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
+	void Copy(pgTexture* dstTexture);
 
 	Diligent::ITexture* getTexture() {
 		return m_pTexture.RawPtr();
@@ -754,6 +755,10 @@ public:
 	virtual ~pgPipeline();
 
 	void setRenderTarget();
+	std::shared_ptr<pgRenderTarget> getRenderTarget() {
+		return m_pRT;
+	}
+
 	//virtual void update(pgRenderEventArgs& e);
 	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) = 0;
 	//virtual void render(pgRenderEventArgs& e);
@@ -844,7 +849,7 @@ struct pgTechniqueCreateInfo : public pgCreateInfo {
 	}
 
 	std::shared_ptr<pgRenderTarget> rt;
-	std::shared_ptr<pgTexture> backBuffer;
+	std::shared_ptr<pgTexture>		backBuffer;
 };
 
 

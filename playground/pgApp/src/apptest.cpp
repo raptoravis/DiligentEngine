@@ -336,6 +336,9 @@ namespace Diligent
 		if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
 			m_pForwardPlusTechnique->render(m_evtArgs);
 		}
+
+		//auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+		//srcTexture->Copy(m_pBackBuffer.get());
 	}
 
 

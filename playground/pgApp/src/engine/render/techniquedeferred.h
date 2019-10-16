@@ -11,23 +11,11 @@ using namespace Diligent;
 class TechniqueDeferred : public pgTechnique {
 	typedef pgTechnique base;
 
-	void createGBuffers();
+	void createGBuffers(const pgCreateInfo& ci);
 
-	RefCntAutoPtr<ITextureView>           m_pColorRTV;
-
-	RefCntAutoPtr<ITextureView>           m_pDiffuseRTV;
-	RefCntAutoPtr<ITextureView>           m_pSpecularRTV;
-	RefCntAutoPtr<ITextureView>           m_pNormalRTV;
-
-	//
-	RefCntAutoPtr<ITexture>				  m_pDepthBuffer;
-	RefCntAutoPtr<ITextureView>           m_pDSRTV;
-	RefCntAutoPtr<ITextureView>           m_pDSSRV;
-
-	RefCntAutoPtr<ITextureView>           m_pDiffuseSRV;
-	RefCntAutoPtr<ITextureView>           m_pSpecularSRV;
-	RefCntAutoPtr<ITextureView>           m_pNormalSRV;
-
+	std::shared_ptr<pgRenderTarget>		 m_pGBufferRT;
+	std::shared_ptr<pgRenderTarget>		 m_pDepthOnlyRT;
+	std::shared_ptr<pgTexture>			 m_depthStencilTexture;
 public:
 	TechniqueDeferred(const pgTechniqueCreateInfo& ci);
 	virtual ~TechniqueDeferred();

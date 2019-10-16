@@ -15,16 +15,17 @@
 TechniqueDeferred::TechniqueDeferred(const pgTechniqueCreateInfo& ci)
 	: base(ci)
 {
-	createGBuffers();
+	createGBuffers(*(pgCreateInfo*)&ci);
 }
 
 TechniqueDeferred::~TechniqueDeferred() {
 
 }
 
-void TechniqueDeferred::createGBuffers() {
+void TechniqueDeferred::createGBuffers(const pgCreateInfo& ci) {
 	// Create window-size offscreen render target
 	TextureDesc RTColorDesc;
+	RTColorDesc.Name = "GBuffer diffuse";
 	RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
 	RTColorDesc.Width = m_desc.Width;
 	RTColorDesc.Height = m_desc.Height;
@@ -41,45 +42,58 @@ void TechniqueDeferred::createGBuffers() {
 
 	RefCntAutoPtr<ITexture> pDiffuseTex;
 	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pDiffuseTex);
-	// Store the render target view
-	m_pDiffuseRTV = pDiffuseTex->GetDefaultView(TEXTURE_VIEW_RENDER_TARGET);
-	m_pDiffuseSRV = pDiffuseTex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 
+	pgTextureCreateInfo texci{ ci };
+
+	texci.texture = pDiffuseTex;
+	std::shared_ptr<pgTexture> diffuseTexture = std::make_shared<pgTexture>(texci);
+
+	RTColorDesc.Name = "GBuffer specular";
 	RefCntAutoPtr<ITexture> pSpecularTex;
 	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pSpecularTex);
-	// Store the render target view
-	m_pSpecularRTV = pSpecularTex->GetDefaultView(TEXTURE_VIEW_RENDER_TARGET);
-	m_pSpecularSRV = pSpecularTex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
+	texci.texture = pSpecularTex;
+	std::shared_ptr<pgTexture> specularTexture = std::make_shared<pgTexture>(texci);
 
+	RTColorDesc.Name = "GBuffer normal";
 	RTColorDesc.Format = TEX_FORMAT_RGBA32_FLOAT;
 
 	RefCntAutoPtr<ITexture> pNormalTex;
 	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pNormalTex);
-	// Store the render target view
-	m_pNormalRTV = pNormalTex->GetDefaultView(TEXTURE_VIEW_RENDER_TARGET);
-	m_pNormalSRV = pNormalTex->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 
-	m_pColorRTV = m_pSwapChain->GetCurrentBackBufferRTV();
-	//m_pDSRTV = m_pSwapChain->GetDepthBufferDSV();
+	texci.texture = pNormalTex;
+	std::shared_ptr<pgTexture> normalTexture = std::make_shared<pgTexture>(texci);
 
 	// Create depth buffer
 	TextureDesc DepthBufferDesc;
-	DepthBufferDesc.Name = "Main depth buffer";
+	DepthBufferDesc.Name = "GBuffer depth";
 	DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
 	DepthBufferDesc.Width = m_desc.Width;
 	DepthBufferDesc.Height = m_desc.Height;
 	DepthBufferDesc.MipLevels = 1;
 	DepthBufferDesc.ArraySize = 1;
-	DepthBufferDesc.Format = m_desc.DepthBufferFormat;
+	DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
 	DepthBufferDesc.SampleCount = m_desc.SamplesCount;
 	DepthBufferDesc.Usage = USAGE_DEFAULT;
 	DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
 	DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
 	DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
 
-	m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &m_pDepthBuffer);
-	m_pDSRTV = m_pDepthBuffer->GetDefaultView(TEXTURE_VIEW_DEPTH_STENCIL);
-	m_pDSSRV = m_pDepthBuffer->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
+	RefCntAutoPtr<ITexture> pDepthStencilTexture;
+	m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+	texci.texture = pDepthStencilTexture;
+	m_depthStencilTexture = std::make_shared<pgTexture>(texci);
+
+	//
+	pgRenderTargetCreateInfo rtci{ ci };
+	m_pGBufferRT = std::make_shared<pgRenderTarget>(rtci);
+
+	auto color0 = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+
+	m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, color0);
+	m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color1, diffuseTexture);
+	m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color2, specularTexture);
+	m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color3, normalTexture);
+	m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, m_depthStencilTexture);
 }
 
 
@@ -94,38 +108,47 @@ void TechniqueDeferred::render(pgRenderEventArgs& e) {
 
 
 void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vector<pgLight>& lights) {
-	PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
-	psrtci.rt = m_pRT;
-	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
-	addPass(pSetRTPass);
+	//PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
+	//psrtci.rt = m_pGBufferRT;
+	//std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
+	//addPass(pSetRTPass);
 
-	PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&rpci };
-	pcrtci.rt = m_pRT;
-	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
-	addPass(pClearRTPass);
+	//PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&rpci };
+	//pcrtci.rt = m_pGBufferRT;
+	//std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
+	//addPass(pClearRTPass);
 
 	GeometryPassCreateInfo gpci{ rpci };
-	gpci.ColorRTV = m_pColorRTV;
-	gpci.DSRTV = m_pDSRTV;
-	gpci.DiffuseRTV = m_pDiffuseRTV;
-	gpci.SpecularRTV = m_pSpecularRTV;
-	gpci.NormalRTV = m_pNormalRTV;
+	gpci.rt = m_pGBufferRT;
 
 	std::shared_ptr<PassGeometry> pGeometryPass = std::make_shared<PassGeometry>(gpci);
 	addPass(pGeometryPass);
 
+	{
+		CopyTexturePassCreateInfo ctpci{ *(pgCreateInfo*)&rpci };
+		ctpci.srcTexture = m_depthStencilTexture;
+		ctpci.dstTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil); 
+
+		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+		addPass(pCopyTexPass);
+	}
+
+	pgRenderTargetCreateInfo rtci{ rpci };
+	m_pDepthOnlyRT = std::make_shared<pgRenderTarget>(rtci);
+	m_pDepthOnlyRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, 
+		m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+
 	pgPipelineCreateInfo plci { *(pgCreateInfo*)&rpci};
+	plci.rt = m_pDepthOnlyRT;
 
 	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(plci);
+
+	plci.rt = m_pRT;
 	std::shared_ptr<pgPipeline>			pBack = std::make_shared<PipelineLightBack>(plci);
 	std::shared_ptr<pgPipeline>			pDir = std::make_shared<PipelineLightDir>(plci);
 
 	LightPassCreateInfo lpci{ rpci };
-	lpci.ColorRTV = m_pColorRTV;
-	lpci.DSSRV = m_pDSSRV;
-	lpci.DiffuseSRV = m_pDiffuseSRV;
-	lpci.SpecularSRV = m_pSpecularSRV;
-	lpci.NormalSRV = m_pNormalSRV;
+	lpci.rt = m_pGBufferRT;
 	lpci.Lights = &lights;
 	lpci.front = pFront;
 	lpci.back = pBack;

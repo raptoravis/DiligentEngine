@@ -2,11 +2,7 @@
 
 PassGeometry::PassGeometry(const GeometryPassCreateInfo& ci)
 	: base(ci)
-	, m_pColorRTV(ci.ColorRTV)
-	, m_pDSRTV(ci.DSRTV)
-	, m_pDiffuseRTV(ci.DiffuseRTV)
-	, m_pSpecularRTV(ci.SpecularRTV)
-	, m_pNormalRTV(ci.NormalRTV)
+	, m_pGBufferRT(ci.rt)
 {
 	PipelineStateDesc PSODesc;
 
@@ -143,15 +139,8 @@ bool PassGeometry::meshFilter(pgMesh* mesh) {
 
 // Render a frame
 void PassGeometry::render(pgRenderEventArgs& e) {
-	// Clear the offscreen render target and depth buffer
-	const float ClearColor[] = { 0.f,  0.f,  0.f, 1.0f };
-	ITextureView* rtvs[] = { m_pColorRTV, m_pDiffuseRTV, m_pSpecularRTV, m_pNormalRTV };
-	m_pImmediateContext->SetRenderTargets(4, rtvs, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	for (int i = 0; i < 4; ++i) {
-		auto rtv = rtvs[i];
-		m_pImmediateContext->ClearRenderTarget(rtv, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
-	m_pImmediateContext->ClearDepthStencil(m_pDSRTV, CLEAR_DEPTH_FLAG, 1.0f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	m_pGBufferRT->Bind();
+	m_pGBufferRT->Clear(pgClearFlags::All, float4(0.39f, 0.58f, 0.93f, 1.0f), 1.0f, 0);
 
 	m_scene->render(e);
 }

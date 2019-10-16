@@ -15,12 +15,7 @@ struct LightPassCreateInfo : public pgPassRenderCreateInfo {
 	{
 	}
 
-	ITextureView*           ColorRTV;
-	ITextureView*           DSSRV;
-
-	ITextureView*           DiffuseSRV;
-	ITextureView*           SpecularSRV;
-	ITextureView*           NormalSRV;
+	std::shared_ptr<pgRenderTarget> rt;
 
 	std::shared_ptr<pgPipeline> front;
 	std::shared_ptr<pgPipeline> back;
@@ -49,12 +44,8 @@ class PassLight : public pgPassRender {
 protected:
 	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
 
-	RefCntAutoPtr<ITextureView>			m_pColorRTV;
-	RefCntAutoPtr<ITextureView>			m_pDSSRV;
+	std::shared_ptr<pgRenderTarget>		m_pGBufferRT;
 
-	RefCntAutoPtr<ITextureView>         m_pDiffuseSRV;
-	RefCntAutoPtr<ITextureView>         m_pSpecularSRV;
-	RefCntAutoPtr<ITextureView>         m_pNormalSRV;
 	const std::vector<pgLight>*			m_pLights;
 
 	RefCntAutoPtr<IBuffer>				m_LightParamsCB;
