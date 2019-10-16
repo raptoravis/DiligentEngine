@@ -9,8 +9,8 @@
 
 using namespace Diligent;
 
-struct OpaquePassCreateInfo : public pgPassRenderCreateInfo {
-	OpaquePassCreateInfo(const pgPassRenderCreateInfo& ci)
+struct PassOpaqueCreateInfo : public pgPassRenderCreateInfo {
+	PassOpaqueCreateInfo(const pgPassRenderCreateInfo& ci)
 		: pgPassRenderCreateInfo(ci)
 	{
 	}
@@ -23,7 +23,7 @@ class PassOpaque : public pgPassRender {
 protected:
 	//void CreatePipelineState(const pgPassRenderCreateInfo& ci);
 public:
-	PassOpaque(const OpaquePassCreateInfo& ci);
+	PassOpaque(const PassOpaqueCreateInfo& ci);
 
 	virtual ~PassOpaque();
 

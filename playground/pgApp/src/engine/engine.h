@@ -253,6 +253,8 @@ struct pgTextureCreateInfo : public pgCreateInfo {
 		: pgCreateInfo(ci)
 	{
 	}
+
+	Diligent::ITexture* texture;
 };
 
 
@@ -282,6 +284,10 @@ public:
 	Diligent::ITextureView* GetUnorderedAccessView();
 
 	void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
+
+	Diligent::ITexture* getTexture() {
+		return m_pTexture.RawPtr();
+	}
 
 	pgTexture(const pgTextureCreateInfo& ci);
 	virtual ~pgTexture();
@@ -726,6 +732,8 @@ struct pgPipelineCreateInfo : public pgCreateInfo {
 		: pgCreateInfo(ci)
 	{
 	}
+
+	std::shared_ptr<pgRenderTarget>		rt;
 };
 
 
@@ -740,11 +748,12 @@ protected:
 
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>			m_pPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>	m_pSRB;
-
+	std::shared_ptr<pgRenderTarget>								m_pRT;
 public:
 	pgPipeline(const pgPipelineCreateInfo& ci);
 	virtual ~pgPipeline();
 
+	void setRenderTarget();
 	//virtual void update(pgRenderEventArgs& e);
 	virtual void updateSRB(pgRenderEventArgs& e, pgUpdateSRB_Flag flag) = 0;
 	//virtual void render(pgRenderEventArgs& e);
@@ -833,6 +842,9 @@ struct pgTechniqueCreateInfo : public pgCreateInfo {
 		: pgCreateInfo(ci)
 	{
 	}
+
+	std::shared_ptr<pgRenderTarget> rt;
+	std::shared_ptr<pgTexture> backBuffer;
 };
 
 
@@ -843,6 +855,8 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
 	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
 	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
+	std::shared_ptr<pgRenderTarget>						m_pRT;
+	std::shared_ptr<pgTexture>							m_pBackBuffer;
 
 	Diligent::SwapChainDesc								m_desc;
 public:

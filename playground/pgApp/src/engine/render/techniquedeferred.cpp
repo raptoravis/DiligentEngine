@@ -3,6 +3,9 @@
 #include "pass/passtransparent.h"
 #include "pass/passgeometry.h"
 #include "pass/passlight.h"
+#include "pass/passsetrt.h"
+#include "pass/passclearrt.h"
+#include "pass/passcopytexture.h"
 
 #include "pipeline/pipelinelightfront.h"
 #include "pipeline/pipelinelightback.h"
@@ -91,6 +94,16 @@ void TechniqueDeferred::render(pgRenderEventArgs& e) {
 
 
 void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vector<pgLight>& lights) {
+	PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
+	psrtci.rt = m_pRT;
+	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
+	addPass(pSetRTPass);
+
+	PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&rpci };
+	pcrtci.rt = m_pRT;
+	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
+	addPass(pClearRTPass);
+
 	GeometryPassCreateInfo gpci{ rpci };
 	gpci.ColorRTV = m_pColorRTV;
 	gpci.DSRTV = m_pDSRTV;
@@ -123,4 +136,13 @@ void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vect
 
 	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(rpci);
 	addPass(pTransparentPass);
+
+	{
+		CopyTexturePassCreateInfo ctpci{ *(pgCreateInfo*)&rpci };
+		ctpci.srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+		ctpci.dstTexture = m_pBackBuffer;
+
+		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+		addPass(pCopyTexPass);
+	}
 }

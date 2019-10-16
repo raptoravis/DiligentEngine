@@ -118,7 +118,7 @@ void pgRenderTarget::Bind()
     }
 
 	Diligent::IBufferView* uavViews[8];
-    uint32_t uavStartSlot = numRTVs;
+    //uint32_t uavStartSlot = numRTVs;
     uint32_t numUAVs = 0;
 
     for (uint32_t i = 0; i < 8; i++ )

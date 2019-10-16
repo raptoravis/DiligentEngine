@@ -37,6 +37,7 @@ bool pgTexture::IsTransparent() const
 pgTexture::pgTexture(const pgTextureCreateInfo& ci)
 	: m_pDevice(ci.device)
 	, m_pImmediateContext(ci.ctx)
+	, m_pTexture(ci.texture)
 {
 }
 
@@ -71,21 +72,25 @@ Diligent::ITextureView* pgTexture::GetUnorderedAccessView()
 
 
 void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil) {
-	if (((int)clearFlags & (int)pgClearFlags::Color) != 0)
-	{
+	if (((int)clearFlags & (int)pgClearFlags::Color) != 0) {
 		auto rtv = GetRenderTargetView();
-		m_pImmediateContext->ClearRenderTarget(rtv, &color.r, 
-			Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		if (rtv) {
+			m_pImmediateContext->ClearRenderTarget(rtv, &color.r,
+				Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
 	}
 
-	{
+	if ((((int)clearFlags & (int)pgClearFlags::Depth) != 0) ||
+		(((int)clearFlags & (int)pgClearFlags::Stencil) != 0)) {
 		uint32_t flags = 0;
 		flags |= ((int)clearFlags & (int)pgClearFlags::Depth) != 0 ? Diligent::CLEAR_DEPTH_FLAG : 0;
 		flags |= ((int)clearFlags & (int)pgClearFlags::Stencil) != 0 ? Diligent::CLEAR_STENCIL_FLAG : 0;
 
 		auto dsv = GetDepthStencilView();
 
-		m_pImmediateContext->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
-			1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		if (dsv) {
+			m_pImmediateContext->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
+				1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
 	}
 }

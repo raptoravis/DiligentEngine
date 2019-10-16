@@ -7,11 +7,25 @@
 #include "engine/render/pipeline/pipelinecolorvertex.h"
 #include "engine/render/pipeline/pipelinetexvertex.h"
 
+#include "engine/render/pass/passsetrt.h"
+#include "engine/render/pass/passclearrt.h"
+#include "engine/render/pass/passcopytexture.h"
+
 TechniqueTest::TechniqueTest(const pgTechniqueCreateInfo& ci)
 	: base(ci)
 {
 	pgPassCreateInfo pci{ *(pgCreateInfo*)&ci };
 	pgSceneCreateInfo sci{ *(pgCreateInfo*)&ci };
+
+	PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&ci };
+	psrtci.rt = m_pRT;
+	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
+	addPass(pSetRTPass);
+
+	PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&ci };
+	pcrtci.rt = m_pRT;
+	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
+	addPass(pClearRTPass);
 
 	bool bTestGltf = false;
 	if (bTestGltf) {
@@ -50,6 +64,16 @@ TechniqueTest::TechniqueTest(const pgTechniqueCreateInfo& ci)
 		ppci.pipeline = pipelineTexVertex;
 		std::shared_ptr<pgPassPilpeline> pCubeTexPass = std::make_shared<pgPassPilpeline>(ppci);
 		addPass(pCubeTexPass);
+
+		//
+		{
+			CopyTexturePassCreateInfo ctpci{ pci };
+			ctpci.srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+			ctpci.dstTexture = m_pBackBuffer;
+
+			std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+			addPass(pCopyTexPass);
+		}
 	}
 }
 

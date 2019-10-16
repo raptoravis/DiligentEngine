@@ -33,12 +33,19 @@ pgPipeline::pgPipeline(const pgPipelineCreateInfo& ci)
 	, m_pImmediateContext(ci.ctx)
 	, m_pEngineFactory(ci.factory)
 	, m_desc(ci.desc)
+	, m_pRT(ci.rt)
 {
 	//
 }
 
 pgPipeline::~pgPipeline() {
 	//
+}
+
+void pgPipeline::setRenderTarget() {
+	if (m_pRT) {
+		m_pRT->Bind();
+	}
 }
 
 //void pgPipeline::update(pgRenderEventArgs& e) {
@@ -57,6 +64,7 @@ pgPassPilpeline::pgPassPilpeline(const pgPassPipelineCreateInfo& ci)
 	: base(ci)
 	, m_pPipeline(ci.pipeline)
 {
+	assert(m_pPipeline);
 }
 
 pgPassPilpeline::~pgPassPilpeline()
@@ -66,6 +74,8 @@ pgPassPilpeline::~pgPassPilpeline()
 // Render a frame
 void pgPassPilpeline::render(pgRenderEventArgs& e)
 {
+	m_pPipeline->setRenderTarget();
+
 	m_scene->render(e);
 }
 
@@ -84,7 +94,8 @@ pgTechnique::pgTechnique(const pgTechniqueCreateInfo& ci)
 		, m_pImmediateContext(ci.ctx)
 		, m_pEngineFactory(ci.factory)
 		, m_desc(ci.desc)
-
+		, m_pRT(ci.rt)
+		, m_pBackBuffer(ci.backBuffer)
 {}
 
 pgTechnique::~pgTechnique()

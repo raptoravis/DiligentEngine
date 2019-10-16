@@ -2,7 +2,7 @@
 
 #include "passopaque.h"
 
-PassOpaque::PassOpaque(const OpaquePassCreateInfo& ci)
+PassOpaque::PassOpaque(const PassOpaqueCreateInfo& ci)
 	: base(ci)
 {
 	PipelineStateDesc PSODesc;

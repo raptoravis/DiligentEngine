@@ -19,10 +19,10 @@ struct pgPassRenderCreateInfo : public pgPassCreateInfo {
 	{
 	}
 
-	Diligent::IBuffer*		PerObjectConstants;
-	Diligent::IBuffer*		MaterialConstants;
-	Diligent::IBuffer*		LightsStructuredBuffer;
-	Diligent::IBufferView*	LightsBufferSRV;
+	Diligent::IBuffer*						PerObjectConstants;
+	Diligent::IBuffer*						MaterialConstants;
+	Diligent::IBuffer*						LightsStructuredBuffer;
+	Diligent::IBufferView*					LightsBufferSRV;
 };
 
 class pgPassRender : public pgPass {

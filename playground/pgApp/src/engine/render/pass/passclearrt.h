@@ -10,8 +10,11 @@ struct PassClearRTCreateInfo : public pgPassCreateInfo {
 	{
 	}
 
-	Diligent::ITexture* dstTexture;
-	Diligent::ITexture* srcTexture;
+	std::shared_ptr<pgRenderTarget> rt;
+	pgClearFlags					clearFlags = pgClearFlags::All;
+	Diligent::float4				clearColor = Diligent::float4(0.39f, 0.58f, 0.93f, 1.0f);
+	float							clearDepth = 1.0f;
+	uint8_t							clearStencil = 0;
 };
 
 class PassClearRT : public pgPass {

@@ -36,13 +36,17 @@ namespace Diligent
 	private:
 		void initLightData();
 		void initBuffers();
-
+		void createRT(pgCreateInfo ci);
 	private:
 		std::vector<pgLight>								m_Lights;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer>			m_PerObjectConstants;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_MaterialConstants;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_LightsStructuredBuffer;
 		Diligent::RefCntAutoPtr<Diligent::IBufferView>		m_LightsBufferSRV;
+
+		std::shared_ptr<pgRenderTarget>						m_pRT;
+		std::shared_ptr<pgTexture>							m_pBackBuffer;
+		std::shared_ptr<pgTexture>							m_pDepthStencilBuffer;
 
 		// 
 		std::shared_ptr<pgTechnique>	m_pTechnique;

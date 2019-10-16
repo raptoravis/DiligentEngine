@@ -10,15 +10,15 @@ struct CopyTexturePassCreateInfo : public pgPassCreateInfo {
 	{
 	}
 
-	Diligent::ITexture* dstTexture;
-	Diligent::ITexture* srcTexture;
+	std::shared_ptr<pgTexture> srcTexture;
+	std::shared_ptr<pgTexture> dstTexture;
 };
 
 class PassCopyTexture : public pgPass {
 	typedef pgPass base;
 
-	Diligent::RefCntAutoPtr<Diligent::ITexture>         m_dstTexture;
-	Diligent::RefCntAutoPtr<Diligent::ITexture>         m_srcTexture;
+	std::shared_ptr<pgTexture>         m_srcTexture;
+	std::shared_ptr<pgTexture>         m_dstTexture;
 
 public:
 	PassCopyTexture(const CopyTexturePassCreateInfo& ci);

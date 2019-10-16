@@ -162,6 +162,78 @@ namespace Diligent
 		}
 	}
 
+	void AppTest::createRT(pgCreateInfo ci) {
+		{
+			// Create window-size offscreen render target
+			TextureDesc RTColorDesc;
+			RTColorDesc.Name = "RT Color";
+			RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
+			RTColorDesc.Width = ci.desc.Width;
+			RTColorDesc.Height = ci.desc.Height;
+			RTColorDesc.MipLevels = 1;
+			RTColorDesc.Format = ci.desc.ColorBufferFormat;
+			// The render target can be bound as a shader resource and as a render target
+			RTColorDesc.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
+			// Define optimal clear value
+			RTColorDesc.ClearValue.Format = RTColorDesc.Format;
+			RTColorDesc.ClearValue.Color[0] = 0.f;
+			RTColorDesc.ClearValue.Color[1] = 0.f;
+			RTColorDesc.ClearValue.Color[2] = 0.f;
+			RTColorDesc.ClearValue.Color[3] = 1.f;
+
+			RefCntAutoPtr<ITexture> colorTextureI;
+			m_pDevice->CreateTexture(RTColorDesc, nullptr, &colorTextureI);
+
+			pgTextureCreateInfo texci{ ci };
+
+			texci.texture = colorTextureI;
+			std::shared_ptr<pgTexture> colorTexture = std::make_shared<pgTexture>(texci);
+
+			// Create depth buffer
+			TextureDesc DepthBufferDesc;
+			DepthBufferDesc.Name = "RT depth stencil";
+			DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
+			DepthBufferDesc.Width = ci.desc.Width;
+			DepthBufferDesc.Height = ci.desc.Height;
+			DepthBufferDesc.MipLevels = 1;
+			DepthBufferDesc.ArraySize = 1;
+			DepthBufferDesc.Format = ci.desc.DepthBufferFormat;
+			DepthBufferDesc.SampleCount = ci.desc.SamplesCount;
+			DepthBufferDesc.Usage = USAGE_DEFAULT;
+			DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
+			DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
+			DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
+
+			RefCntAutoPtr<ITexture> depthStencilTextureI;
+			m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &depthStencilTextureI);
+
+			texci.texture = depthStencilTextureI;
+			std::shared_ptr<pgTexture> depthStencilTexture = std::make_shared<pgTexture>(texci);
+
+			//
+			pgRenderTargetCreateInfo rtci{ ci };
+			m_pRT = std::make_shared<pgRenderTarget>(rtci);
+
+			m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
+			m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, depthStencilTexture);
+		}
+
+		//
+		{
+			auto colorTextureI = m_pSwapChain->GetCurrentBackBufferRTV()->GetTexture();
+			auto depthStencilTextureI = m_pSwapChain->GetDepthBufferDSV()->GetTexture();
+
+			pgTextureCreateInfo texci{ ci };
+
+			texci.texture = colorTextureI;
+			m_pBackBuffer = std::make_shared<pgTexture>(texci);
+
+			texci.texture = depthStencilTextureI;
+			m_pDepthStencilBuffer = std::make_shared<pgTexture>(texci);
+		}
+
+	}
+
 	void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice, IDeviceContext** ppContexts, Uint32 NumDeferredCtx, ISwapChain* pSwapChain)
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
@@ -172,6 +244,8 @@ namespace Diligent
 		ci.factory = m_pEngineFactory;
 		ci.swapChain = m_pSwapChain;
 		ci.desc = m_pSwapChain->GetDesc();
+
+		createRT(ci);
 
 		pgCameraCreateInfo cci{ ci };
 
@@ -186,6 +260,8 @@ namespace Diligent
 		m_pCamera = std::make_shared<pgCamera>(cci);
 
 		pgTechniqueCreateInfo tci{ ci };
+		tci.rt = m_pRT;
+		tci.backBuffer = m_pBackBuffer;
 
 		// technique will clean up passed added in it
 		m_pForwardTechnique = std::make_shared<TechniqueForward>(tci);
@@ -240,10 +316,10 @@ namespace Diligent
 	// Render a frame
 	void AppTest::Render()
 	{
-		// Clear the back buffer 
-		const float ClearColor[] = { 0.032f,  0.032f,  0.032f, 1.0f };
-		m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		//// Clear the back buffer 
+		//const float ClearColor[] = { 0.032f,  0.032f,  0.032f, 1.0f };
+		//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		if (m_renderingTechnique == RenderingTechnique::Test) {
 			m_pTechnique->render(m_evtArgs);
