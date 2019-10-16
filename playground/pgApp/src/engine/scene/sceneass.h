@@ -19,6 +19,7 @@ namespace fs = std::filesystem;
 // Implements a basic model loader using Assimp.
 class pgSceneAss : public pgScene
 {
+	pgSceneCreateInfo	m_ci;
 public:
     typedef pgScene base;
 
@@ -57,8 +58,8 @@ protected:
 
     std::shared_ptr<pgMesh> CreateMesh();
     std::shared_ptr<pgMaterial> CreateMaterial();
-    std::shared_ptr<pgTexture> CreateTexture( const std::wstring& fileName );
-    std::shared_ptr<pgTexture> CreateTexture2D( uint16_t width, uint16_t height );
+    std::shared_ptr<pgTexture> CreateTexture(const std::wstring& fileName );
+    std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height );
 
     //virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
 

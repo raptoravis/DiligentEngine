@@ -216,31 +216,6 @@ public:
 	}
 };
 
-class pgTexture : public pgObject
-{
-public:
-	// Get the width of the textures in texels.
-	virtual uint16_t GetWidth() const;
-	// Get the height of the texture in texles.
-	virtual uint16_t GetHeight() const;
-	// Get the depth of the texture in texture slices for 3D textures, or 
-	// cube faces for cubemap textures.
-	virtual uint16_t GetDepth() const;
-
-	// Get the bits-per-pixel of the texture.
-	virtual uint8_t GetBPP() const;
-
-	// Check to see if this texture has an alpha channel.
-	virtual bool IsTransparent() const;
-
-	pgTexture() {
-		//
-	}
-
-	Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
-};
-
-
 class pgBuffer : public pgObject
 {
 	const uint32_t m_count;
@@ -254,6 +229,181 @@ public:
 	uint32_t getCount() const {
 		return m_count;
 	}
+
+	Diligent::IBufferView* GetUnorderedAccessView() {
+		auto uav = m_pBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
+		return uav ;
+	}
+};
+
+/**
+ * Flags to specify which value should be cleared.
+ */
+enum class pgClearFlags : uint8_t
+{
+	Color = 1 << 0,
+	Depth = 1 << 1,
+	Stencil = 1 << 2,
+	DepthStencil = Depth | Stencil,
+	All = Color | Depth | Stencil,
+};
+
+struct pgTextureCreateInfo : public pgCreateInfo {
+	pgTextureCreateInfo(const pgCreateInfo& ci)
+		: pgCreateInfo(ci)
+	{
+	}
+};
+
+
+class pgTexture : public pgObject
+{
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>			m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>			m_pImmediateContext;
+
+public:
+	// Get the width of the textures in texels.
+	uint16_t GetWidth() const;
+	// Get the height of the texture in texles.
+	uint16_t GetHeight() const;
+	// Get the depth of the texture in texture slices for 3D textures, or 
+	// cube faces for cubemap textures.
+	uint16_t GetDepth() const;
+
+	// Get the bits-per-pixel of the texture.
+	uint8_t GetBPP() const;
+
+	// Check to see if this texture has an alpha channel.
+	bool IsTransparent() const;
+
+	Diligent::ITextureView* GetShaderResourceView();
+	Diligent::ITextureView* GetDepthStencilView();
+	Diligent::ITextureView* GetRenderTargetView();
+	Diligent::ITextureView* GetUnorderedAccessView();
+
+	void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
+
+	pgTexture(const pgTextureCreateInfo& ci);
+	virtual ~pgTexture();
+
+	Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
+};
+
+struct pgRenderTargetCreateInfo : public pgCreateInfo {
+	pgRenderTargetCreateInfo(const pgCreateInfo& ci)
+		: pgCreateInfo(ci)
+	{
+	}
+};
+
+class pgRenderTarget : public pgObject
+{
+	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>			m_pDevice;
+	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>			m_pImmediateContext;
+
+	typedef std::vector< std::shared_ptr<pgTexture> > TextureList;
+	typedef std::vector< std::shared_ptr<pgBuffer> > StructuredBufferList;
+
+	TextureList					m_Textures;
+
+	StructuredBufferList		m_StructuredBuffers;
+
+	// The width in pixels of textures associated to this render target.
+	uint16_t					m_Width;
+	// The height in pixels of textures associated to this render target.
+	uint16_t					m_Height;
+
+	// Check to see if the render target is valid.
+	bool						m_bCheckValidity;
+
+public:
+	enum class AttachmentPoint : uint8_t
+	{
+		Color0,         // Must be a uncompressed color format.
+		Color1,         // Must be a uncompressed color format.
+		Color2,         // Must be a uncompressed color format.
+		Color3,         // Must be a uncompressed color format.
+		Color4,         // Must be a uncompressed color format.
+		Color5,         // Must be a uncompressed color format.
+		Color6,         // Must be a uncompressed color format.
+		Color7,         // Must be a uncompressed color format.
+		Depth,          // Must be a texture with a depth format.
+		DepthStencil,   // Must be a texture with a depth/stencil format.
+		NumAttachmentPoints
+	};
+
+	pgRenderTarget(const pgRenderTargetCreateInfo& ci);
+	virtual ~pgRenderTarget();
+	/**
+	 * Attach a texture to the render target.
+	 * The dimension of all textures attached to a render target
+	 * must match.
+	 *
+	 * To remove a texture from an attachment point, just attach a NULL texture.
+	 */
+	void AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture);
+	std::shared_ptr<pgTexture> GetTexture(AttachmentPoint attachment);
+
+	/**
+	 * Clear the contents of a texture attached to a specific attachment point.
+	 * @param attachemnt The attachment point of which to clear the contents of the texture.
+	 * @param clearFlags Which values should be cleared.
+	 * @param color The clear color to use for color attachment points.
+	 * @param depth The depth value to use for depth attachment points.
+	 * @param stencil The stencil value to use for stencil attachment points.
+	 */
+	virtual void Clear(AttachmentPoint attachemnt, pgClearFlags clearFlags = pgClearFlags::All, 
+		const Diligent::float4& color = Diligent::float4(0,0,0,0), float depth = 1.0f, uint8_t stencil = 0);
+
+	/**
+	* Clear the contents of all of the textures attached to the render target.
+	* @param clearFlags Which values should be cleared.
+	* @param color The clear color to use for color attachment points.
+	* @param depth The depth value to use for depth attachment points.
+	* @param stencil The stencil value to use for stencil attachment points.
+	*/
+	virtual void Clear(pgClearFlags clearFlags = pgClearFlags::All, 
+		const Diligent::float4& color = Diligent::float4(0, 0, 0, 0), float depth = 1.0f, uint8_t stencil = 0);
+
+	/**
+	 * Generate mipmaps for all of the textures that are attached to the render target.
+	 */
+	virtual void GenerateMipMaps();
+
+	/**
+	 * StructuredBuffers can be written to in a shader. StructuredBuffers must be bound to the
+	 * rendering pipeline at the same time as render target textures and depth stencil buffers.
+	 * The maximum number of StructuredBuffers that can be attached to a render target
+	 * are 8 - num color textures. So there can only be a total of 8 color textures
+	 * and RWbuffers attached to the render target at any time.
+	 */
+	void AttachStructuredBuffer(uint8_t slot, std::shared_ptr<pgBuffer> rwBuffer);
+	std::shared_ptr<pgBuffer> GetStructuredBuffer(uint8_t slot);
+
+	/**
+	 * Resize the color and depth/stencil textures that are associated to this render target view.
+	 * Resizing a texture will clear it's contents.
+	 */
+	virtual void Resize(uint16_t width, uint16_t height);
+
+	/**
+	 * Bind this render target to the rendering pipeline.
+	 * It will remain the active render target until another RenderTarget is bound
+	 * using this same method.
+	 */
+	virtual void Bind();
+	/**
+	 * Unbind this render target from the rendering pipeline.
+	 */
+	virtual void UnBind();
+
+	/**
+	 * After attaching color, depth, stencil, and StructuredBuffers to the render target,
+	 * you can check if the render target is valid using this method.
+	 * The render target will also be checked for validity before it is bound
+	 * to rendering pipeline (using the RenderTarget::Bind method).
+	 */
+	virtual bool IsValid() const;
 };
 
 // A material class is used to wrap the shaders and to 

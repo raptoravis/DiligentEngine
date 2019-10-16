@@ -33,3 +33,59 @@ bool pgTexture::IsTransparent() const
 
 	return false;
 }
+
+pgTexture::pgTexture(const pgTextureCreateInfo& ci)
+	: m_pDevice(ci.device)
+	, m_pImmediateContext(ci.ctx)
+{
+}
+
+pgTexture::~pgTexture() {
+	//
+}
+
+Diligent::ITextureView* pgTexture::GetShaderResourceView()
+{
+	auto srv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+	return srv;
+}
+
+Diligent::ITextureView* pgTexture::GetDepthStencilView() 
+{
+	auto dsv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+	return dsv;
+}
+
+Diligent::ITextureView* pgTexture::GetRenderTargetView() 
+{
+	auto rtv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+
+	return rtv;
+}
+
+Diligent::ITextureView* pgTexture::GetUnorderedAccessView() 
+{
+	auto uav = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_UNORDERED_ACCESS);
+	return uav;
+}
+
+
+void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil) {
+	if (((int)clearFlags & (int)pgClearFlags::Color) != 0)
+	{
+		auto rtv = GetRenderTargetView();
+		m_pImmediateContext->ClearRenderTarget(rtv, &color.r, 
+			Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+
+	{
+		uint32_t flags = 0;
+		flags |= ((int)clearFlags & (int)pgClearFlags::Depth) != 0 ? Diligent::CLEAR_DEPTH_FLAG : 0;
+		flags |= ((int)clearFlags & (int)pgClearFlags::Stencil) != 0 ? Diligent::CLEAR_STENCIL_FLAG : 0;
+
+		auto dsv = GetDepthStencilView();
+
+		m_pImmediateContext->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
+			1.f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+}

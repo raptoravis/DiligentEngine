@@ -34,6 +34,7 @@ private:
 
 pgSceneAss::pgSceneAss(const pgSceneCreateInfo& ci)
     : base(ci)
+	, m_ci(ci)
 {
 	//
 }
@@ -522,16 +523,19 @@ std::shared_ptr<pgMaterial> pgSceneAss::CreateMaterial()
 	return mat;
 }
 
-std::shared_ptr<pgTexture> pgSceneAss::CreateTexture(const std::wstring& fileName) 
+std::shared_ptr<pgTexture> pgSceneAss::CreateTexture(const std::wstring& fileName)
 {
-	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>();
+	pgTextureCreateInfo tci{*(pgCreateInfo*)&m_ci};
+	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(tci);
 
 	return tex;
 }
 
 std::shared_ptr<pgTexture> pgSceneAss::CreateTexture2D(uint16_t width, uint16_t height)
 {
-	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>();
+	pgTextureCreateInfo tci{ *(pgCreateInfo*)&m_ci };
+
+	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(tci);
 
 	return tex;
 }
