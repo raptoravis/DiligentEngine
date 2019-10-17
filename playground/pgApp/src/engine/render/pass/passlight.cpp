@@ -3,50 +3,41 @@
 
 #include "../../mathutils.h"
 
-PassLight::PassLight(const LightPassCreateInfo& ci)
+PassLight::PassLight(const pgPassRenderCreateInfo& ci, 
+	std::shared_ptr<pgRenderTarget> rt,
+	std::shared_ptr<pgPipeline> front,
+	std::shared_ptr<pgPipeline> back,
+	std::shared_ptr<pgPipeline> dir,
+	const std::vector<pgLight>*	Lights)
 	: base(ci)
-	, m_pGBufferRT(ci.rt)
-	, m_pLights(ci.Lights)
-	, m_LightPipeline0(ci.front)
-	, m_LightPipeline1(ci.back)
-	, m_DirectionalLightPipeline(ci.dir)
+	, m_pGBufferRT(rt)
+	, m_pLights(Lights)
+	, m_LightPipeline0(front)
+	, m_LightPipeline1(back)
+	, m_DirectionalLightPipeline(dir)
 {
 	PipelineStateDesc PSODesc;
 
-	CreatePipelineState(ci, PSODesc);
+	CreatePipelineState(PSODesc);
 
-	pgSceneCreateInfo sci{*(pgCreateInfo*)&ci};
+	m_pPointLightScene = pgSceneAss::CreateSphere(1.0f);
+	m_pSpotLightScene = pgSceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
+	m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, -1);
 
-	m_pPointLightScene = pgSceneAss::CreateSphere(sci, 1.0f);
-	m_pSpotLightScene = pgSceneAss::CreateCylinder(sci, 0.0f, 1.0f, 1.0f, float3(0, 0, 1));
-	m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(sci, -1, 1, -1, 1, -1);
+	m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(m_pPointLightScene, m_LightPipeline0);
+	m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(m_pPointLightScene, m_LightPipeline1);
 
-	pgPassPipelineCreateInfo ppci{ ci };
+	m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(m_pSpotLightScene, m_LightPipeline0);
+	m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(m_pSpotLightScene, m_LightPipeline1);
 
-	ppci.scene = m_pPointLightScene;
-	ppci.pipeline = m_LightPipeline0;
-	m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(ppci);
-
-	ppci.pipeline = m_LightPipeline1;
-	m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(ppci);
-
-	ppci.scene = m_pSpotLightScene;
-	ppci.pipeline = m_LightPipeline0;
-	m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(ppci);
-
-	ppci.pipeline = m_LightPipeline1;
-	m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(ppci);
-
-	ppci.scene = m_pDirectionalLightScene;
-	ppci.pipeline = m_DirectionalLightPipeline;
-	m_pSubPassDir = std::make_shared<pgPassPilpeline>(ppci);
+	m_pSubPassDir = std::make_shared<pgPassPilpeline>(m_pDirectionalLightScene, m_DirectionalLightPipeline);
 }
 
 PassLight::~PassLight()
 {
 }
 
-void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void PassLight::CreatePipelineState(PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -59,9 +50,9 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 	// This tutorial will render to a single render target
 	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
 	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -80,7 +71,7 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 	// In this tutorial, we will load shaders from file. To be able to do that,
 	// we need to create a shader source stream factory
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
+	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
@@ -89,7 +80,7 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 		ShaderCI.EntryPoint = "VS_main";
 		ShaderCI.Desc.Name = "OpaqueVS";
 		ShaderCI.FilePath = "ForwardRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pVS);
+		pgApp::s_device->CreateShader(ShaderCI, &pVS);
 	}
 
 	// Create a pixel shader
@@ -99,7 +90,7 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 		ShaderCI.EntryPoint = "PS_DeferredLighting";
 		ShaderCI.Desc.Name = "LightPS";
 		ShaderCI.FilePath = "DeferredRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pPS);
+		pgApp::s_device->CreateShader(ShaderCI, &pPS);
 	}
 
 	// Define vertex shader input layout
@@ -149,7 +140,7 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 	//RTPSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
 
 	//
-	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
+	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
 	{
 		BufferDesc CBDesc;
@@ -159,7 +150,7 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 		CBDesc.Usage = USAGE_DYNAMIC;
 		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_LightParamsCB);
+		pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_LightParamsCB);
 	}
 
 	{
@@ -170,20 +161,20 @@ void PassLight::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineSt
 		CBDesc.Usage = USAGE_DYNAMIC;
 		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_ScreenToViewParamsCB);
+		pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_ScreenToViewParamsCB);
 	}
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
 	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(ci.PerObjectConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
 	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
 	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")->Set(m_ScreenToViewParamsCB);
 
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(ci.LightsBufferSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
 	auto diffuseTex = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getTexture());
 
@@ -219,8 +210,8 @@ void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& light
 		if (light.m_Type == pgLight::LightType::Directional) {
 			//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
 			//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
-			bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
-			Diligent::float4x4 othoMat = Diligent::float4x4::Ortho((float)m_desc.Width, (float)m_desc.Height, 0.f, 1.f, IsGL);
+			bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
+			Diligent::float4x4 othoMat = Diligent::float4x4::Ortho((float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height, 0.f, 1.f, IsGL);
 			CBConstants->ModelViewProjection = othoMat;
 			CBConstants->ModelView = float4x4::Identity();
 		}
@@ -261,7 +252,7 @@ void PassLight::updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag) 
 		//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
 		//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 		CBConstants->m_InverseProjectionMatrix = Proj.Inverse();
-		CBConstants->m_ScreenDimensions = float2((float)m_desc.Width, (float)m_desc.Height);
+		CBConstants->m_ScreenDimensions = float2((float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height);
 	}
 }
 

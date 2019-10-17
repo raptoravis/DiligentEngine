@@ -1,19 +1,19 @@
 #include "passgeometry.h"
 
-PassGeometry::PassGeometry(const GeometryPassCreateInfo& ci)
+PassGeometry::PassGeometry(const pgPassRenderCreateInfo& ci, std::shared_ptr<pgRenderTarget> rt)
 	: base(ci)
-	, m_pGBufferRT(ci.rt)
+	, m_pGBufferRT(rt)
 {
 	PipelineStateDesc PSODesc;
 
-	CreatePipelineState(ci, PSODesc);
+	CreatePipelineState(PSODesc);
 }
 
 PassGeometry::~PassGeometry() {
 	//
 }
 
-void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc) {
+void PassGeometry::CreatePipelineState(PipelineStateDesc& PSODesc) {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	// Pipeline state name is used by the engine to report issues.
@@ -26,12 +26,12 @@ void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, Pipelin
 	// This tutorial will render to a single render target
 	PSODesc.GraphicsPipeline.NumRenderTargets = 3;
 	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
 	PSODesc.GraphicsPipeline.RTVFormats[1] = TEX_FORMAT_RGBA8_UNORM;
 	PSODesc.GraphicsPipeline.RTVFormats[2] = TEX_FORMAT_RGBA32_FLOAT;
 
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -50,7 +50,7 @@ void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, Pipelin
 	// In this tutorial, we will load shaders from file. To be able to do that,
 	// we need to create a shader source stream factory
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
+	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
@@ -59,7 +59,7 @@ void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, Pipelin
 		ShaderCI.EntryPoint = "VS_main";
 		ShaderCI.Desc.Name = "OpaqueVS";
 		ShaderCI.FilePath = "ForwardRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pVS);
+		pgApp::s_device->CreateShader(ShaderCI, &pVS);
 	}
 
 	// Create a pixel shader
@@ -69,7 +69,7 @@ void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, Pipelin
 		ShaderCI.EntryPoint = "PS_Geometry";
 		ShaderCI.Desc.Name = "GeometryPS";
 		ShaderCI.FilePath = "DeferredRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pPS);
+		pgApp::s_device->CreateShader(ShaderCI, &pPS);
 	}
 
 	// Define vertex shader input layout
@@ -115,13 +115,13 @@ void PassGeometry::CreatePipelineState(const pgPassRenderCreateInfo& ci, Pipelin
 	//RTPSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
 
 	//
-	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
+	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
 	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(ci.PerObjectConstants);
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(ci.MaterialConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Material")->Set(m_MaterialConstants);
 	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(pLightsBufferSRV);
 
 	// Create a shader resource binding object and bind all static resources in it

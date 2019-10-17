@@ -1,9 +1,7 @@
 #include "../engine.h"
 
-pgRenderTarget::pgRenderTarget(const pgRenderTargetCreateInfo& ci)
-	: m_pDevice(ci.device)
-	, m_pImmediateContext(ci.ctx)
-    , m_Width( 0 )
+pgRenderTarget::pgRenderTarget()
+    : m_Width( 0 )
     , m_Height( 0 )
     , m_bCheckValidity( false )
 {
@@ -143,13 +141,13 @@ void pgRenderTarget::Bind()
         depthStencilView = depthStencilTexture->GetDepthStencilView();
     }
 
-	m_pImmediateContext->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView, 
+	pgApp::s_ctx->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView, 
 		Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
 void pgRenderTarget::UnBind()
 {
-	m_pImmediateContext->SetRenderTargets( 0, nullptr, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	pgApp::s_ctx->SetRenderTargets( 0, nullptr, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
 bool pgRenderTarget::IsValid() const

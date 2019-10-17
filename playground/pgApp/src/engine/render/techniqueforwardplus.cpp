@@ -6,8 +6,8 @@
 #include "pass/passclearrt.h"
 #include "pass/passcopytexture.h"
 
-TechniqueForwardPlus::TechniqueForwardPlus(const pgTechniqueCreateInfo& ci)
-	: base(ci)
+TechniqueForwardPlus::TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
+	: base(rt, backBuffer)
 {
 }
 
@@ -25,29 +25,24 @@ void TechniqueForwardPlus::render(pgRenderEventArgs& e) {
 }
 
 
-void TechniqueForwardPlus::init(const pgPassRenderCreateInfo& rpci, const std::vector<pgLight>& lights) {
-	PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
-	psrtci.rt = m_pRT;
-	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
+void TechniqueForwardPlus::init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights) {
+	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(m_pRT);
 	addPass(pSetRTPass);
 
-	PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&rpci };
-	pcrtci.rt = m_pRT;
-	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
+	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(m_pRT);
 	addPass(pClearRTPass);
 
-	std::shared_ptr<PassOpaque> pOpaquePass = std::make_shared<PassOpaque>(rpci);
+	std::shared_ptr<PassOpaque> pOpaquePass = std::make_shared<PassOpaque>(prci);
 	addPass(pOpaquePass);
 
-	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(rpci);
+	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(prci);
 	addPass(pTransparentPass);
 
 	{
-		CopyTexturePassCreateInfo ctpci{ *(pgCreateInfo*)&rpci };
-		ctpci.srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
-		ctpci.dstTexture = m_pBackBuffer;
+		auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+		auto dstTexture = m_pBackBuffer;
 
-		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
 		addPass(pCopyTexPass);
 	}
 }

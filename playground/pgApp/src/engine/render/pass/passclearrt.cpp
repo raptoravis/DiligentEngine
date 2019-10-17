@@ -1,12 +1,16 @@
 #include "passclearrt.h"
 
-PassClearRT::PassClearRT(const PassClearRTCreateInfo& ci)
-	: base(ci)
-	, m_RenderTarget(ci.rt)
-	, m_ClearFlags(ci.clearFlags)
-	, m_ClearColor(ci.clearColor)
-	, m_ClearDepth(ci.clearDepth)
-	, m_ClearStencil(ci.clearStencil)
+PassClearRT::PassClearRT(std::shared_ptr<pgRenderTarget> rt,
+	pgClearFlags clearFlags,
+	Diligent::float4 clearColor,
+	float clearDepth,
+	uint8_t clearStencil) 
+	: base(0)
+	, m_RenderTarget(rt)
+	, m_ClearFlags(clearFlags)
+	, m_ClearColor(clearColor)
+	, m_ClearDepth(clearDepth)
+	, m_ClearStencil(clearStencil)
 {
 }
 

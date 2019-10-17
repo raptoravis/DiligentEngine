@@ -21,7 +21,7 @@ class PassOpaque : public pgPassRender {
 	typedef pgPassRender base;
 
 protected:
-	//void CreatePipelineState(const pgPassRenderCreateInfo& ci);
+	//void CreatePipelineState(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 public:
 	PassOpaque(const PassOpaqueCreateInfo& ci);
 

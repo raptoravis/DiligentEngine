@@ -34,10 +34,8 @@ bool pgTexture::IsTransparent() const
 	return false;
 }
 
-pgTexture::pgTexture(const pgTextureCreateInfo& ci)
-	: m_pDevice(ci.device)
-	, m_pImmediateContext(ci.ctx)
-	, m_pTexture(ci.texture)
+pgTexture::pgTexture(Diligent::ITexture* texture)
+	: m_pTexture(texture)
 {
 }
 
@@ -75,7 +73,7 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 	if (((int)clearFlags & (int)pgClearFlags::Color) != 0) {
 		auto rtv = GetRenderTargetView();
 		if (rtv) {
-			m_pImmediateContext->ClearRenderTarget(rtv, &color.r,
+			pgApp::s_ctx->ClearRenderTarget(rtv, &color.r,
 				Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 	}
@@ -89,7 +87,7 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 		auto dsv = GetDepthStencilView();
 
 		if (dsv) {
-			m_pImmediateContext->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
+			pgApp::s_ctx->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,
 				depth, stencil, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 	}
@@ -102,5 +100,5 @@ void pgTexture::Copy(pgTexture* dstTexture) {
 	CopyAttribs.DstMipLevel = 0;
 	CopyAttribs.DstSlice = 0;
 
-	m_pImmediateContext->CopyTexture(CopyAttribs);
+	pgApp::s_ctx->CopyTexture(CopyAttribs);
 }

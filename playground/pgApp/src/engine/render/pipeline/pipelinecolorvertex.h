@@ -8,10 +8,10 @@ private:
 	Diligent::RefCntAutoPtr<Diligent::IBuffer>               m_VSConstants;
 
 private:
-	void CreatePipelineState(const pgPipelineCreateInfo& ci);
+	void CreatePipelineState();
 
 public:
-	PipelineColorVertex(const pgPipelineCreateInfo& ci);
+	PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineColorVertex();
 
 	//virtual void update(pgRenderEventArgs& e);

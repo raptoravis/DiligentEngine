@@ -1,9 +1,9 @@
 #include "passcopytexture.h"
 
-PassCopyTexture::PassCopyTexture(const CopyTexturePassCreateInfo& ci)
-	: base(ci)
-	, m_dstTexture(ci.dstTexture)
-	, m_srcTexture(ci.srcTexture)
+PassCopyTexture::PassCopyTexture(std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture)
+	: base(0)
+	, m_dstTexture(dstTexture)
+	, m_srcTexture(srcTexture)
 {
 }
 
@@ -19,7 +19,7 @@ void PassCopyTexture::render(pgRenderEventArgs& e) {
 	CopyAttribs.DstMipLevel = 0;
 	CopyAttribs.DstSlice = 0;
 
-	m_pImmediateContext->CopyTexture(CopyAttribs);
+	pgApp::s_ctx->CopyTexture(CopyAttribs);
 }
 
 void PassCopyTexture::update(pgRenderEventArgs& e) {

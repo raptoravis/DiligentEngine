@@ -12,23 +12,23 @@
 #include "pipeline/pipelinelightdir.h"
 
 
-TechniqueDeferred::TechniqueDeferred(const pgTechniqueCreateInfo& ci)
-	: base(ci)
+TechniqueDeferred::TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
+	: base(rt, backBuffer)
 {
-	createGBuffers(*(pgCreateInfo*)&ci);
+	createGBuffers();
 }
 
 TechniqueDeferred::~TechniqueDeferred() {
 
 }
 
-void TechniqueDeferred::createGBuffers(const pgCreateInfo& ci) {
+void TechniqueDeferred::createGBuffers() {
 	// Create window-size offscreen render target
 	TextureDesc RTColorDesc;
 	RTColorDesc.Name = "GBuffer diffuse";
 	RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
-	RTColorDesc.Width = m_desc.Width;
-	RTColorDesc.Height = m_desc.Height;
+	RTColorDesc.Width = pgApp::s_desc.Width;
+	RTColorDesc.Height = pgApp::s_desc.Height;
 	RTColorDesc.MipLevels = 1;
 	RTColorDesc.Format = TEX_FORMAT_RGBA8_UNORM;
 	// The render target can be bound as a shader resource and as a render target
@@ -41,51 +41,44 @@ void TechniqueDeferred::createGBuffers(const pgCreateInfo& ci) {
 	RTColorDesc.ClearValue.Color[3] = 1.f;
 
 	RefCntAutoPtr<ITexture> pDiffuseTex;
-	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pDiffuseTex);
+	pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pDiffuseTex);
 
-	pgTextureCreateInfo texci{ ci };
-
-	texci.texture = pDiffuseTex;
-	std::shared_ptr<pgTexture> diffuseTexture = std::make_shared<pgTexture>(texci);
+	std::shared_ptr<pgTexture> diffuseTexture = std::make_shared<pgTexture>(pDiffuseTex);
 
 	RTColorDesc.Name = "GBuffer specular";
 	RefCntAutoPtr<ITexture> pSpecularTex;
-	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pSpecularTex);
-	texci.texture = pSpecularTex;
-	std::shared_ptr<pgTexture> specularTexture = std::make_shared<pgTexture>(texci);
+	pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pSpecularTex);
+	std::shared_ptr<pgTexture> specularTexture = std::make_shared<pgTexture>(pSpecularTex);
 
 	RTColorDesc.Name = "GBuffer normal";
 	RTColorDesc.Format = TEX_FORMAT_RGBA32_FLOAT;
 
 	RefCntAutoPtr<ITexture> pNormalTex;
-	m_pDevice->CreateTexture(RTColorDesc, nullptr, &pNormalTex);
+	pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pNormalTex);
 
-	texci.texture = pNormalTex;
-	std::shared_ptr<pgTexture> normalTexture = std::make_shared<pgTexture>(texci);
+	std::shared_ptr<pgTexture> normalTexture = std::make_shared<pgTexture>(pNormalTex);
 
 	// Create depth buffer
 	TextureDesc DepthBufferDesc;
 	DepthBufferDesc.Name = "GBuffer depth";
 	DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
-	DepthBufferDesc.Width = m_desc.Width;
-	DepthBufferDesc.Height = m_desc.Height;
+	DepthBufferDesc.Width = pgApp::s_desc.Width;
+	DepthBufferDesc.Height = pgApp::s_desc.Height;
 	DepthBufferDesc.MipLevels = 1;
 	DepthBufferDesc.ArraySize = 1;
 	DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
-	DepthBufferDesc.SampleCount = m_desc.SamplesCount;
+	DepthBufferDesc.SampleCount = pgApp::s_desc.SamplesCount;
 	DepthBufferDesc.Usage = USAGE_DEFAULT;
 	DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
 	DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
 	DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
 
 	RefCntAutoPtr<ITexture> pDepthStencilTexture;
-	m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
-	texci.texture = pDepthStencilTexture;
-	m_depthStencilTexture = std::make_shared<pgTexture>(texci);
+	pgApp::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+	m_depthStencilTexture = std::make_shared<pgTexture>(pDepthStencilTexture);
 
 	//
-	pgRenderTargetCreateInfo rtci{ ci };
-	m_pGBufferRT = std::make_shared<pgRenderTarget>(rtci);
+	m_pGBufferRT = std::make_shared<pgRenderTarget>();
 
 	auto color0 = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
 
@@ -107,7 +100,7 @@ void TechniqueDeferred::render(pgRenderEventArgs& e) {
 }
 
 
-void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vector<pgLight>& lights) {
+void TechniqueDeferred::init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights) {
 	//PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
 	//psrtci.rt = m_pGBufferRT;
 	//std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
@@ -117,55 +110,39 @@ void TechniqueDeferred::init(const pgPassRenderCreateInfo& rpci, const std::vect
 	//pcrtci.rt = m_pGBufferRT;
 	//std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
 	//addPass(pClearRTPass);
-
-	GeometryPassCreateInfo gpci{ rpci };
-	gpci.rt = m_pGBufferRT;
-
-	std::shared_ptr<PassGeometry> pGeometryPass = std::make_shared<PassGeometry>(gpci);
+	std::shared_ptr<PassGeometry> pGeometryPass = std::make_shared<PassGeometry>(prci, m_pGBufferRT);
 	addPass(pGeometryPass);
 
 	{
-		CopyTexturePassCreateInfo ctpci{ *(pgCreateInfo*)&rpci };
-		ctpci.srcTexture = m_depthStencilTexture;
-		ctpci.dstTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil); 
+		auto srcTexture = m_depthStencilTexture;
+		auto dstTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
-		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
 		addPass(pCopyTexPass);
 	}
 
-	pgRenderTargetCreateInfo rtci{ rpci };
-	m_pDepthOnlyRT = std::make_shared<pgRenderTarget>(rtci);
+	m_pDepthOnlyRT = std::make_shared<pgRenderTarget>();
 	m_pDepthOnlyRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, 
 		m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
 
-	pgPipelineCreateInfo plci { *(pgCreateInfo*)&rpci};
-	plci.rt = m_pDepthOnlyRT;
 
-	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(plci);
+	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(m_pDepthOnlyRT);
 
-	plci.rt = m_pRT;
-	std::shared_ptr<pgPipeline>			pBack = std::make_shared<PipelineLightBack>(plci);
-	std::shared_ptr<pgPipeline>			pDir = std::make_shared<PipelineLightDir>(plci);
+	std::shared_ptr<pgPipeline>			pBack = std::make_shared<PipelineLightBack>(m_pRT);
+	std::shared_ptr<pgPipeline>			pDir = std::make_shared<PipelineLightDir>(m_pRT);
 
-	LightPassCreateInfo lpci{ rpci };
-	lpci.rt = m_pGBufferRT;
-	lpci.Lights = &lights;
-	lpci.front = pFront;
-	lpci.back = pBack;
-	lpci.dir = pDir;
-
-	std::shared_ptr<PassLight> pLightPass = std::make_shared<PassLight>(lpci);
+	std::shared_ptr<PassLight> pLightPass = std::make_shared<PassLight>(prci, 
+		m_pGBufferRT, pFront, pBack, pDir, &lights);
 	addPass(pLightPass);
 
-	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(rpci);
+	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(prci);
 	addPass(pTransparentPass);
 
 	{
-		CopyTexturePassCreateInfo ctpci{ *(pgCreateInfo*)&rpci };
-		ctpci.srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
-		ctpci.dstTexture = m_pBackBuffer;
+		auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+		auto dstTexture = m_pBackBuffer;
 
-		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(ctpci);
+		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
 		addPass(pCopyTexPass);
 	}
 }

@@ -1,8 +1,7 @@
 #include "../engine.h"
 
-pgMaterial::pgMaterial(Diligent::IRenderDevice* device)
-	: m_RenderDevice(device)
-	, m_Dirty(false)
+pgMaterial::pgMaterial()
+	: m_Dirty(false)
 {
 	m_pProperties = (MaterialProperties*)_aligned_malloc(sizeof(MaterialProperties), 16);
 	// Construct default material properties.

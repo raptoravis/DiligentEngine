@@ -2,17 +2,17 @@
 
 using namespace Diligent;
 
-PipelineLightDir::PipelineLightDir(const pgPipelineCreateInfo& ci) 
-	: base(ci)
+PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt) 
+	: base(rt)
 {
-	CreatePipelineState(ci);
+	CreatePipelineState();
 }
 
 PipelineLightDir::~PipelineLightDir() {
 
 }
 
-void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
+void PipelineLightDir::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
@@ -27,9 +27,9 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	// This tutorial will render to a single render target
 	PSODesc.GraphicsPipeline.NumRenderTargets = 0;
 	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -54,7 +54,7 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 
 	// Create a shader source stream factory to load shaders from files.
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
+	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
@@ -63,10 +63,10 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 		ShaderCI.EntryPoint = "VS_main";
 		ShaderCI.Desc.Name = "VS";
 		ShaderCI.FilePath = "ForwardRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pVS);
+		pgApp::s_device->CreateShader(ShaderCI, &pVS);
 		// Create dynamic uniform buffer that will store our transformation matrix
 		// Dynamic buffers can be frequently updated by the CPU
-		//CreateUniformBuffer(m_pDevice, sizeof(float4x4), "VS constants CB", &m_VSConstants);
+		//CreateUniformBuffer(pgApp::s_device, sizeof(float4x4), "VS constants CB", &m_VSConstants);
 	}
 
 	// Create a pixel shader
@@ -76,7 +76,7 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 		ShaderCI.EntryPoint = "PS_DeferredLighting";
 		ShaderCI.Desc.Name = "PS_DeferredLighting";
 		ShaderCI.FilePath = "DeferredRendering.hlsl";
-		m_pDevice->CreateShader(ShaderCI, &pPS);
+		pgApp::s_device->CreateShader(ShaderCI, &pPS);
 	}
 
 	// Define vertex shader input layout
@@ -125,7 +125,7 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	//PSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
 	//PSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
 
-	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
+	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
 	//// Since we did not explcitly specify the type for 'Constants' variable, default
 	//// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables 
@@ -142,13 +142,13 @@ void PipelineLightDir::CreatePipelineState(const pgPipelineCreateInfo& ci)
 
 
 void PipelineLightDir::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	m_pImmediateContext->SetStencilRef(1);
+	pgApp::s_ctx->SetStencilRef(1);
 
 	base::bind(e, flag);
 }
 
 void PipelineLightDir::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
-	m_pImmediateContext->SetStencilRef(1);
+	pgApp::s_ctx->SetStencilRef(1);
 
 	base::unbind(e, flag);
 }

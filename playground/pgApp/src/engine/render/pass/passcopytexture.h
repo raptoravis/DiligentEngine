@@ -4,16 +4,6 @@
 
 #include "../../engine.h"
 
-struct CopyTexturePassCreateInfo : public pgPassCreateInfo {
-	CopyTexturePassCreateInfo(const pgPassCreateInfo& ci)
-		: pgPassCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgTexture> srcTexture;
-	std::shared_ptr<pgTexture> dstTexture;
-};
-
 class PassCopyTexture : public pgPass {
 	typedef pgPass base;
 
@@ -21,7 +11,7 @@ class PassCopyTexture : public pgPass {
 	std::shared_ptr<pgTexture>         m_dstTexture;
 
 public:
-	PassCopyTexture(const CopyTexturePassCreateInfo& ci);
+	PassCopyTexture(std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
 	virtual ~PassCopyTexture();
 
 	// Render the pass. This should only be called by the pgTechnique.

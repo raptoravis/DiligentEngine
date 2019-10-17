@@ -9,7 +9,7 @@ class MeshCube : public pgMesh {
 	void CreateIndexBuffer();
 
 public:
-	MeshCube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
+	MeshCube();
 	virtual ~MeshCube();
 
 	virtual void render(pgRenderEventArgs& e);

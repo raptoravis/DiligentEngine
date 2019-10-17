@@ -6,9 +6,9 @@ class PipelineLightBack : public pgPipeline {
 	typedef pgPipeline base;
 private:
 private:
-	void CreatePipelineState(const pgPipelineCreateInfo& ci);
+	void CreatePipelineState();
 public:
-	PipelineLightBack(const pgPipelineCreateInfo& ci);
+	PipelineLightBack(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineLightBack();
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);

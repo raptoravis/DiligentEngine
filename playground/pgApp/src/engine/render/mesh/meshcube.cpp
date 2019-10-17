@@ -3,8 +3,8 @@
 
 using namespace Diligent;
 
-MeshCube::MeshCube(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx) 
-	: pgMesh(device, ctx)
+MeshCube::MeshCube() 
+	: pgMesh()
 {
 	CreateVertexBuffer();
 	CreateIndexBuffer();
@@ -53,7 +53,7 @@ void MeshCube::CreateVertexBuffer()
 		{float3(+1,-1,+1), float4(0.2f,0.2f,0.2f,1)},
 	};
 
-	std::shared_ptr<pgBuffer> buffer = pgSceneAss::createFloatVertexBuffer(m_pDevice, 
+	std::shared_ptr<pgBuffer> buffer = pgSceneAss::createFloatVertexBuffer(pgApp::s_device, 
 		(const float*)MeshCubeVerts, 8, sizeof(Vertex));
 
 	pgBufferBinding binding{"VERTEX", 0};
@@ -72,7 +72,7 @@ void MeshCube::CreateIndexBuffer()
 		3,6,7, 3,2,6
 	};
 
-	m_pIndexBuffer = pgSceneAss::createUIntIndexBuffer(m_pDevice,
+	m_pIndexBuffer = pgSceneAss::createUIntIndexBuffer(pgApp::s_device,
 		Indices, 36);
 }
 

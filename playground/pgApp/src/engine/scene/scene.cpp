@@ -219,6 +219,14 @@ void pgSceneNode::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
 
 
+pgScene::pgScene() {
+	//
+}
+
+pgScene::~pgScene() {
+	//
+}
+
 void pgScene::render(pgRenderEventArgs& e)
 {
 	// keep it to restore it

@@ -12,7 +12,7 @@ class TechniqueForward : public pgTechnique {
 	typedef pgTechnique base;
 
 public:
-	TechniqueForward(const pgTechniqueCreateInfo& ci);
+	TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~TechniqueForward();
 
 	void init(const pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);

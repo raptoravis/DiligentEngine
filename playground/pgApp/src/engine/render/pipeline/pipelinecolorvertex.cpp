@@ -2,17 +2,17 @@
 
 using namespace Diligent;
 
-PipelineColorVertex::PipelineColorVertex(const pgPipelineCreateInfo& ci) 
-	: base(ci)
+PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt) 
+	: base(rt)
 {
-	CreatePipelineState(ci);
+	CreatePipelineState();
 }
 
 PipelineColorVertex::~PipelineColorVertex() {
 
 }
 
-void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
+void PipelineColorVertex::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
@@ -27,9 +27,9 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	// This tutorial will render to a single render target
 	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
 	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = m_desc.ColorBufferFormat;
+	PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = m_desc.DepthBufferFormat;
+	PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -48,7 +48,7 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	// In this tutorial, we will load shaders from file. To be able to do that,
 	// we need to create a shader source stream factory
 	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	m_pEngineFactory->CreateDefaultShaderSourceStreamFactory(nullptr, &pShaderSourceFactory);
+	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(nullptr, &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 	// Create a vertex shader
 	RefCntAutoPtr<IShader> pVS;
@@ -57,7 +57,7 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = "Cube VS";
 		ShaderCI.FilePath = "cube.vsh";
-		m_pDevice->CreateShader(ShaderCI, &pVS);
+		pgApp::s_device->CreateShader(ShaderCI, &pVS);
 		// Create dynamic uniform buffer that will store our transformation matrix
 		// Dynamic buffers can be frequently updated by the CPU
 		BufferDesc CBDesc;
@@ -66,7 +66,7 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 		CBDesc.Usage = USAGE_DYNAMIC;
 		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		m_pDevice->CreateBuffer(CBDesc, nullptr, &m_VSConstants);
+		pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_VSConstants);
 	}
 
 	// Create a pixel shader
@@ -76,7 +76,7 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = "Cube PS";
 		ShaderCI.FilePath = "cube.psh";
-		m_pDevice->CreateShader(ShaderCI, &pPS);
+		pgApp::s_device->CreateShader(ShaderCI, &pPS);
 	}
 
 	// Define vertex shader input layout
@@ -96,7 +96,7 @@ void PipelineColorVertex::CreatePipelineState(const pgPipelineCreateInfo& ci)
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
-	m_pDevice->CreatePipelineState(PSODesc, &m_pPSO);
+	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
 	// Since we did not explcitly specify the type for 'Constants' variable, default
 	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
@@ -124,16 +124,16 @@ void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 			{
 				// Map the buffer and write current world-view-projection matrix
-				MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+				MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
 				*CBConstants = worldViewProjMatrix.Transpose();
 			}
 
 			// Set the pipeline state
-			m_pImmediateContext->SetPipelineState(m_pPSO);
+			pgApp::s_ctx->SetPipelineState(m_pPSO);
 
 			// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 			// makes sure that resources are transitioned to required states.
-			m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			pgApp::s_ctx->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 	}
 }

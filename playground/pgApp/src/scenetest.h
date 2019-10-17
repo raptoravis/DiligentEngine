@@ -6,8 +6,8 @@
 
 class SceneTest : public pgSceneAss {
 public:
-	SceneTest(const pgSceneCreateInfo& sci)
-		: pgSceneAss(sci)
+	SceneTest()
+		: pgSceneAss()
 	{
 	}
 

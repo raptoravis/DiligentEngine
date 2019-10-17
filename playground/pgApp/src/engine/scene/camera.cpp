@@ -6,13 +6,9 @@
 //#define ARCBALL_CAMERA_IMPLEMENTATION
 //#include "arcball_camera.h"
 
-pgCamera::pgCamera(const pgCameraCreateInfo& cci) 
-	: m_pDevice(cci.device)
-	, m_pImmediateContext(cci.ctx)
-	, m_pEngineFactory(cci.factory)
-	, m_desc(cci.desc)
-	, _pos(cci.pos)
-	, _look(cci.dir)
+pgCamera::pgCamera(const Diligent::float3 pos, const Diligent::float3 dir)
+	: _pos(pos)
+	, _look(dir)
 {
 	reset(_pos, _look);
 	setProjectionMatrix(0.1f, 100.f);
@@ -40,9 +36,9 @@ void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir) {
 }
 
 void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane) {
-	const bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
+	const bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
 
-	float aspectRatio = static_cast<float>(m_desc.Width) / static_cast<float>(m_desc.Height);
+	float aspectRatio = static_cast<float>(pgApp::s_desc.Width) / static_cast<float>(pgApp::s_desc.Height);
 
 	// Projection matrix differs between DX and OpenGL
 	m_projectionMatrix = Diligent::float4x4::Projection(Diligent::PI_F / 4.f, aspectRatio, NearPlane, FarPlane, IsGL);

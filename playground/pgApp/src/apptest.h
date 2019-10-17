@@ -37,7 +37,7 @@ namespace Diligent
 	private:
 		void initLightData();
 		void initBuffers();
-		void createRT(pgCreateInfo ci);
+		void createRT();
 	private:
 		std::vector<pgLight>								m_Lights;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer>			m_PerObjectConstants;

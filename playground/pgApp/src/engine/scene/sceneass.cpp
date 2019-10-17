@@ -32,9 +32,8 @@ private:
 	std::wstring m_FileName;
 };
 
-pgSceneAss::pgSceneAss(const pgSceneCreateInfo& ci)
-    : base(ci)
-	, m_ci(ci)
+pgSceneAss::pgSceneAss()
+    : base()
 {
 	//
 }
@@ -511,45 +510,47 @@ std::shared_ptr<pgBuffer> pgSceneAss::createUIntIndexBuffer(Diligent::IRenderDev
 
 std::shared_ptr<pgMesh> pgSceneAss::CreateMesh()
 {
-	std::shared_ptr<pgMesh> mesh = std::make_shared<pgMesh>(m_pDevice, m_pImmediateContext);
+	std::shared_ptr<pgMesh> mesh = std::make_shared<pgMesh>();
 
 	return mesh;
 }
 
 std::shared_ptr<pgMaterial> pgSceneAss::CreateMaterial()
 {
-	std::shared_ptr<pgMaterial> mat = std::make_shared<pgMaterial>(m_pDevice);
+	std::shared_ptr<pgMaterial> mat = std::make_shared<pgMaterial>();
 
 	return mat;
 }
 
 std::shared_ptr<pgTexture> pgSceneAss::CreateTexture(const std::wstring& fileName)
 {
-	pgTextureCreateInfo tci{*(pgCreateInfo*)&m_ci};
-	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(tci);
+	assert(0);
+	Diligent::ITexture* texture = 0;
+	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
 
 	return tex;
 }
 
 std::shared_ptr<pgTexture> pgSceneAss::CreateTexture2D(uint16_t width, uint16_t height)
 {
-	pgTextureCreateInfo tci{ *(pgCreateInfo*)&m_ci };
+	assert(0);
+	Diligent::ITexture* texture = 0;
 
-	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(tci);
+	std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
 
 	return tex;
 }
 
 std::shared_ptr<pgBuffer> pgSceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count, uint32_t stride) {
-	return createFloatVertexBuffer(m_pDevice, data, count, stride);
+	return createFloatVertexBuffer(pgApp::s_device, data, count, stride);
 }
 
 std::shared_ptr<pgBuffer> pgSceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count) {
-	return createUIntIndexBuffer(m_pDevice, data, count);
+	return createUIntIndexBuffer(pgApp::s_device, data, count);
 }
 
-std::shared_ptr<pgSceneAss> pgSceneAss::CreateScene(const pgSceneCreateInfo& ci) {
-	std::shared_ptr<pgSceneAss> pScene = std::make_shared<pgSceneAss>(ci);
+std::shared_ptr<pgSceneAss> pgSceneAss::CreateScene() {
+	std::shared_ptr<pgSceneAss> pScene = std::make_shared<pgSceneAss>();
 
 	return pScene;
 }
@@ -589,7 +590,7 @@ Diligent::Quaternion RotationFromTwoVectors(const Diligent::float3& u, const Dil
 }
 
 
-std::shared_ptr<pgScene> pgSceneAss::CreatePlane(const pgSceneCreateInfo& ci, float size, const Diligent::float3& N)
+std::shared_ptr<pgScene> pgSceneAss::CreatePlane(float size, const Diligent::float3& N)
 {
 	float halfSize = size * 0.5f;
 	Diligent::float3 p[4];
@@ -611,7 +612,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreatePlane(const pgSceneCreateInfo& ci, fl
 	}
 
 	// Now create the plane polygon from the transformed vertices.
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 
 	std::stringstream ss;
 
@@ -636,7 +637,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreatePlane(const pgSceneCreateInfo& ci, fl
 	return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(const pgSceneCreateInfo& ci, float left, float right, float bottom, float top, float z)
+std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(float left, float right, float bottom, float top, float z)
 {
 	Diligent::float3 p[4]; // Vertex position
 	Diligent::float3 n[4]; // Vertex normal (required for texture patch polygons)
@@ -651,7 +652,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(const pgSceneCreateInfo& c
 	p[3] = Diligent::float3(right, top, z);      n[3] = Diligent::float3(0, 0, 1);    t[3] = Diligent::float2(1, 1);
 
 	// Now create the quad.
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 
 	std::stringstream ss;
 
@@ -678,9 +679,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(const pgSceneCreateInfo& c
 
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateSphere(const pgSceneCreateInfo& ci, float radius, float tesselation)
+std::shared_ptr<pgScene> pgSceneAss::CreateSphere(float radius, float tesselation)
 {
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 	std::stringstream ss;
 	// Create a white diffuse material for the sphere.
 	// f red green blue Kd Ks Shine transmittance indexOfRefraction
@@ -701,9 +702,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateSphere(const pgSceneCreateInfo& ci, f
 	return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateCube(const pgSceneCreateInfo& ci, float size)
+std::shared_ptr<pgScene> pgSceneAss::CreateCube(float size)
 {
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 	std::stringstream ss;
 
 	// Create a white diffuse material for the cube.
@@ -723,9 +724,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateCube(const pgSceneCreateInfo& ci, flo
 	return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(const pgSceneCreateInfo& ci, float baseRadius, float apexRadius, float height, const Diligent::float3& axis)
+std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(float baseRadius, float apexRadius, float height, const Diligent::float3& axis)
 {
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 	std::stringstream ss;
 
 	// Create a white diffuse material for the cylinder.
@@ -750,15 +751,15 @@ std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(const pgSceneCreateInfo& ci,
 	return nullptr;
 }
 
-std::shared_ptr <pgScene> pgSceneAss::CreateCone(const pgSceneCreateInfo& ci, float baseRadius, float height)
+std::shared_ptr <pgScene> pgSceneAss::CreateCone(float baseRadius, float height)
 {
 	// A cone is just a cylinder with a 0 size apex.
-	return CreateCylinder(ci, baseRadius, 0, height);
+	return CreateCylinder(baseRadius, 0, height);
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const pgSceneCreateInfo& ci, const Diligent::float3& tail, const Diligent::float3& head, float radius)
+std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const Diligent::float3& tail, const Diligent::float3& head, float radius)
 {
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 	std::stringstream ss;
 
 	Diligent::float3 dir = head - tail;
@@ -794,9 +795,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const pgSceneCreateInfo& ci, co
 
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateAxis(const pgSceneCreateInfo& ci, float radius, float length)
+std::shared_ptr<pgScene> pgSceneAss::CreateAxis(float radius, float length)
 {
-	std::shared_ptr<pgSceneAss> scene = CreateScene(ci);
+	std::shared_ptr<pgSceneAss> scene = CreateScene();
 	std::stringstream ss;
 
 	// Create a red material for the +X axis.

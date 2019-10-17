@@ -4,22 +4,13 @@
 
 #include "../../engine.h"
 
-struct PassSetRTCreateInfo : public pgPassCreateInfo {
-	PassSetRTCreateInfo(const pgPassCreateInfo& ci)
-		: pgPassCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgRenderTarget> rt;
-};
-
 class PassSetRT : public pgPass {
 	typedef pgPass base;
 
 	std::shared_ptr<pgRenderTarget> m_pRT;
 
 public:
-	PassSetRT(const PassSetRTCreateInfo& ci);
+	PassSetRT(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PassSetRT();
 
 	// Render the pass. This should only be called by the pgTechnique.

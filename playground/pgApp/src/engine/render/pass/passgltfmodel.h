@@ -52,7 +52,7 @@ class PassGltf : public pgPass {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
 public:
-	PassGltf(const pgPassCreateInfo& ci);
+	PassGltf();
 
 	virtual ~PassGltf();
 

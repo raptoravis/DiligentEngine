@@ -13,23 +13,19 @@ __declspec(align(16)) struct PerObject
 	float4x4 ModelView;
 };
 
-struct pgPassRenderCreateInfo : public pgPassCreateInfo {
-	pgPassRenderCreateInfo(pgPassCreateInfo& ci)
-		: pgPassCreateInfo(ci)
-	{
-	}
-
-	Diligent::IBuffer*						PerObjectConstants;
-	Diligent::IBuffer*						MaterialConstants;
-	Diligent::IBuffer*						LightsStructuredBuffer;
-	Diligent::IBufferView*					LightsBufferSRV;
+struct pgPassRenderCreateInfo {
+	std::shared_ptr<pgScene>  scene;
+	IBuffer*	              PerObjectConstants;
+	IBuffer*		          MaterialConstants;
+	IBuffer*			      LightsStructuredBuffer;
+	IBufferView*			  LightsBufferSRV;
 };
 
 class pgPassRender : public pgPass {
 	typedef pgPass base;
 
 protected:
-	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
+	void CreatePipelineState(PipelineStateDesc& PSODesc);
 	void LoadTexture();
 
 	RefCntAutoPtr<IPipelineState>         m_pPSO;
@@ -39,6 +35,7 @@ protected:
 	RefCntAutoPtr<IBuffer>                m_MaterialConstants;
 
 	RefCntAutoPtr<IBuffer>                m_LightsStructuredBuffer;
+	RefCntAutoPtr<IBufferView>			  m_LightsBufferSRV;
 
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
 public:

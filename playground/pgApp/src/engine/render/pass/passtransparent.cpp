@@ -11,7 +11,7 @@ PassTransparent::PassTransparent(const pgPassRenderCreateInfo& ci)
 	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
 	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
 
-	CreatePipelineState(ci, PSODesc);
+	CreatePipelineState(PSODesc);
 }
 
 PassTransparent::~PassTransparent()

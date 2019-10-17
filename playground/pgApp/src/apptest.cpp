@@ -74,7 +74,7 @@ namespace Diligent
 			CBDesc.Usage = USAGE_DYNAMIC;
 			CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 			CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-			m_pDevice->CreateBuffer(CBDesc, nullptr, &m_PerObjectConstants);
+			pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_PerObjectConstants);
 		}
 
 		{
@@ -85,7 +85,7 @@ namespace Diligent
 			CBDesc.Usage = USAGE_DYNAMIC;
 			CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
 			CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-			m_pDevice->CreateBuffer(CBDesc, nullptr, &m_MaterialConstants);
+			pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_MaterialConstants);
 		}
 
 		//IBufferView* pLightsBufferUAV;
@@ -103,7 +103,7 @@ namespace Diligent
 			BufferData VBData;
 			VBData.pData = m_Lights.data();
 			VBData.DataSize = sizeof(pgLight) * static_cast<Uint32>(m_Lights.size());
-			m_pDevice->CreateBuffer(BuffDesc, &VBData, &m_LightsStructuredBuffer);
+			pgApp::s_device->CreateBuffer(BuffDesc, &VBData, &m_LightsStructuredBuffer);
 
 			m_LightsBufferSRV = m_LightsStructuredBuffer->GetDefaultView(BUFFER_VIEW_SHADER_RESOURCE);
 			//pLightsBufferUAV = m_LightsStructuredBuffer->GetDefaultView(BUFFER_VIEW_UNORDERED_ACCESS);
@@ -162,16 +162,16 @@ namespace Diligent
 		}
 	}
 
-	void AppTest::createRT(pgCreateInfo ci) {
+	void AppTest::createRT() {
 		{
 			// Create window-size offscreen render target
 			TextureDesc RTColorDesc;
 			RTColorDesc.Name = "RT Color";
 			RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
-			RTColorDesc.Width = ci.desc.Width;
-			RTColorDesc.Height = ci.desc.Height;
+			RTColorDesc.Width = pgApp::s_desc.Width;
+			RTColorDesc.Height = pgApp::s_desc.Height;
 			RTColorDesc.MipLevels = 1;
-			RTColorDesc.Format = ci.desc.ColorBufferFormat;
+			RTColorDesc.Format = pgApp::s_desc.ColorBufferFormat;
 			// The render target can be bound as a shader resource and as a render target
 			RTColorDesc.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
 			// Define optimal clear value
@@ -182,38 +182,33 @@ namespace Diligent
 			RTColorDesc.ClearValue.Color[3] = 1.f;
 
 			RefCntAutoPtr<ITexture> colorTextureI;
-			m_pDevice->CreateTexture(RTColorDesc, nullptr, &colorTextureI);
+			pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &colorTextureI);
 
-			pgTextureCreateInfo texci{ ci };
-
-			texci.texture = colorTextureI;
-			std::shared_ptr<pgTexture> colorTexture = std::make_shared<pgTexture>(texci);
+			std::shared_ptr<pgTexture> colorTexture = std::make_shared<pgTexture>(colorTextureI);
 
 			// Create depth buffer
 			TextureDesc DepthBufferDesc;
 			DepthBufferDesc.Name = "RT depth stencil";
 			DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
-			DepthBufferDesc.Width = ci.desc.Width;
-			DepthBufferDesc.Height = ci.desc.Height;
+			DepthBufferDesc.Width = pgApp::s_desc.Width;
+			DepthBufferDesc.Height = pgApp::s_desc.Height;
 			DepthBufferDesc.MipLevels = 1;
 			DepthBufferDesc.ArraySize = 1;
-			//DepthBufferDesc.Format = ci.desc.DepthBufferFormat;
+			//DepthBufferDesc.Format = pgApp::s_desc.DepthBufferFormat;
 			DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
-			DepthBufferDesc.SampleCount = ci.desc.SamplesCount;
+			DepthBufferDesc.SampleCount = pgApp::s_desc.SamplesCount;
 			DepthBufferDesc.Usage = USAGE_DEFAULT;
 			DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
 			DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
 			DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
 
 			RefCntAutoPtr<ITexture> depthStencilTextureI;
-			m_pDevice->CreateTexture(DepthBufferDesc, nullptr, &depthStencilTextureI);
+			pgApp::s_device->CreateTexture(DepthBufferDesc, nullptr, &depthStencilTextureI);
 
-			texci.texture = depthStencilTextureI;
-			std::shared_ptr<pgTexture> depthStencilTexture = std::make_shared<pgTexture>(texci);
+			std::shared_ptr<pgTexture> depthStencilTexture = std::make_shared<pgTexture>(depthStencilTextureI);
 
 			//
-			pgRenderTargetCreateInfo rtci{ ci };
-			m_pRT = std::make_shared<pgRenderTarget>(rtci);
+			m_pRT = std::make_shared<pgRenderTarget>();
 
 			m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
 			m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, depthStencilTexture);
@@ -224,13 +219,8 @@ namespace Diligent
 			auto colorTextureI = m_pSwapChain->GetCurrentBackBufferRTV()->GetTexture();
 			auto depthStencilTextureI = m_pSwapChain->GetDepthBufferDSV()->GetTexture();
 
-			pgTextureCreateInfo texci{ ci };
-
-			texci.texture = colorTextureI;
-			m_pBackBuffer = std::make_shared<pgTexture>(texci);
-
-			texci.texture = depthStencilTextureI;
-			m_pDepthStencilBuffer = std::make_shared<pgTexture>(texci);
+			m_pBackBuffer = std::make_shared<pgTexture>(colorTextureI);
+			m_pDepthStencilBuffer = std::make_shared<pgTexture>(depthStencilTextureI);
 		}
 
 	}
@@ -239,40 +229,33 @@ namespace Diligent
 	{
 		SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
-		pgCreateInfo ci;
-		ci.device = m_pDevice;
-		ci.ctx = m_pImmediateContext;
-		ci.factory = m_pEngineFactory;
-		ci.swapChain = m_pSwapChain;
-		ci.desc = m_pSwapChain->GetDesc();
+		//
+		pgApp::s_device.Attach(pDevice);
+		pgApp::s_ctx.Attach(*ppContexts);
+		pgApp::s_swapChain.Attach(pSwapChain);
+		pgApp::s_engineFactory.Attach(pEngineFactory);
+		pgApp::s_desc = pSwapChain->GetDesc();
 
-		createRT(ci);
-
-		pgCameraCreateInfo cci{ ci };
+		createRT();
 
 		//m_renderingTechnique = RenderingTechnique::Deferred;
 		//m_renderingTechnique = RenderingTechnique::Forward;
 		m_renderingTechnique = RenderingTechnique::Test;
 
+		Diligent::float3 pos = Diligent::float3(0, 0, 0);
 		if (m_renderingTechnique != RenderingTechnique::Test) {
-			cci.pos = float3(0, 0, -25);
+			pos = float3(0, 0, -25);
 		}
 
-		m_pCamera = std::make_shared<pgCamera>(cci);
-
-		pgTechniqueCreateInfo tci{ ci };
-		tci.rt = m_pRT;
-		tci.backBuffer = m_pBackBuffer;
+		m_pCamera = std::make_shared<pgCamera>(pos, Diligent::float3(0, 0, -1));
 
 		// technique will clean up passed added in it
-		m_pForwardTechnique = std::make_shared<TechniqueForward>(tci);
-		m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(tci);
-		m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(tci);
+		m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRT, m_pBackBuffer);
+		m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRT, m_pBackBuffer);
+		m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(m_pRT, m_pBackBuffer);
 
 		//
-		pgSceneCreateInfo sci{ ci };
-
-		std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>(sci);
+		std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
 		std::wstring filePath = L"resources/models/test/test_scene.nff";
 		testScene->LoadFromFile(filePath);
 		testScene->customMesh();
@@ -280,38 +263,42 @@ namespace Diligent
 		initLightData();
 		initBuffers();
 
-		pgPassCreateInfo pci {ci};
-		pgPassRenderCreateInfo rpci{ pci };
-		rpci.PerObjectConstants = m_PerObjectConstants.RawPtr();
-		rpci.MaterialConstants = m_MaterialConstants.RawPtr();
-		rpci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
-		rpci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
-		rpci.scene = testScene;
+		pgPassRenderCreateInfo prci;
+		prci.PerObjectConstants = m_PerObjectConstants.RawPtr();
+		prci.MaterialConstants = m_MaterialConstants.RawPtr();
+		prci.LightsStructuredBuffer = m_LightsStructuredBuffer.RawPtr();
+		prci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
+		prci.scene = testScene;
 
 		//if (m_renderingTechnique == RenderingTechnique::Forward) 
 		{
 			auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
-			forwardTech->init(rpci, m_Lights);
+			forwardTech->init(prci, m_Lights);
 		}
 		//else if (m_renderingTechnique == RenderingTechnique::Deferred) 
 		{
 			auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
-			deferredTech->init(rpci, m_Lights);
+			deferredTech->init(prci, m_Lights);
 		}
 		//else if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
 		{
 			auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
-			fpTech->init(rpci, m_Lights);
+			fpTech->init(prci, m_Lights);
 		}
 
 		// always init test technique
 		{
-			m_pTechnique = std::make_shared<TechniqueTest>(tci);
+			m_pTechnique = std::make_shared<TechniqueTest>(m_pRT, m_pBackBuffer);
 		}
 	}
 
-	AppTest::~AppTest()
-	{
+	AppTest::~AppTest()	{
+		//
+		pgApp::s_device.Detach();
+		pgApp::s_ctx.Detach();
+		pgApp::s_swapChain.Detach();
+		pgApp::s_engineFactory.Detach();
+		//pgApp::s_desc = pSwapChain->GetDesc();
 	}
 
 	// Render a frame
@@ -319,8 +306,8 @@ namespace Diligent
 	{
 		//// Clear the back buffer 
 		//const float ClearColor[] = { 0.032f,  0.032f,  0.032f, 1.0f };
-		//m_pImmediateContext->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		//m_pImmediateContext->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		//pgApp::s_ctx->ClearRenderTarget(nullptr, ClearColor, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		//pgApp::s_ctx->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		if (m_renderingTechnique == RenderingTechnique::Test) {
 			m_pTechnique->render(m_evtArgs);
@@ -350,7 +337,7 @@ namespace Diligent
 		m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
 		m_evtArgs.set((float)CurrTime, (float)ElapsedTime, 
-			this, m_pCamera.get(), m_pImmediateContext);
+			this, m_pCamera.get(), pgApp::s_ctx);
 
 		int technique = (int)m_renderingTechnique;
 

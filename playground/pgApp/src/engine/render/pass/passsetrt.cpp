@@ -1,8 +1,8 @@
 #include "passsetrt.h"
 
-PassSetRT::PassSetRT(const PassSetRTCreateInfo& ci)
-	: base(ci)
-	, m_pRT(ci.rt)
+PassSetRT::PassSetRT(std::shared_ptr<pgRenderTarget> rt)
+	: base(0)
+	, m_pRT(rt)
 {
 }
 

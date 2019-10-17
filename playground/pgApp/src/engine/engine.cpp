@@ -37,6 +37,16 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
+pgPass::pgPass(std::shared_ptr<pgScene> scene)
+	: m_bEnabled(true)
+	, m_scene(scene)
+{
+}
+
+pgPass::~pgPass() {
+	//
+}
+
 void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
@@ -46,13 +56,8 @@ void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
 
 
-pgPipeline::pgPipeline(const pgPipelineCreateInfo& ci) 
-	: m_pDevice(ci.device)
-	, m_pSwapChain(ci.swapChain)
-	, m_pImmediateContext(ci.ctx)
-	, m_pEngineFactory(ci.factory)
-	, m_desc(ci.desc)
-	, m_pRT(ci.rt)
+pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt)
+	: m_pRT(rt)
 {
 	//
 }
@@ -74,11 +79,11 @@ void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 	{
 		// Set the pipeline state
-		m_pImmediateContext->SetPipelineState(m_pPSO);
+		pgApp::s_ctx->SetPipelineState(m_pPSO);
 
 		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
 		// makes sure that resources are transitioned to required states.
-		m_pImmediateContext->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		pgApp::s_ctx->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 }
 
@@ -86,9 +91,9 @@ void pgPipeline::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
 
-pgPassPilpeline::pgPassPilpeline(const pgPassPipelineCreateInfo& ci)
-	: base(ci)
-	, m_pPipeline(ci.pipeline)
+pgPassPilpeline::pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
+	: base(scene)
+	, m_pPipeline(pipeline)
 {
 	assert(m_pPipeline);
 }
@@ -115,14 +120,9 @@ void pgPassPilpeline::update(pgRenderEventArgs& e) {
 }
 
 
-pgTechnique::pgTechnique(const pgTechniqueCreateInfo& ci)
-		: m_pDevice(ci.device)
-		, m_pSwapChain(ci.swapChain)
-		, m_pImmediateContext(ci.ctx)
-		, m_pEngineFactory(ci.factory)
-		, m_desc(ci.desc)
-		, m_pRT(ci.rt)
-		, m_pBackBuffer(ci.backBuffer)
+pgTechnique::pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
+		: m_pRT(rt)
+		, m_pBackBuffer(backBuffer)
 {
 }
 

@@ -77,19 +77,6 @@ inline std::string ConvertString(const std::wstring& wstring)
 	return converter.to_bytes(wstring);
 }
 
-struct pgCreateInfo {
-	Diligent::IRenderDevice*		device;
-	Diligent::IDeviceContext*		ctx;
-	Diligent::ISwapChain*			swapChain;
-	Diligent::IEngineFactory*		factory;
-
-	Diligent::SwapChainDesc			desc;
-
-	pgCreateInfo() {
-		//
-	}
-};
-
 class pgObject
 {
 public:
@@ -98,25 +85,9 @@ public:
 	}
 };
 
-struct pgCameraCreateInfo : public pgCreateInfo {
-	pgCameraCreateInfo(pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-
-	Diligent::float3 pos = {0, 0, 0};
-	Diligent::float3 dir = {0, 0, -1.0f};
-};
-
 
 class pgCamera : public pgObject
 {
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
-
-	Diligent::SwapChainDesc								m_desc;
-
 	Diligent::MouseState m_LastMouseState;
 
 	Diligent::float4x4   m_viewMatrix;
@@ -131,7 +102,7 @@ class pgCamera : public pgObject
 
 	const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
 public:
-	pgCamera(const pgCameraCreateInfo& cci);
+	pgCamera(const Diligent::float3 pos, const Diligent::float3 dir);
 
 	virtual ~pgCamera();
 
@@ -260,21 +231,9 @@ enum class pgClearFlags : uint8_t
 	All = Color | Depth | Stencil,
 };
 
-struct pgTextureCreateInfo : public pgCreateInfo {
-	pgTextureCreateInfo(const pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-
-	Diligent::ITexture* texture;
-};
-
 
 class pgTexture : public pgObject
 {
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>			m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>			m_pImmediateContext;
-
 public:
 	// Get the width of the textures in texels.
 	uint16_t GetWidth() const;
@@ -302,24 +261,14 @@ public:
 		return m_pTexture.RawPtr();
 	}
 
-	pgTexture(const pgTextureCreateInfo& ci);
+	pgTexture(Diligent::ITexture* texture);
 	virtual ~pgTexture();
 
 	Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
 };
 
-struct pgRenderTargetCreateInfo : public pgCreateInfo {
-	pgRenderTargetCreateInfo(const pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-};
-
 class pgRenderTarget : public pgObject
 {
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>			m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>			m_pImmediateContext;
-
 	typedef std::vector< std::shared_ptr<pgTexture> > TextureList;
 	typedef std::vector< std::shared_ptr<pgBuffer> > StructuredBufferList;
 
@@ -351,7 +300,7 @@ public:
 		NumAttachmentPoints
 	};
 
-	pgRenderTarget(const pgRenderTargetCreateInfo& ci);
+	pgRenderTarget();
 	virtual ~pgRenderTarget();
 	/**
 	 * Attach a texture to the render target.
@@ -446,7 +395,7 @@ public:
 		Opacity = 7,
 	};
 
-	pgMaterial(Diligent::IRenderDevice* device);
+	pgMaterial();
 
 	virtual ~pgMaterial();
 
@@ -616,9 +565,6 @@ class pgSceneNode;
 class pgMesh : public pgObject
 {
 protected:
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		  m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>		  m_pImmediateContext;
-
 	typedef std::map<pgBufferBinding, std::shared_ptr<pgBuffer> > BufferMap;
 	BufferMap m_VertexBuffers;
 
@@ -626,16 +572,8 @@ protected:
 	std::shared_ptr<pgMaterial> m_pMaterial;
 
 public:
-	pgMesh(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx)
-		: m_pDevice(device)
-		, m_pImmediateContext(ctx)
-	{
-		//
-	}
-
-	virtual ~pgMesh() {
-		//
-	}
+	pgMesh();
+	virtual ~pgMesh();
 
 	// Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
 	virtual void addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> buffer);
@@ -708,34 +646,12 @@ private:
 	MeshList m_Meshes;
 };
 
-struct pgSceneCreateInfo : public pgCreateInfo {
-	pgSceneCreateInfo(pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-};
-
-
 class pgScene : public pgObject {
 protected:
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
-
-	Diligent::SwapChainDesc								m_desc;
-
 	std::shared_ptr<pgSceneNode> m_pRootNode; 
 public:
-	pgScene(const pgSceneCreateInfo& ci) 
-		: m_pDevice(ci.device)
-		, m_pImmediateContext(ci.ctx)
-		, m_pEngineFactory(ci.factory)
-		, m_pSwapChain(ci.swapChain)
-		, m_desc(ci.desc)
-	{
-		//
-	}
+	pgScene();
+	virtual ~pgScene();
 
 	std::shared_ptr<pgSceneNode> getRootNode() const {
 		return m_pRootNode;
@@ -750,30 +666,13 @@ public:
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
-struct pgPipelineCreateInfo : public pgCreateInfo {
-	pgPipelineCreateInfo(pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgRenderTarget>		rt;
-};
-
-
 class pgPipeline : public pgObject {
 protected:
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
-
-	Diligent::SwapChainDesc								m_desc;
-
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>			m_pPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>	m_pSRB;
 	std::shared_ptr<pgRenderTarget>								m_pRT;
 public:
-	pgPipeline(const pgPipelineCreateInfo& ci);
+	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~pgPipeline();
 
 	void setRenderTarget();
@@ -786,38 +685,14 @@ public:
 };
 
 
-struct pgPassCreateInfo : public pgCreateInfo {
-	pgPassCreateInfo(const pgCreateInfo& ci) 
-		: pgCreateInfo(ci) 
-		, scene(0)
-	{
-	}
-
-	std::shared_ptr<pgScene>		scene;
-};
-
 class pgPass : public pgObject
 {
 	bool m_bEnabled;
 protected:
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
-
-	Diligent::SwapChainDesc								m_desc;
 	std::shared_ptr<pgScene>							m_scene;
 public:
-	pgPass(const pgPassCreateInfo& ci) 
-		: m_bEnabled(true)
-		, m_pDevice(ci.device)
-		, m_pSwapChain(ci.swapChain)
-		, m_pImmediateContext(ci.ctx)
-		, m_pEngineFactory(ci.factory)
-		, m_desc(ci.desc)
-		, m_scene(ci.scene)
-	{
-	}
+	pgPass(std::shared_ptr<pgScene> scene);
+	virtual ~pgPass();
 
 	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
 	void setEnabled(bool enabled) {
@@ -842,21 +717,13 @@ public:
 
 };
 
-struct pgPassPipelineCreateInfo : public pgPassCreateInfo {
-	pgPassPipelineCreateInfo(const pgPassCreateInfo& ci)
-		: pgPassCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgPipeline>		pipeline;
-};
-
+	
 class pgPassPilpeline : public pgPass {
 	typedef pgPass base;
 protected:
 	std::shared_ptr<pgPipeline>			m_pPipeline;
 public:
-	pgPassPilpeline(const pgPassPipelineCreateInfo& ci);
+	pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
 	virtual ~pgPassPilpeline();
 
 	// Render the pass. This should only be called by the pgTechnique.
@@ -866,30 +733,13 @@ public:
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
-struct pgTechniqueCreateInfo : public pgCreateInfo {
-	pgTechniqueCreateInfo(pgCreateInfo& ci)
-		: pgCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgRenderTarget> rt;
-	std::shared_ptr<pgTexture>		backBuffer;
-};
-
-
 class pgTechnique : public pgObject
 {
 protected:
-	Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	m_pDevice;
-	Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	m_pImmediateContext;
-	Diligent::RefCntAutoPtr<Diligent::ISwapChain>		m_pSwapChain;
-	Diligent::RefCntAutoPtr<Diligent::IEngineFactory>   m_pEngineFactory;
 	std::shared_ptr<pgRenderTarget>						m_pRT;
 	std::shared_ptr<pgTexture>							m_pBackBuffer;
-
-	Diligent::SwapChainDesc								m_desc;
 public:
-	pgTechnique(const pgTechniqueCreateInfo& ci);
+	pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~pgTechnique();
 
 	// Add a pass to the technique. The ID of the added pass is returned

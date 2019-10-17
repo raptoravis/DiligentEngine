@@ -5,7 +5,7 @@ PassOpaque::PassOpaque(const PassOpaqueCreateInfo& ci)
 {
 	PipelineStateDesc PSODesc;
 
-	CreatePipelineState(ci, PSODesc);
+	CreatePipelineState(PSODesc);
 }
 
 PassOpaque::~PassOpaque()

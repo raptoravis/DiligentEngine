@@ -11,16 +11,16 @@ using namespace Diligent;
 class TechniqueDeferred : public pgTechnique {
 	typedef pgTechnique base;
 
-	void createGBuffers(const pgCreateInfo& ci);
+	void createGBuffers();
 
 	std::shared_ptr<pgRenderTarget>		 m_pGBufferRT;
 	std::shared_ptr<pgRenderTarget>		 m_pDepthOnlyRT;
 	std::shared_ptr<pgTexture>			 m_depthStencilTexture;
 public:
-	TechniqueDeferred(const pgTechniqueCreateInfo& ci);
+	TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~TechniqueDeferred();
 
-	void init(const pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);
+	void init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights);
 
 	virtual void update(pgRenderEventArgs& e);
 

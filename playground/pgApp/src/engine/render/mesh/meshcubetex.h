@@ -9,7 +9,7 @@ class MeshCubeTex : public pgMesh {
 	void CreateIndexBuffer();
 
 public:
-	MeshCubeTex(Diligent::IRenderDevice* device, Diligent::IDeviceContext* ctx);
+	MeshCubeTex();
 	virtual ~MeshCubeTex();
 
 	virtual void render(pgRenderEventArgs& e);

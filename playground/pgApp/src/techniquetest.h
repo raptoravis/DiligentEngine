@@ -10,7 +10,7 @@ class TechniqueTest : public pgTechnique {
 	typedef pgTechnique base;
 
 public:
-	TechniqueTest(const pgTechniqueCreateInfo& ci);
+	TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~TechniqueTest();
 
 	virtual void update(pgRenderEventArgs& e);

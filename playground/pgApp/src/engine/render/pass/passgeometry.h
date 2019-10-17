@@ -9,26 +9,16 @@
 
 using namespace Diligent;
 
-struct GeometryPassCreateInfo : public pgPassRenderCreateInfo {
-	GeometryPassCreateInfo(const pgPassRenderCreateInfo& ci)
-		: pgPassRenderCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgRenderTarget> rt;
-};
-
-
 class PassGeometry : public pgPassRender {
 	typedef pgPassRender base;
 
 protected:
-	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
+	void CreatePipelineState(PipelineStateDesc& PSODesc);
 
 	std::shared_ptr<pgRenderTarget> m_pGBufferRT;
 
 public:
-	PassGeometry(const GeometryPassCreateInfo& ci);
+	PassGeometry(const pgPassRenderCreateInfo& ci, std::shared_ptr<pgRenderTarget> rt);
 
 	virtual ~PassGeometry();
 

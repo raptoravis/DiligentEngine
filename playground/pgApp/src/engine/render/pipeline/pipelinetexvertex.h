@@ -8,10 +8,10 @@ private:
 	Diligent::RefCntAutoPtr<Diligent::IBuffer>				m_VSConstants;
 	Diligent::RefCntAutoPtr<Diligent::ITextureView>         m_TextureSRV;
 private:
-	void CreatePipelineState(const pgPipelineCreateInfo& ci);
+	void CreatePipelineState();
 	void LoadTexture();
 public:
-	PipelineTexVertex(const pgPipelineCreateInfo& ci);
+	PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineTexVertex();
 
 	//virtual void update(pgRenderEventArgs& e);

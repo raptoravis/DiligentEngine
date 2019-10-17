@@ -12,8 +12,6 @@ using namespace Diligent;
 class PassTransparent : public pgPassRender {
 	typedef pgPassRender base;
 
-protected:
-	//void CreatePipelineState(const pgPassRenderCreateInfo& ci);
 public:
 	PassTransparent(const pgPassRenderCreateInfo& ci);
 

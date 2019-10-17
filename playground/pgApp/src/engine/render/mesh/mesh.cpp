@@ -2,6 +2,14 @@
 
 using namespace Diligent;
 
+pgMesh::pgMesh() {
+	//
+}
+
+pgMesh::~pgMesh() {
+	//
+}
+
 void pgMesh::addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> pgBuffer)
 {
 	m_VertexBuffers[binding] = pgBuffer;
@@ -65,10 +73,10 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 		pBuffs[0] = buffer.second->m_pBuffer.RawPtr();
 
-		m_pImmediateContext->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_NONE);
+		pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_NONE);
 	}
 
-	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 	auto count = m_pIndexBuffer->getCount();
 
@@ -79,7 +87,7 @@ void pgMesh::render(pgRenderEventArgs& e)
 	// Verify the state of vertex and index buffers
 	DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
-	m_pImmediateContext->Draw(DrawAttrs);
+	pgApp::s_ctx->Draw(DrawAttrs);
 }
 
 void pgMesh::bind(pgRenderEventArgs& e, pgBindFlag flag) {

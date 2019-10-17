@@ -9,22 +9,6 @@
 
 using namespace Diligent;
 
-struct LightPassCreateInfo : public pgPassRenderCreateInfo {
-	LightPassCreateInfo(const pgPassRenderCreateInfo& ci)
-		: pgPassRenderCreateInfo(ci)
-	{
-	}
-
-	std::shared_ptr<pgRenderTarget> rt;
-
-	std::shared_ptr<pgPipeline> front;
-	std::shared_ptr<pgPipeline> back;
-	std::shared_ptr<pgPipeline> dir;
-
-	const std::vector<pgLight>*	Lights;
-
-};
-
 __declspec(align(16)) struct ScreenToViewParams
 {
 	float4x4 m_InverseProjectionMatrix;
@@ -42,7 +26,7 @@ class PassLight : public pgPassRender {
 	typedef pgPassRender base;
 
 protected:
-	void CreatePipelineState(const pgPassRenderCreateInfo& ci, PipelineStateDesc& PSODesc);
+	void CreatePipelineState(PipelineStateDesc& PSODesc);
 
 	std::shared_ptr<pgRenderTarget>		m_pGBufferRT;
 
@@ -69,7 +53,12 @@ protected:
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
 	void updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag);
 public:
-	PassLight(const LightPassCreateInfo& ci);
+	PassLight(const pgPassRenderCreateInfo& ci,
+		std::shared_ptr<pgRenderTarget> rt, 
+		std::shared_ptr<pgPipeline> front, 
+		std::shared_ptr<pgPipeline> back, 
+		std::shared_ptr<pgPipeline> dir, 
+		const std::vector<pgLight>*	Lights);
 
 	virtual ~PassLight();
 

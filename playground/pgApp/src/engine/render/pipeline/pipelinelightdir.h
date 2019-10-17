@@ -6,9 +6,9 @@ class PipelineLightDir : public pgPipeline {
 	typedef pgPipeline base;
 private:
 private:
-	void CreatePipelineState(const pgPipelineCreateInfo& ci);
+	void CreatePipelineState();
 public:
-	PipelineLightDir(const pgPipelineCreateInfo& ci);
+	PipelineLightDir(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineLightDir();
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
