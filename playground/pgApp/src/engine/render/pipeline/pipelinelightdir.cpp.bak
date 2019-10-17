@@ -1,10 +1,10 @@
-#include "pipelinelightback.h"
+#include "pipelinelightdir.h"
 
 using namespace Diligent;
 
-PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt, 
+PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt,
 	std::shared_ptr<pgRenderTarget> GBufferRT,
-	IBuffer* PerObjectConstants, 
+	IBuffer* PerObjectConstants,
 	IBufferView* LightsBufferSRV,
 	Diligent::IBuffer* LightParamsCB,
 	Diligent::IBuffer* ScreenToViewParamsCB)
@@ -18,18 +18,18 @@ PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt,
 	CreatePipelineState();
 }
 
-PipelineLightBack::~PipelineLightBack() {
+PipelineLightDir::~PipelineLightDir() {
 
 }
 
-void PipelineLightBack::CreatePipelineState()
+void PipelineLightDir::CreatePipelineState()
 {
 	// Pipeline state object encompasses configuration of all GPU stages
 
 	PipelineStateDesc PSODesc;
 	// Pipeline state name is used by the engine to report issues.
 	// It is always a good idea to give objects descriptive names.
-	PSODesc.Name = "PipelineLightBack";
+	PSODesc.Name = "PipelineLightDir";
 
 	// This is a graphics pipeline
 	PSODesc.IsComputePipeline = false;
@@ -43,22 +43,16 @@ void PipelineLightBack::CreatePipelineState()
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
-	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_FRONT;
-	PSODesc.GraphicsPipeline.RasterizerDesc.DepthClipEnable = False;
-	//PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
+	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
 
 	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
 	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_ONE;
 	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_ONE;
 
-	// Enable depth testing and Disable depth writes
+	// Enable depth testing
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
 	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = False;
-	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_GREATER_EQUAL;
-
-	// Render pixel if the depth function passes and the stencil was not un-marked in the previous pass.
-	PSODesc.GraphicsPipeline.DepthStencilDesc.StencilEnable = True;
-	PSODesc.GraphicsPipeline.DepthStencilDesc.BackFace.StencilFunc = COMPARISON_FUNC_EQUAL;
+	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_GREATER;
 
 	ShaderCreateInfo ShaderCI;
 	// Tell the system that the shader source code is in HLSL.
@@ -119,16 +113,14 @@ void PipelineLightBack::CreatePipelineState()
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
-	ShaderResourceVariableDesc Vars[] =
-	{
-		{SHADER_TYPE_PIXEL, "Lights", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		{SHADER_TYPE_PIXEL, "DiffuseTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		{SHADER_TYPE_PIXEL, "SpecularTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		{SHADER_TYPE_PIXEL, "NormalTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		{SHADER_TYPE_PIXEL, "DepthTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
-	};
-	PSODesc.ResourceLayout.Variables = Vars;
-	PSODesc.ResourceLayout.NumVariables = _countof(Vars);
+	//// Shader variables should typically be mutable, which means they are expected
+	//// to change on a per-instance basis
+	//ShaderResourceVariableDesc Vars[] =
+	//{
+	//	{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+	//};
+	//PSODesc.ResourceLayout.Variables = Vars;
+	//PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 
 	//// Define static sampler for g_Texture. Static samplers should be used whenever possible
 	//SamplerDesc SamLinearClampDesc
@@ -155,31 +147,26 @@ void PipelineLightBack::CreatePipelineState()
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
 	auto GbufferRT = m_pGBufferRT;
 	auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getShaderResourceView());
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getTexture());
 
 	auto specularTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(specularTex->getShaderResourceView());
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(specularTex->getTexture());
 
 	auto normalTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(normalTex->getShaderResourceView());
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(normalTex->getTexture());
 
 	auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(depthTex->getShaderResourceView());
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(depthTex->getTexture());
 }
 
 
-void PipelineLightBack::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	if (flag == pgBindFlag::pgBindFlag_Mesh) {
-		//
-	}
-	else if (flag == pgBindFlag::pgBindFlag_Pass) {
-		pgApp::s_ctx->SetStencilRef(1);
-	}
+void PipelineLightDir::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	pgApp::s_ctx->SetStencilRef(1);
 
 	base::bind(e, flag);
 }
 
-void PipelineLightBack::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+void PipelineLightDir::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	pgApp::s_ctx->SetStencilRef(1);
 
 	base::unbind(e, flag);

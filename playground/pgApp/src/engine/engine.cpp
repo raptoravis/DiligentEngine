@@ -81,13 +81,15 @@ pgPipeline::~pgPipeline() {
 }
 
 void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	if (m_pRT) {
-		m_pRT->bind();
+	if (flag & pgBindFlag::pgBindFlag_Pass) {
+		if (m_pRT) {
+			m_pRT->bind();
+		}
 	}
 
 	e.pApp->bind(e, pgBindFlag::pgBindFlag_Pass);
 
-	{
+	if (flag & pgBindFlag::pgBindFlag_Mesh) {
 		// Set the pipeline state
 		pgApp::s_ctx->SetPipelineState(m_pPSO);
 

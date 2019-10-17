@@ -111,7 +111,7 @@ void pgRenderTarget::bind()
         std::shared_ptr<pgTexture> texture = m_Textures[i];
         if ( texture )
         {
-            renderTargetViews[numRTVs++] = texture->GetRenderTargetView();
+            renderTargetViews[numRTVs++] = texture->getRenderTargetView();
         }
     }
 
@@ -124,7 +124,7 @@ void pgRenderTarget::bind()
         std::shared_ptr<pgBuffer> rwbuffer = m_StructuredBuffers[i];
         if ( rwbuffer )
         {
-            uavViews[numUAVs++] = rwbuffer->GetUnorderedAccessView();
+            uavViews[numUAVs++] = rwbuffer->getUnorderedAccessView();
         }
     }
     
@@ -134,11 +134,11 @@ void pgRenderTarget::bind()
 
     if ( depthTexture )
     {
-        depthStencilView = depthTexture->GetDepthStencilView();
+        depthStencilView = depthTexture->getDepthStencilView();
     }
     else if ( depthStencilTexture )
     {
-        depthStencilView = depthStencilTexture->GetDepthStencilView();
+        depthStencilView = depthStencilTexture->getDepthStencilView();
     }
 
 	pgApp::s_ctx->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView, 
@@ -160,7 +160,7 @@ bool pgRenderTarget::IsValid() const
     {
         if ( texture )
         {
-			if (texture->GetRenderTargetView()) {
+			if (texture->getRenderTargetView()) {
 				++numRTV;
 			}
 

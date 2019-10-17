@@ -145,7 +145,7 @@ class pgSceneNode;
 class pgMaterial;
 class pgMesh;
 
-enum pgBindFlag : int {
+enum pgBindFlag {
 	pgBindFlag_None = 0, 
 	pgBindFlag_Technique = 1,
 	pgBindFlag_Pass = 2,
@@ -213,7 +213,7 @@ public:
 		return m_count;
 	}
 
-	Diligent::IBufferView* GetUnorderedAccessView() {
+	Diligent::IBufferView* getUnorderedAccessView() {
 		auto uav = m_pBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
 		return uav ;
 	}
@@ -249,10 +249,10 @@ public:
 	// Check to see if this texture has an alpha channel.
 	bool IsTransparent() const;
 
-	Diligent::ITextureView* GetShaderResourceView();
-	Diligent::ITextureView* GetDepthStencilView();
-	Diligent::ITextureView* GetRenderTargetView();
-	Diligent::ITextureView* GetUnorderedAccessView();
+	Diligent::ITextureView* getShaderResourceView();
+	Diligent::ITextureView* getDepthStencilView();
+	Diligent::ITextureView* getRenderTargetView();
+	Diligent::ITextureView* getUnorderedAccessView();
 
 	void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
 	void Copy(pgTexture* dstTexture);
@@ -733,7 +733,6 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
-	void _render(pgRenderEventArgs& e);
 protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);

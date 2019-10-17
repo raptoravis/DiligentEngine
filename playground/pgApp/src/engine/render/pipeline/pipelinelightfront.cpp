@@ -2,8 +2,9 @@
 
 using namespace Diligent;
 
-PipelineLightFront::PipelineLightFront(std::shared_ptr<pgRenderTarget> rt) 
+PipelineLightFront::PipelineLightFront(std::shared_ptr<pgRenderTarget> rt, IBuffer* PerObjectConstants)
 	: base(rt)
+	, m_PerObjectConstants(PerObjectConstants)
 {
 	CreatePipelineState();
 }
@@ -127,6 +128,8 @@ void PipelineLightFront::CreatePipelineState()
 
 	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
+
 	//// Since we did not explcitly specify the type for 'Constants' variable, default
 	//// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables 
 	//// never change and are bound directly through the pipeline state object.
@@ -142,7 +145,12 @@ void PipelineLightFront::CreatePipelineState()
 
 
 void PipelineLightFront::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	pgApp::s_ctx->SetStencilRef(1);
+	if (flag == pgBindFlag::pgBindFlag_Mesh) {
+		//
+	}
+	else if (flag == pgBindFlag::pgBindFlag_Pass) {
+		pgApp::s_ctx->SetStencilRef(1);
+	}
 
 	base::bind(e, flag);
 }

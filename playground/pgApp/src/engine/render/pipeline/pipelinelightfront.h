@@ -5,10 +5,10 @@
 class PipelineLightFront : public pgPipeline {
 	typedef pgPipeline base;
 private:
-private:
 	void CreatePipelineState();
+	Diligent::RefCntAutoPtr<Diligent::IBuffer>              m_PerObjectConstants;
 public:
-	PipelineLightFront(std::shared_ptr<pgRenderTarget> rt);
+	PipelineLightFront(std::shared_ptr<pgRenderTarget> rt, Diligent::IBuffer* PerObjectConstants);
 	virtual ~PipelineLightFront();
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);

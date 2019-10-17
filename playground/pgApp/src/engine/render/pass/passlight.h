@@ -22,18 +22,17 @@ __declspec(align(16)) struct LightParams
 	uint32_t padding[3];
 };
 
-class PassLight : public pgPassRender {
-	typedef pgPassRender base;
+class PassLight : public pgPass {
+	typedef pgPass base;
 
 protected:
-	void CreatePipelineState(PipelineStateDesc& PSODesc);
-
-	std::shared_ptr<pgRenderTarget>		m_pGBufferRT;
 
 	const std::vector<pgLight>*			m_pLights;
 
 	RefCntAutoPtr<IBuffer>				m_LightParamsCB;
 	RefCntAutoPtr<IBuffer>				m_ScreenToViewParamsCB;
+
+	RefCntAutoPtr<IBuffer>              m_PerObjectConstants;
 
 	std::shared_ptr<pgPipeline>			m_LightPipeline0;
 	std::shared_ptr<pgPipeline>			m_LightPipeline1;
@@ -53,12 +52,14 @@ protected:
 	std::shared_ptr<pgTechnique>		m_pTechniqueSpot;
 	std::shared_ptr<pgTechnique>		m_pTechniqueDir;
 		
+	void createBuffers();
 
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
 	void updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag);
 public:
-	PassLight(const pgPassRenderCreateInfo& ci,
-		std::shared_ptr<pgRenderTarget> rt, 
+	PassLight(IBuffer* PerObjectConstants, 
+		IBuffer* LightParamsCB,
+		IBuffer* ScreenToViewParamsCB,
 		std::shared_ptr<pgPipeline> front, 
 		std::shared_ptr<pgPipeline> back, 
 		std::shared_ptr<pgPipeline> dir, 

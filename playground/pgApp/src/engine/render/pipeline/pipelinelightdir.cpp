@@ -2,8 +2,18 @@
 
 using namespace Diligent;
 
-PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt) 
+PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt,
+	std::shared_ptr<pgRenderTarget> GBufferRT,
+	IBuffer* PerObjectConstants,
+	IBufferView* LightsBufferSRV,
+	Diligent::IBuffer* LightParamsCB,
+	Diligent::IBuffer* ScreenToViewParamsCB)
 	: base(rt)
+	, m_pGBufferRT(GBufferRT)
+	, m_PerObjectConstants(PerObjectConstants)
+	, m_LightParamsCB(LightParamsCB)
+	, m_ScreenToViewParamsCB(ScreenToViewParamsCB)
+	, m_LightsBufferSRV(LightsBufferSRV)
 {
 	CreatePipelineState();
 }
@@ -103,14 +113,16 @@ void PipelineLightDir::CreatePipelineState()
 	// Define variable type that will be used by default
 	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 
-	//// Shader variables should typically be mutable, which means they are expected
-	//// to change on a per-instance basis
-	//ShaderResourceVariableDesc Vars[] =
-	//{
-	//	{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
-	//};
-	//PSODesc.ResourceLayout.Variables = Vars;
-	//PSODesc.ResourceLayout.NumVariables = _countof(Vars);
+	ShaderResourceVariableDesc Vars[] =
+	{
+		{SHADER_TYPE_PIXEL, "Lights", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "DiffuseTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "SpecularTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "NormalTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		{SHADER_TYPE_PIXEL, "DepthTextureVS", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+	};
+	PSODesc.ResourceLayout.Variables = Vars;
+	PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 
 	//// Define static sampler for g_Texture. Static samplers should be used whenever possible
 	//SamplerDesc SamLinearClampDesc
@@ -127,17 +139,26 @@ void PipelineLightDir::CreatePipelineState()
 
 	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
-	//// Since we did not explcitly specify the type for 'Constants' variable, default
-	//// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables 
-	//// never change and are bound directly through the pipeline state object.
-	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
+	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")->Set(m_ScreenToViewParamsCB);
 
-	// Since we are using mutable variable, we must create a shader resource binding object
-	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
+	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-	//// Set texture SRV in the SRB
-	//m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
+	auto GbufferRT = m_pGBufferRT;
+	auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getShaderResourceView());
+
+	auto specularTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "SpecularTextureVS")->Set(specularTex->getShaderResourceView());
+
+	auto normalTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "NormalTextureVS")->Set(normalTex->getShaderResourceView());
+
+	auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")->Set(depthTex->getShaderResourceView());
 }
 
 
