@@ -56,6 +56,20 @@ static uint32_t getSlot(const pgBufferBinding& binding) {
 	return 0;
 }
 
+void pgMesh::_render(pgRenderEventArgs& e) {
+	auto oldMesh = e.pMesh;
+	auto currentMesh = this;
+
+	e.pMesh = currentMesh;
+	currentMesh->bind(e, pgBindFlag::pgBindFlag_Mesh);
+
+	currentMesh->render(e);
+
+	// clear it
+	currentMesh->unbind(e, pgBindFlag::pgBindFlag_Mesh);
+	e.pMesh = oldMesh;
+}
+
 void pgMesh::render(pgRenderEventArgs& e)
 {
 	assert(e.pPass);

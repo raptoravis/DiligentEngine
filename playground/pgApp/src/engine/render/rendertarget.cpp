@@ -92,7 +92,7 @@ void pgRenderTarget::Resize( uint16_t width, uint16_t height )
     //}
 }
 
-void pgRenderTarget::Bind()
+void pgRenderTarget::bind()
 {
     if ( m_bCheckValidity )
     {
@@ -145,7 +145,7 @@ void pgRenderTarget::Bind()
 		Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
-void pgRenderTarget::UnBind()
+void pgRenderTarget::unbind()
 {
 	pgApp::s_ctx->SetRenderTargets( 0, nullptr, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }

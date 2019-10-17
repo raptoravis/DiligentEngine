@@ -359,11 +359,11 @@ public:
 	 * It will remain the active render target until another RenderTarget is bound
 	 * using this same method.
 	 */
-	virtual void Bind();
+	virtual void bind();
 	/**
 	 * Unbind this render target from the rendering pipeline.
 	 */
-	virtual void UnBind();
+	virtual void unbind();
 
 	/**
 	 * After attaching color, depth, stencil, and StructuredBuffers to the render target,
@@ -582,6 +582,9 @@ public:
 	virtual void setMaterial(std::shared_ptr<pgMaterial> material);
 	virtual std::shared_ptr<pgMaterial> getMaterial() const;
 
+	void _render(pgRenderEventArgs& e);
+
+protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
@@ -616,11 +619,9 @@ public:
 	void addMesh(std::shared_ptr<pgMesh> mesh);
 	void RemoveMesh(std::shared_ptr<pgMesh> mesh);
 
-	/**
-	 * Render meshes associated with this scene node.
-	 * This method will traverse it's children.
-	 */
-	void render(pgRenderEventArgs& e);
+	void _render(pgRenderEventArgs& e);
+protected:
+	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
@@ -660,8 +661,9 @@ public:
 		m_pRootNode = root;
 	}
 
-	void render(pgRenderEventArgs& e);
-
+	void _render(pgRenderEventArgs& e);
+protected:
+	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
@@ -675,7 +677,6 @@ public:
 	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~pgPipeline();
 
-	void setRenderTarget();
 	std::shared_ptr<pgRenderTarget> getRenderTarget() {
 		return m_pRT;
 	}
@@ -688,6 +689,9 @@ public:
 class pgPass : public pgObject
 {
 	bool m_bEnabled;
+
+	friend class pgMesh;
+	friend class pgMaterial;
 protected:
 	std::shared_ptr<pgScene>							m_scene;
 public:
@@ -705,16 +709,17 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e) = 0;
-	virtual void render(pgRenderEventArgs& e) = 0;
-
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+	void _render(pgRenderEventArgs& e);
 
 	// return true if to render
 	virtual bool meshFilter(pgMesh* mesh) {
 		return true;
 	}
+protected:
+	virtual void render(pgRenderEventArgs& e) = 0;
 
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 	
@@ -728,6 +733,8 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
+	void _render(pgRenderEventArgs& e);
+protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
@@ -750,6 +757,8 @@ public:
 	void update(pgRenderEventArgs& e);
 
 	// Render the scene using the passes that have been configured.
+	void _render(pgRenderEventArgs& e);
+protected:
 	void render(pgRenderEventArgs& e);
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);

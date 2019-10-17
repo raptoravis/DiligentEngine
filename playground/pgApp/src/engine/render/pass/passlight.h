@@ -48,6 +48,10 @@ protected:
 	std::shared_ptr<pgPassPilpeline>	m_pSubPassSpot0;
 	std::shared_ptr<pgPassPilpeline>	m_pSubPassSpot1;
 	std::shared_ptr<pgPassPilpeline>	m_pSubPassDir;
+
+	std::shared_ptr<pgTechnique>		m_pTechniqueSphere;
+	std::shared_ptr<pgTechnique>		m_pTechniqueSpot;
+	std::shared_ptr<pgTechnique>		m_pTechniqueDir;
 		
 
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);

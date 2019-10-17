@@ -47,6 +47,20 @@ pgPass::~pgPass() {
 	//
 }
 
+void pgPass::_render(pgRenderEventArgs& e) {
+	// keep to restore it
+	auto oldPass = e.pPass;
+
+	auto currentPass = this;
+	e.pPass = currentPass;
+	currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
+
+	currentPass->render(e);
+
+	currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
+	e.pPass = oldPass;
+}
+
 void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
@@ -66,14 +80,10 @@ pgPipeline::~pgPipeline() {
 	//
 }
 
-void pgPipeline::setRenderTarget() {
-	if (m_pRT) {
-		m_pRT->Bind();
-	}
-}
-
 void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	this->setRenderTarget();
+	if (m_pRT) {
+		m_pRT->bind();
+	}
 
 	e.pApp->bind(e, pgBindFlag::pgBindFlag_Pass);
 
@@ -104,7 +114,7 @@ pgPassPilpeline::~pgPassPilpeline()
 
 // Render a frame
 void pgPassPilpeline::render(pgRenderEventArgs& e) {
-	m_scene->render(e);
+	m_scene->_render(e);
 }
 
 void pgPassPilpeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
@@ -156,7 +166,7 @@ void pgTechnique::update(pgRenderEventArgs& e) {
 }
 
 // Render the scene using the passes that have been configured.
-void pgTechnique::render(pgRenderEventArgs& e) {
+void pgTechnique::_render(pgRenderEventArgs& e) {
 	// keep to restore it
 	auto oldTechnique = e.pTechnique;
 
@@ -165,26 +175,20 @@ void pgTechnique::render(pgRenderEventArgs& e) {
 
 	currentTechnique->bind(e, pgBindFlag::pgBindFlag_Technique);
 
+	render(e);
+
+	currentTechnique->unbind(e, pgBindFlag::pgBindFlag_Technique);
+	e.pTechnique = oldTechnique;
+}
+
+void pgTechnique::render(pgRenderEventArgs& e) {
 	for (auto pass : m_Passes)
 	{
 		if (pass->isEnabled())
 		{
-			// keep to restore it
-			auto oldPass = e.pPass;
-
-			auto currentPass = pass.get();
-			e.pPass = currentPass;
-			currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-			pass->render(e);
-
-			currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
-			e.pPass = oldPass;
+			pass->_render(e);
 		}
 	}
-
-	currentTechnique->unbind(e, pgBindFlag::pgBindFlag_Technique);
-	e.pTechnique = oldTechnique;
 }
 
 void pgTechnique::bind(pgRenderEventArgs& e, pgBindFlag flag) {

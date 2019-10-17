@@ -20,7 +20,7 @@ bool PassOpaque::meshFilter(pgMesh* mesh) {
 
 // Render a frame
 void PassOpaque::render(pgRenderEventArgs& e) {
-	m_scene->render(e);
+	m_scene->_render(e);
 }
 
 void PassOpaque::update(pgRenderEventArgs& e) {

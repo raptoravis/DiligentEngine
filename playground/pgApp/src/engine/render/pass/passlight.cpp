@@ -31,6 +31,19 @@ PassLight::PassLight(const pgPassRenderCreateInfo& ci,
 	m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(m_pSpotLightScene, m_LightPipeline1);
 
 	m_pSubPassDir = std::make_shared<pgPassPilpeline>(m_pDirectionalLightScene, m_DirectionalLightPipeline);
+
+	m_pTechniqueSphere = std::make_shared<pgTechnique>(nullptr, nullptr);
+	m_pTechniqueSphere->addPass(m_pSubPassSphere0);
+	m_pTechniqueSphere->addPass(m_pSubPassSphere1);
+
+	m_pTechniqueSpot = std::make_shared<pgTechnique>(nullptr, nullptr);
+	m_pTechniqueSpot->addPass(m_pSubPassSpot0);
+	m_pTechniqueSpot->addPass(m_pSubPassSpot1);
+
+
+	m_pTechniqueDir = std::make_shared<pgTechnique>(nullptr, nullptr);
+	m_pTechniqueDir->addPass(m_pSubPassDir);
+
 }
 
 PassLight::~PassLight()
@@ -278,18 +291,17 @@ void PassLight::render(pgRenderEventArgs& e) {
 				switch (light.m_Type)
 				{
 				case pgLight::LightType::Point:
-					m_pSubPassSphere0->render(e);
-					m_pSubPassSphere1->render(e);
+					m_pTechniqueSphere->_render(e);
 					break;
 				case pgLight::LightType::Spot:
-					m_pSubPassSpot0->render(e);
-					m_pSubPassSpot1->render(e);
+					m_pTechniqueSpot->_render(e);
 					break;
 				case pgLight::LightType::Directional:
-					m_pSubPassDir->render(e);
+					m_pTechniqueDir->_render(e);
 					break;
 				}
 			}
+
 			lightParams.m_LightIndex++;
 		}
 	}

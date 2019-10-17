@@ -13,7 +13,7 @@ PassSetRT::~PassSetRT()
 // Render a frame
 void PassSetRT::render(pgRenderEventArgs& e) {
 	if (m_pRT) {
-		m_pRT->Bind();
+		m_pRT->bind();
 	}
 }
 
