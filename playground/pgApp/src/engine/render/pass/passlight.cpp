@@ -1,7 +1,7 @@
-#pragma once
-
 #include "passlight.h"
 #include "../../scene/sceneass.h"
+
+#include "../../mat2quat.h"
 
 PassLight::PassLight(const LightPassCreateInfo& ci)
 	: base(ci)
@@ -184,12 +184,51 @@ bool PassLight::meshFilter(pgMesh* mesh) {
 }
 
 
-void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam) {
+void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light) {
 	{
 		// Map the buffer and write current world-view-projection matrix
 		MapHelper<LightParams> CBConstants(e.pDeviceContext, m_LightParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
 
 		CBConstants->m_LightIndex = lightParam.m_LightIndex;
+	}
+
+	{
+		// Map the buffer and write current world-view-projection matrix
+		MapHelper<PerObject> CBConstants(e.pDeviceContext, m_PerObjectConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+
+		if (light.m_Type == pgLight::LightType::Directional) {
+			//CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
+			//CBConstants->ModelView = m_WorldViewMatrix.Transpose();
+			bool IsGL = m_pDevice->GetDeviceCaps().IsGLDevice();
+			Diligent::float4x4 othoMat = Diligent::float4x4::Ortho((float)m_desc.Width, (float)m_desc.Height, 0.f, 1.f, IsGL);
+			CBConstants->ModelViewProjection = othoMat;
+			CBConstants->ModelView = float4x4::Identity();
+		}
+		else {
+			auto& Proj = e.pCamera->getProjectionMatrix();
+			//const float4x4 nodeTransform = e.pSceneNode->getLocalTransform();
+			const float4x4 nodeTransform = Diligent::float4x4::Identity();
+
+			Diligent::float4x4 translation = Diligent::float4x4::Translation(Diligent::float3(light.m_PositionWS));
+			// Create a rotation matrix that rotates the model towards the direction of the light.
+			Diligent::float4x4 rotation = MakeQuaternionFromTwoVec3(Diligent::float3(0, 0, 1), normalize(Diligent::float3(light.m_DirectionWS))).ToMatrix();
+
+			// Compute the scale depending on the light type.
+			float scaleX, scaleY, scaleZ;
+			// For point lights, we want to scale the geometry by the range of the light.
+			scaleX = scaleY = scaleZ = light.m_Range;
+			if (light.m_Type == pgLight::LightType::Spot)
+			{
+				// For spotlights, we want to scale the base of the cone by the spotlight angle.
+				scaleX = scaleY = std::tan((PI_F / 180.0f) * (light.m_SpotlightAngle)) * light.m_Range;
+			}
+
+			Diligent::float4x4 scale = Diligent::float4x4::Scale(Diligent::float3(scaleX, scaleY, scaleZ));
+
+			Diligent::float4x4 modelViewMat = nodeTransform * scale * rotation * translation * e.pCamera->getViewMatrix();
+			CBConstants->ModelView = modelViewMat;
+			CBConstants->ModelViewProjection = modelViewMat * Proj;
+		}
 	}
 }
 
@@ -217,10 +256,8 @@ void PassLight::render(pgRenderEventArgs& e) {
 
 		for (const pgLight& light : *m_pLights) {
 			if (light.m_Enabled) {
-				m_pCurrentLight = &light;
-
 				// Update the constant buffer for the per-light data.
-				updateLightParams(e, lightParams);
+				updateLightParams(e, lightParams, light);
 
 				// Clear the stencil buffer for the next light
 				m_LightPipeline0->getRenderTarget()->Clear(pgClearFlags::Stencil, 

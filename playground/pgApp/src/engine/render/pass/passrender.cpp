@@ -5,6 +5,9 @@
 
 pgPassRender::pgPassRender(const pgPassRenderCreateInfo& ci)
 	: base(ci)
+	, m_PerObjectConstants(ci.PerObjectConstants)
+	, m_MaterialConstants(ci.MaterialConstants)
+	, m_LightsStructuredBuffer(ci.LightsStructuredBuffer)
 {
 	//LoadTexture();
 

@@ -128,3 +128,30 @@ inline Diligent::Quaternion calculateRotation(const Diligent::float4x4& m) {
 
 	return res;
 }
+
+inline Diligent::Quaternion MakeQuaternionFromTwoVec3(const Diligent::float3& u, const Diligent::float3& v)
+{
+	float norm_u_norm_v = sqrt(Diligent::dot(u, u) * Diligent::dot(v, v));
+	float real_part = norm_u_norm_v + Diligent::dot(u, v);
+	Diligent::float3 t;
+
+	if (real_part < static_cast<float>(1.e-6f) * norm_u_norm_v)
+	{
+		// If u and v are exactly opposite, rotate 180 degrees
+		// around an arbitrary orthogonal axis. Axis normalisation
+		// can happen later, when we normalise the quaternion.
+		real_part = static_cast<float>(0);
+		t = abs(u.x) > abs(u.z) 
+			? Diligent::float3(-u.y, u.x, static_cast<float>(0)) 
+			: Diligent::float3(static_cast<float>(0), -u.z, u.y);
+	}
+	else
+	{
+		// Otherwise, build quaternion the standard way.
+		t = cross(u, v);
+	}
+
+	Diligent::Quaternion r = normalize(Diligent::Quaternion(t.x, t.y, t.z, real_part));
+
+	return r;
+}

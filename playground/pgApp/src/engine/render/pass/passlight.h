@@ -59,9 +59,7 @@ protected:
 	std::shared_ptr<pgScene>			m_pSpotLightScene;
 	std::shared_ptr<pgScene>			m_pDirectionalLightScene;
 
-	const pgLight*						m_pCurrentLight;
-
-	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam);
+	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
 	void updateScreenToViewParams(pgRenderEventArgs& e);
 
 	void RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
