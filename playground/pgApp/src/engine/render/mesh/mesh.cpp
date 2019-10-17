@@ -1,5 +1,4 @@
 #include "../../engine.h"
-#include "../../app.h"
 
 using namespace Diligent;
 
@@ -71,8 +70,6 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 	m_pImmediateContext->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-	e.pPass->bind(e, pgBindFlag::pgBindFlag_Object);
-
 	auto count = m_pIndexBuffer->getCount();
 
 	DrawAttribs DrawAttrs;
@@ -83,4 +80,12 @@ void pgMesh::render(pgRenderEventArgs& e)
 	DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
 	m_pImmediateContext->Draw(DrawAttrs);
+}
+
+void pgMesh::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	e.pPass->bind(e, flag);
+}
+
+void pgMesh::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	e.pPass->unbind(e, flag);
 }

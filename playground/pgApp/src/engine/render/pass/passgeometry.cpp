@@ -152,3 +152,7 @@ void PassGeometry::update(pgRenderEventArgs& e) {
 void PassGeometry::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::bind(e, flag);
 }
+
+void PassGeometry::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::unbind(e, flag);
+}

@@ -1,4 +1,3 @@
-#include "../../app.h"
 #include "passclearrt.h"
 
 PassClearRT::PassClearRT(const PassClearRTCreateInfo& ci)

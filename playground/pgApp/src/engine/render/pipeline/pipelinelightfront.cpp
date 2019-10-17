@@ -146,3 +146,9 @@ void PipelineLightFront::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 	base::bind(e, flag);
 }
+
+void PipelineLightFront::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	m_pImmediateContext->SetStencilRef(1);
+
+	base::unbind(e, flag);
+}

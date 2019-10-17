@@ -4,7 +4,8 @@
 #include "SampleBase.h"
 #include "BasicMath.h"
 
-#include "engine/app.h"
+#include "engine/engine.h"
+#include "engine/render/light.h"
 
 namespace Diligent
 {

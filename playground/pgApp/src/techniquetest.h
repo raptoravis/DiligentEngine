@@ -17,5 +17,7 @@ public:
 
 	// Render the scene using the passes that have been configured.
 	virtual void render(pgRenderEventArgs& e);
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 };

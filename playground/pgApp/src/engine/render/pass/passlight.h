@@ -67,7 +67,7 @@ protected:
 		
 
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
-	void updateScreenToViewParams(pgRenderEventArgs& e);
+	void updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag);
 public:
 	PassLight(const LightPassCreateInfo& ci);
 
@@ -77,6 +77,7 @@ public:
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 	virtual bool meshFilter(pgMesh* mesh);
 };

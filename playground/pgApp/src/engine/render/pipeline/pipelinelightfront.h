@@ -11,8 +11,7 @@ public:
 	PipelineLightFront(const pgPipelineCreateInfo& ci);
 	virtual ~PipelineLightFront();
 
-	//virtual void update(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 };

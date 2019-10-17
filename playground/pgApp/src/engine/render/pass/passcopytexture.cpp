@@ -1,4 +1,3 @@
-#include "../../app.h"
 #include "passcopytexture.h"
 
 PassCopyTexture::PassCopyTexture(const CopyTexturePassCreateInfo& ci)

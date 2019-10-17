@@ -167,47 +167,59 @@ public:
 };
 
 class pgApp;
+class pgTechnique;
 class pgPass;
+class pgScene;
 class pgSceneNode;
 class pgMaterial;
 class pgMesh;
 
 enum pgBindFlag : int {
 	pgBindFlag_None = 0, 
-	pgBindFlag_Material = 1, 
-	pgBindFlag_Object = 2,
-	pgBindFlag_Pass = 4,
-	pgBindFlag_Pipeline = 8,
-	pgBindFlag_User1 = 16, 
-	pgBindFlag_User2 = 32, 
+	pgBindFlag_Technique = 1,
+	pgBindFlag_Pass = 2,
+	pgBindFlag_SceneNode = 4,
+	pgBindFlag_Material = 8, 
+	pgBindFlag_Mesh = 16,
+	pgBindFlag_Scene = 32, 
 	pgBindFlag_User3 = 64
 };
 
 class pgRenderEventArgs
 {
 public:
-	pgApp*						pApp;
-	float						CurrTime;
-	float						ElapsedTime;
-	
-	Diligent::IDeviceContext*	pDeviceContext;
-	pgCamera*					pCamera;
+	float												CurrTime;
+	float												ElapsedTime;
 
-	pgPass*						pPass;
-	pgSceneNode*				pSceneNode;
-	pgMaterial*					pMaterial;
+	pgApp*												pApp;
+	pgCamera*											pCamera;
+
+	Diligent::RefCntAutoPtr< Diligent::IDeviceContext>	pDeviceContext;
+
+	//
+	pgTechnique*										pTechnique;
+	pgPass*												pPass;
+	pgScene*											pScene;
+	pgSceneNode*										pSceneNode;
+	pgMaterial*											pMaterial;
+	pgMesh*												pMesh;
 public:
 	pgRenderEventArgs() 
 		: pApp(0)
 		, pDeviceContext(0)
 		, pCamera(0)
 		, pPass(0)
+		, pScene(0)
 		, pSceneNode(0)
 		, pMaterial(0)
 	{
 	}
 
-	void set(pgApp* caller, float currentTime, float elapsedTime, Diligent::IDeviceContext* ctx, pgCamera* camera) {
+	void set(float currentTime, float elapsedTime, 
+		pgApp* caller, pgCamera* camera, 
+		Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx
+		) 
+	{
 		pApp = caller;
 		pDeviceContext = ctx;
 		pCamera = camera;
@@ -474,6 +486,9 @@ public:
 	std::shared_ptr<pgTexture> GetTexture(TextureType ID) const;
 	void SetTexture(TextureType type, std::shared_ptr<pgTexture> texture);
 
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+
 	static uint32_t getConstantBufferSize() {
 		return sizeof(MaterialProperties);
 	}
@@ -630,6 +645,8 @@ public:
 	virtual std::shared_ptr<pgMaterial> getMaterial() const;
 
 	virtual void render(pgRenderEventArgs& e);
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -666,6 +683,8 @@ public:
 	 * This method will traverse it's children.
 	 */
 	void render(pgRenderEventArgs& e);
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 protected:
 
@@ -725,7 +744,10 @@ public:
 		m_pRootNode = root;
 	}
 
-	virtual void render(pgRenderEventArgs& e);
+	void render(pgRenderEventArgs& e);
+
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 struct pgPipelineCreateInfo : public pgCreateInfo {
@@ -760,6 +782,7 @@ public:
 	}
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 
@@ -807,8 +830,10 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e) = 0;
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag) = 0;
 	virtual void render(pgRenderEventArgs& e) = 0;
+
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 	// return true if to render
 	virtual bool meshFilter(pgMesh* mesh) {
@@ -838,6 +863,7 @@ public:
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 struct pgTechniqueCreateInfo : public pgCreateInfo {
@@ -871,14 +897,48 @@ public:
 	unsigned int addPass(std::shared_ptr<pgPass> pass);
 	std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
-	virtual void update(pgRenderEventArgs& e);
+	void update(pgRenderEventArgs& e);
 
 	// Render the scene using the passes that have been configured.
-	virtual void render(pgRenderEventArgs& e);
+	void render(pgRenderEventArgs& e);
 
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 private:
 	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
 	RenderPassList m_Passes;
 
 };
 
+class pgApp : public Diligent::SampleBase {
+public:
+	static Diligent::RefCntAutoPtr<Diligent::IRenderDevice>		s_device;
+	static Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	s_ctx;
+	static Diligent::RefCntAutoPtr<Diligent::ISwapChain>		s_swapChain;
+	static Diligent::RefCntAutoPtr<Diligent::IEngineFactory>	s_engineFactory;
+	static std::shared_ptr<pgRenderTarget>						s_rt;
+	static std::shared_ptr<pgTexture>							s_backBuffer;
+
+	static Diligent::SwapChainDesc								s_desc;
+
+protected:
+	std::shared_ptr<pgCamera>							m_pCamera;
+	pgRenderEventArgs									m_evtArgs;
+
+public:
+	pgApp();
+	virtual ~pgApp();
+
+	virtual void Initialize(Diligent::IEngineFactory*   pEngineFactory,
+		Diligent::IRenderDevice*    pDevice,
+		Diligent::IDeviceContext**  ppContexts,
+		Diligent::Uint32            NumDeferredCtx,
+		Diligent::ISwapChain*       pSwapChain) override;
+
+	virtual void Render() override;
+	virtual void Update(double CurrTime, double ElapsedTime) override;
+	virtual const Diligent::Char* GetSampleName()const override { return "pgApp"; }
+
+	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+};

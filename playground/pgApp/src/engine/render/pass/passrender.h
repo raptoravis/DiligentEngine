@@ -50,5 +50,6 @@ public:
 	virtual void update(pgRenderEventArgs& e);
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 

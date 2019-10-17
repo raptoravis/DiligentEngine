@@ -146,3 +146,9 @@ void PipelineLightDir::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 	base::bind(e, flag);
 }
+
+void PipelineLightDir::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	m_pImmediateContext->SetStencilRef(1);
+
+	base::unbind(e, flag);
+}

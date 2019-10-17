@@ -1,7 +1,7 @@
 #include "passlight.h"
 #include "../../scene/sceneass.h"
 
-#include "../../mat2quat.h"
+#include "../../mathutils.h"
 
 PassLight::PassLight(const LightPassCreateInfo& ci)
 	: base(ci)
@@ -252,7 +252,7 @@ void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& light
 	}
 }
 
-void PassLight::updateScreenToViewParams(pgRenderEventArgs& e) {
+void PassLight::updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag) {
 	{
 		// Map the buffer and write current world-view-projection matrix
 		MapHelper<ScreenToViewParams> CBConstants(e.pDeviceContext, m_ScreenToViewParamsCB, MAP_WRITE, MAP_FLAG_DISCARD);
@@ -267,7 +267,7 @@ void PassLight::updateScreenToViewParams(pgRenderEventArgs& e) {
 
 // Render a frame
 void PassLight::render(pgRenderEventArgs& e) {
-	updateScreenToViewParams(e);
+	updateScreenToViewParams(e, pgBindFlag::pgBindFlag_Pass);
 
 	if (m_pLights) {
 		LightParams	lightParams;
@@ -310,4 +310,8 @@ void PassLight::update(pgRenderEventArgs& e) {
 
 void PassLight::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::bind(e, flag);
+}
+
+void PassLight::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::unbind(e, flag);
 }

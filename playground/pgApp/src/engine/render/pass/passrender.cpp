@@ -1,6 +1,3 @@
-#pragma once
-
-#include "../../app.h"
 #include "passrender.h"
 
 pgPassRender::pgPassRender(const pgPassRenderCreateInfo& ci)
@@ -156,7 +153,7 @@ void pgPassRender::update(pgRenderEventArgs& e) {
 void pgPassRender::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	e.pApp->bind(e, flag);
 
-	if (flag & pgBindFlag::pgBindFlag_Object) {
+	if (flag == pgBindFlag::pgBindFlag_Mesh) {
 		// Set the pipeline state
 		m_pImmediateContext->SetPipelineState(m_pPSO);
 
@@ -164,4 +161,8 @@ void pgPassRender::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 		// makes sure that resources are transitioned to required states.
 		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
+}
+
+void pgPassRender::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
 }

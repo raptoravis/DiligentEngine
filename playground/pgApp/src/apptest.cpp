@@ -17,7 +17,7 @@
 
 #include <windows.h>
 
-#include "engine/mat2quat.h"
+#include "engine/mathutils.h"
 
 #include "scenetest.h"
 
@@ -111,7 +111,7 @@ namespace Diligent
 	}
 
 	void AppTest::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-		if (flag & pgBindFlag::pgBindFlag_Object) {
+		if (flag & pgBindFlag::pgBindFlag_Mesh) {
 			const float4x4 view = e.pCamera->getViewMatrix();
 			const float4x4 local = e.pSceneNode->getLocalTransform();
 
@@ -250,9 +250,9 @@ namespace Diligent
 
 		pgCameraCreateInfo cci{ ci };
 
-		m_renderingTechnique = RenderingTechnique::Deferred;
+		//m_renderingTechnique = RenderingTechnique::Deferred;
 		//m_renderingTechnique = RenderingTechnique::Forward;
-		//m_renderingTechnique = RenderingTechnique::Test;
+		m_renderingTechnique = RenderingTechnique::Test;
 
 		if (m_renderingTechnique != RenderingTechnique::Test) {
 			cci.pos = float3(0, 0, -25);
@@ -349,7 +349,8 @@ namespace Diligent
 
 		m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
-		m_evtArgs.set(this, (float)CurrTime, (float)ElapsedTime, m_pImmediateContext.RawPtr(), m_pCamera.get());
+		m_evtArgs.set((float)CurrTime, (float)ElapsedTime, 
+			this, m_pCamera.get(), m_pImmediateContext);
 
 		int technique = (int)m_renderingTechnique;
 

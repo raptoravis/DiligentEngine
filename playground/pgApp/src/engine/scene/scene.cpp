@@ -1,5 +1,4 @@
 #include "../engine.h"
-#include "../app.h"
 
 pgSceneNode::pgSceneNode(const Diligent::float4x4& localTransform)
 	: m_LocalTransform(localTransform)
@@ -155,19 +154,45 @@ void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 }
 
 void pgSceneNode::render(pgRenderEventArgs& e) {
-	e.pSceneNode = this;
+	// keep it to restore it
+	auto oldSceneNode = e.pSceneNode;
+
+	auto currentSceneNode = this;
+
+	e.pSceneNode = currentSceneNode;
+	currentSceneNode->bind(e, pgBindFlag::pgBindFlag_SceneNode);
 
 	// First render all my meshes.
 	for (auto mesh : m_Meshes) {
 		bool renderIt = e.pPass->meshFilter(mesh.get());
 		if (renderIt) {
-			e.pMaterial = mesh->getMaterial().get();
-			e.pPass->bind(e, pgBindFlag::pgBindFlag_Material);
+			auto oldMaterial = e.pMaterial;
+			auto currentMaterial = mesh->getMaterial().get();
 
-			mesh->render(e);
+			e.pMaterial = currentMaterial;
+
+			if (currentMaterial) {
+				currentMaterial->bind(e, pgBindFlag::pgBindFlag_Material);
+			}
+
+			{
+				auto oldMesh = e.pMesh;
+				auto currentMesh = mesh.get();
+				e.pMesh = currentMesh;
+				currentMesh->bind(e, pgBindFlag::pgBindFlag_Mesh);
+
+				mesh->render(e);
+
+				// clear it
+				currentMesh->unbind(e, pgBindFlag::pgBindFlag_Mesh);
+				e.pMesh = oldMesh;
+			}
 
 			// clear it
-			e.pMaterial = 0;
+			if (currentMaterial) {
+				currentMaterial->unbind(e, pgBindFlag::pgBindFlag_Material);
+			}
+			e.pMaterial = oldMaterial;
 		}
 	}
 
@@ -178,13 +203,43 @@ void pgSceneNode::render(pgRenderEventArgs& e) {
 	}
 
 	// clear it
-	e.pSceneNode = 0;
+	currentSceneNode->unbind(e, pgBindFlag::pgBindFlag_SceneNode);
+
+	//e.pSceneNode.reset();
+	e.pSceneNode = oldSceneNode;
 }
+
+
+void pgSceneNode::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
+void pgSceneNode::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
 
 void pgScene::render(pgRenderEventArgs& e)
 {
+	// keep it to restore it
+	auto oldScene = e.pScene;
+	auto currentScene = this;
+	e.pScene = currentScene;
+	currentScene->bind(e, pgBindFlag::pgBindFlag_Scene);
+
 	if (m_pRootNode)
 	{
 		m_pRootNode->render(e);
 	}
+
+	currentScene->unbind(e, pgBindFlag::pgBindFlag_Scene);
+	e.pScene = oldScene;
+}
+
+void pgScene::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
+void pgScene::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
 }

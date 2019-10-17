@@ -89,3 +89,11 @@ void TechniqueTest::update(pgRenderEventArgs& e) {
 void TechniqueTest::render(pgRenderEventArgs& e) {
 	base::render(e);
 }
+
+void TechniqueTest::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+
+}
+
+void TechniqueTest::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+
+}

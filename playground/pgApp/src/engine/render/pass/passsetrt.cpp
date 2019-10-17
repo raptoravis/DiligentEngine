@@ -1,5 +1,4 @@
-#include "../../app.h"
-#include "PassSetRT.h"
+#include "passsetrt.h"
 
 PassSetRT::PassSetRT(const PassSetRTCreateInfo& ci)
 	: base(ci)

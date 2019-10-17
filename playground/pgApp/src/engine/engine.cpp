@@ -1,7 +1,16 @@
 #include "engine.h"
-#include "./app.h"
 
 #include <windows.h>
+
+Diligent::RefCntAutoPtr<Diligent::IRenderDevice>	pgApp::s_device;
+Diligent::RefCntAutoPtr<Diligent::IDeviceContext>	pgApp::s_ctx;
+Diligent::RefCntAutoPtr<Diligent::ISwapChain>		pgApp::s_swapChain;
+Diligent::RefCntAutoPtr<Diligent::IEngineFactory>	pgApp::s_engineFactory;
+std::shared_ptr<pgRenderTarget>						pgApp::s_rt;
+std::shared_ptr<pgTexture>							pgApp::s_backBuffer;
+
+Diligent::SwapChainDesc								pgApp::s_desc;
+
 
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function, const std::string& message)
 {
@@ -28,6 +37,14 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
+void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
+void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
 
 pgPipeline::pgPipeline(const pgPipelineCreateInfo& ci) 
 	: m_pDevice(ci.device)
@@ -51,13 +68,11 @@ void pgPipeline::setRenderTarget() {
 }
 
 void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	if (flag & pgBindFlag::pgBindFlag_Pipeline) {
-		this->setRenderTarget();
-	}
+	this->setRenderTarget();
 
-	e.pApp->bind(e, flag);
+	e.pApp->bind(e, pgBindFlag::pgBindFlag_Pass);
 
-	if (flag & pgBindFlag::pgBindFlag_Pipeline) {
+	{
 		// Set the pipeline state
 		m_pImmediateContext->SetPipelineState(m_pPSO);
 
@@ -65,6 +80,10 @@ void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 		// makes sure that resources are transitioned to required states.
 		m_pImmediateContext->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
+}
+
+void pgPipeline::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
 }
 
 pgPassPilpeline::pgPassPilpeline(const pgPassPipelineCreateInfo& ci)
@@ -79,10 +98,7 @@ pgPassPilpeline::~pgPassPilpeline()
 }
 
 // Render a frame
-void pgPassPilpeline::render(pgRenderEventArgs& e)
-{
-	m_pPipeline->bind(e, pgBindFlag_Pipeline);
-
+void pgPassPilpeline::render(pgRenderEventArgs& e) {
 	m_scene->render(e);
 }
 
@@ -90,8 +106,12 @@ void pgPassPilpeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	m_pPipeline->bind(e, flag);
 }
 
-void pgPassPilpeline::update(pgRenderEventArgs& e)
-{
+void pgPassPilpeline::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	m_pPipeline->unbind(e, flag);
+}
+
+
+void pgPassPilpeline::update(pgRenderEventArgs& e) {
 }
 
 
@@ -103,22 +123,20 @@ pgTechnique::pgTechnique(const pgTechniqueCreateInfo& ci)
 		, m_desc(ci.desc)
 		, m_pRT(ci.rt)
 		, m_pBackBuffer(ci.backBuffer)
-{}
-
-pgTechnique::~pgTechnique()
 {
+}
+
+pgTechnique::~pgTechnique() {
 	m_Passes.clear();
 }
 
-unsigned int pgTechnique::addPass(std::shared_ptr<pgPass> pass)
-{
+unsigned int pgTechnique::addPass(std::shared_ptr<pgPass> pass) {
 	// No check for duplicate passes (it may be intended to render the same pass multiple times?)
 	m_Passes.push_back(pass);
 	return static_cast<unsigned int>(m_Passes.size()) - 1;
 }
 
-std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
-{
+std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const {
 	if (ID < m_Passes.size())
 	{
 		return m_Passes[ID];
@@ -127,8 +145,7 @@ std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
 	return 0;
 }
 
-void pgTechnique::update(pgRenderEventArgs& e)
-{
+void pgTechnique::update(pgRenderEventArgs& e) {
 	for (auto pass : m_Passes)
 	{
 		if (pass->isEnabled())
@@ -139,22 +156,76 @@ void pgTechnique::update(pgRenderEventArgs& e)
 }
 
 // Render the scene using the passes that have been configured.
-void pgTechnique::render(pgRenderEventArgs& e)
-{
+void pgTechnique::render(pgRenderEventArgs& e) {
+	// keep to restore it
+	auto oldTechnique = e.pTechnique;
+
+	auto currentTechnique = this;
+	e.pTechnique = currentTechnique;
+
+	currentTechnique->bind(e, pgBindFlag::pgBindFlag_Technique);
+
 	for (auto pass : m_Passes)
 	{
 		if (pass->isEnabled())
 		{
-			// set the pass
-			e.pPass = pass.get();
-			e.pPass->bind(e, pgBindFlag::pgBindFlag_Pass);
+			// keep to restore it
+			auto oldPass = e.pPass;
+
+			auto currentPass = pass.get();
+			e.pPass = currentPass;
+			currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
 
 			pass->render(e);
 
-			// clear it
-			e.pPass = 0;
+			currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
+			e.pPass = oldPass;
 		}
 	}
+
+	currentTechnique->unbind(e, pgBindFlag::pgBindFlag_Technique);
+	e.pTechnique = oldTechnique;
+}
+
+void pgTechnique::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
+void pgTechnique::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
 }
 
 
+pgApp::pgApp() {
+	//
+}
+
+
+pgApp::~pgApp() {
+	//
+}
+
+void pgApp::Initialize(Diligent::IEngineFactory*   pEngineFactory,
+	Diligent::IRenderDevice*    pDevice,
+	Diligent::IDeviceContext**  ppContexts,
+	Diligent::Uint32            NumDeferredCtx,
+	Diligent::ISwapChain*       pSwapChain)
+{
+	//
+}
+
+void pgApp::Render() {
+	//
+}
+
+void pgApp::Update(double CurrTime, double ElapsedTime) {
+	//
+}
+
+void pgApp::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}
+
+void pgApp::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	//
+}

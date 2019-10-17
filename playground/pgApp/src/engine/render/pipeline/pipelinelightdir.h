@@ -11,8 +11,7 @@ public:
 	PipelineLightDir(const pgPipelineCreateInfo& ci);
 	virtual ~PipelineLightDir();
 
-	//virtual void update(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 };

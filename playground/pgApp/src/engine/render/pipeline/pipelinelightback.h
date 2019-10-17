@@ -11,8 +11,7 @@ public:
 	PipelineLightBack(const pgPipelineCreateInfo& ci);
 	virtual ~PipelineLightBack();
 
-	//virtual void update(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
+	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 };

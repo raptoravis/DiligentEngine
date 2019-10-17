@@ -146,29 +146,31 @@ void PipelineTexVertex::LoadTexture()
 }
 
 void PipelineTexVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	if (flag & pgBindFlag::pgBindFlag_Object) {
-		const float4x4 view = e.pCamera->getViewMatrix();
+	{
+		if (flag == pgBindFlag::pgBindFlag_Mesh) {
+			const float4x4 view = e.pCamera->getViewMatrix();
 
-		const float4x4 local = e.pSceneNode->getLocalTransform();
+			const float4x4 local = e.pSceneNode->getLocalTransform();
 
-		// Set cube world view matrix
-		float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * local * view;
+			// Set cube world view matrix
+			float4x4 CubeWorldView = float4x4::RotationY(static_cast<float>(e.CurrTime) * 1.0f) * local * view;
 
-		auto& Proj = e.pCamera->getProjectionMatrix();
+			auto& Proj = e.pCamera->getProjectionMatrix();
 
-		// Compute world-view-projection matrix
-		float4x4 worldViewProjMatrix = CubeWorldView * Proj;
+			// Compute world-view-projection matrix
+			float4x4 worldViewProjMatrix = CubeWorldView * Proj;
 
-		{
-			// Map the buffer and write current world-view-projection matrix
-			MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
-			*CBConstants = worldViewProjMatrix.Transpose();
+			{
+				// Map the buffer and write current world-view-projection matrix
+				MapHelper<float4x4> CBConstants(m_pImmediateContext, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+				*CBConstants = worldViewProjMatrix.Transpose();
+			}
+
+			m_pImmediateContext->SetPipelineState(m_pPSO);
+
+			// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
+			// makes sure that resources are transitioned to required states.
+			m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
-
-		m_pImmediateContext->SetPipelineState(m_pPSO);
-
-		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-		// makes sure that resources are transitioned to required states.
-		m_pImmediateContext->CommitShaderResources(m_pSRB, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 }

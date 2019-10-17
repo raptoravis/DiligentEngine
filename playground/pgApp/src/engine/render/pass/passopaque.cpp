@@ -1,5 +1,3 @@
-#pragma once
-
 #include "passopaque.h"
 
 PassOpaque::PassOpaque(const PassOpaqueCreateInfo& ci)
@@ -31,4 +29,8 @@ void PassOpaque::update(pgRenderEventArgs& e) {
 
 void PassOpaque::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::bind(e, flag);
+}
+
+void PassOpaque::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::unbind(e, flag);
 }

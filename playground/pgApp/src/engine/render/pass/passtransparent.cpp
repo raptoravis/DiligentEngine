@@ -1,5 +1,3 @@
-#pragma once
-
 #include "passtransparent.h"
 
 PassTransparent::PassTransparent(const pgPassRenderCreateInfo& ci)
@@ -37,4 +35,8 @@ void PassTransparent::update(pgRenderEventArgs& e) {
 
 void PassTransparent::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::bind(e, flag);
+}
+
+void PassTransparent::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	base::unbind(e, flag);
 }

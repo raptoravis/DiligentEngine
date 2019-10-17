@@ -196,3 +196,13 @@ bool pgMaterial::IsTransparent() const
 		m_pProperties->m_AlphaThreshold <= 0.0f); // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
 }
 
+
+void pgMaterial::bind(pgRenderEventArgs& e, pgBindFlag flag) {
+	e.pPass->bind(e, flag);
+}
+
+void pgMaterial::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
+	e.pPass->unbind(e, flag);
+}
+
+
