@@ -20,6 +20,26 @@ PassLight::PassLight(const LightPassCreateInfo& ci)
 	m_pPointLightScene = pgSceneAss::CreateSphere(sci, 1.0f);
 	m_pSpotLightScene = pgSceneAss::CreateCylinder(sci, 0.0f, 1.0f, 1.0f, float3(0, 0, 1));
 	m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(sci, -1, 1, -1, 1, -1);
+
+	pgPassPipelineCreateInfo ppci{ ci };
+
+	ppci.scene = m_pPointLightScene;
+	ppci.pipeline = m_LightPipeline0;
+	m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(ppci);
+
+	ppci.pipeline = m_LightPipeline1;
+	m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(ppci);
+
+	ppci.scene = m_pSpotLightScene;
+	ppci.pipeline = m_LightPipeline0;
+	m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(ppci);
+
+	ppci.pipeline = m_LightPipeline1;
+	m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(ppci);
+
+	ppci.scene = m_pDirectionalLightScene;
+	ppci.pipeline = m_DirectionalLightPipeline;
+	m_pSubPassDir = std::make_shared<pgPassPilpeline>(ppci);
 }
 
 PassLight::~PassLight()
@@ -267,28 +287,21 @@ void PassLight::render(pgRenderEventArgs& e) {
 				switch (light.m_Type)
 				{
 				case pgLight::LightType::Point:
-					RenderSubPass(e, m_pPointLightScene, m_LightPipeline0);
-					RenderSubPass(e, m_pPointLightScene, m_LightPipeline1);
+					m_pSubPassSphere0->render(e);
+					m_pSubPassSphere1->render(e);
 					break;
 				case pgLight::LightType::Spot:
-					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline0);
-					RenderSubPass(e, m_pSpotLightScene, m_LightPipeline1);
+					m_pSubPassSpot0->render(e);
+					m_pSubPassSpot1->render(e);
 					break;
 				case pgLight::LightType::Directional:
-					RenderSubPass(e, m_pDirectionalLightScene, m_DirectionalLightPipeline);
+					m_pSubPassDir->render(e);
 					break;
 				}
 			}
 			lightParams.m_LightIndex++;
 		}
 	}
-}
-
-void PassLight::RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-{
-	pipeline->bind(e, pgBindFlag::pgBindFlag_Pipeline);
-
-	scene->render(e);
 }
 
 void PassLight::update(pgRenderEventArgs& e) {

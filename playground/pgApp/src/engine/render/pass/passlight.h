@@ -59,10 +59,15 @@ protected:
 	std::shared_ptr<pgScene>			m_pSpotLightScene;
 	std::shared_ptr<pgScene>			m_pDirectionalLightScene;
 
+	std::shared_ptr<pgPassPilpeline>	m_pSubPassSphere0;
+	std::shared_ptr<pgPassPilpeline>	m_pSubPassSphere1;
+	std::shared_ptr<pgPassPilpeline>	m_pSubPassSpot0;
+	std::shared_ptr<pgPassPilpeline>	m_pSubPassSpot1;
+	std::shared_ptr<pgPassPilpeline>	m_pSubPassDir;
+		
+
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
 	void updateScreenToViewParams(pgRenderEventArgs& e);
-
-	void RenderSubPass(pgRenderEventArgs& e, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
 public:
 	PassLight(const LightPassCreateInfo& ci);
 
