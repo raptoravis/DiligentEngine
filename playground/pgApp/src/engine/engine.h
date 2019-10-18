@@ -156,6 +156,16 @@ enum pgBindFlag {
 	pgBindFlag_User3 = 64
 };
 
+// CPU Access. Used for textures and Buffers
+enum class CPUAccess
+{
+	None = 0,          // No CPU access to this texture is necessary.
+	Read = (1 << 0), // CPU reads permitted.
+	Write = (1 << 1), // CPU writes permitted.
+	ReadWrite = Read | Write
+};
+
+
 class pgRenderEventArgs
 {
 public:
@@ -259,12 +269,6 @@ public:
 
 	bool IsValid() const;
 
-	template <typename T>
-	void Set(std::shared_ptr<T> value);
-
-	template <typename T>
-	std::shared_ptr<T> Get() const;
-
 	// Get the type of the stored parameter.
 	Type GetType() const;
 
@@ -272,11 +276,10 @@ public:
 	virtual void Bind();
 	virtual void UnBind();
 
-protected:
-	virtual void SetConstantBuffer(std::shared_ptr<ConstantBuffer> constantBuffer);
-	virtual void SetTexture(std::shared_ptr<pgTexture> texture);
-	virtual void SetSampler(std::shared_ptr<SamplerState> sampler);
-	virtual void SetStructuredBuffer(std::shared_ptr<StructuredBuffer> rwBuffer);
+	void SetConstantBuffer(std::shared_ptr<ConstantBuffer> constantBuffer);
+	void SetTexture(std::shared_ptr<pgTexture> texture);
+	void SetSampler(std::shared_ptr<SamplerState> sampler);
+	void SetStructuredBuffer(std::shared_ptr<StructuredBuffer> rwBuffer);
 
 private:
 	std::string m_Name;
@@ -368,6 +371,7 @@ private:
 
 class pgBuffer : public pgObject
 {
+protected:
 	// The stride of the vertex buffer in bytes.
 	uint32_t m_uiStride;
 	// How this buffer should be bound.
@@ -385,7 +389,7 @@ public:
 		ConstantBuffer
 	};
 
-	pgBuffer(int count)
+	pgBuffer(uint32_t count)
 		: m_uiCount(count)
 	{
 	}
@@ -420,7 +424,10 @@ public:
 
 class ConstantBuffer : public pgBuffer
 {
+	typedef pgBuffer base;
 public:
+	ConstantBuffer(uint32_t size, void* data = 0);
+	virtual ~ConstantBuffer();
 
 	// The contents of a constant buffer can also be updated.
 	template <typename T>
@@ -441,7 +448,7 @@ public:
 	virtual void Copy(std::shared_ptr<ConstantBuffer> other);
 
 	// Implementations must provide this method.
-	virtual void Set(const void* data, size_t size) = 0;
+	virtual void Set(const void* data, size_t size);
 
 protected:
 
@@ -450,20 +457,25 @@ protected:
 
 class StructuredBuffer : public pgBuffer
 {
+	typedef pgBuffer base;
 public:
+	StructuredBuffer(const void* data, uint32_t count, uint32_t stride, 
+		CPUAccess cpuAccess = CPUAccess::None, bool bUAV = false);
+	virtual ~StructuredBuffer();
+
 	// Bind the buffer for rendering.
-	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 	// Unbind the buffer for rendering.
-	virtual void UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+	virtual void UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 
 	// Is this an index buffer or an attribute/vertex buffer?
-	virtual BufferType GetType() const = 0;
+	virtual BufferType GetType() const;
 	// How many elements does this buffer contain?
-	virtual unsigned int GetElementCount() const = 0;
+	virtual unsigned int GetElementCount() const;
 
 	// Copy the contents of another buffer to this one.
 	// Buffers must be the same size.
-	virtual void Copy(std::shared_ptr<StructuredBuffer> other) = 0;
+	virtual void Copy(std::shared_ptr<StructuredBuffer> other);
 
 	// Set the buffer data.
 	template<typename T>
@@ -472,10 +484,10 @@ public:
 	}
 
 	// Clear the contents of the buffer.
-	virtual void Clear() = 0;
+	virtual void Clear();
 
 protected:
-	virtual void SetData(void* data, size_t elementSize, size_t offset, size_t numElements) = 0;
+	virtual void SetData(void* data, size_t elementSize, size_t offset, size_t numElements);
 
 };
 
@@ -722,6 +734,9 @@ public:
 	 * Resizing a texture will clear it's contents.
 	 */
 	virtual void Resize(uint16_t width, uint16_t height);
+
+	virtual void Bind();
+	virtual void UnBind();
 
 	/**
 	 * Bind this render target to the rendering pipeline.
@@ -1014,13 +1029,11 @@ protected:
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>			m_pPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>	m_pSRB;
 
+	Diligent::PipelineStateDesc									m_PSODesc;
 	ShaderMap m_Shaders;
 
-	Diligent::BlendStateDesc m_BlendState;
-	Diligent::RasterizerStateDesc m_RasterizerState;
-	Diligent::DepthStencilStateDesc m_DepthStencilState;
-
 	std::shared_ptr<pgRenderTarget>								m_pRT;
+	bool														m_bDirty;
 public:
 	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~pgPipeline();
@@ -1032,21 +1045,22 @@ public:
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 	//
-	virtual void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
-	virtual std::shared_ptr<Shader> GetShader(Shader::ShaderType type) const;
-	virtual const ShaderMap& GetShaders() const;
+	void SetLayoutElement(uint32_t layoutElementCount, const Diligent::LayoutElement* pLayoutElements);
+	void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
+	std::shared_ptr<Shader> GetShader(Shader::ShaderType type) const;
+	const ShaderMap& GetShaders() const;
 
-	virtual void SetBlendState(const Diligent::BlendStateDesc& blendState);
-	virtual Diligent::BlendStateDesc& GetBlendState();
+	void SetBlendState(const Diligent::BlendStateDesc& blendState);
+	Diligent::BlendStateDesc& GetBlendState();
 
-	virtual void SetRasterizerState(const Diligent::RasterizerStateDesc& rasterizerState);
-	virtual Diligent::RasterizerStateDesc& GetRasterizerState();
+	void SetRasterizerState(const Diligent::RasterizerStateDesc& rasterizerState);
+	Diligent::RasterizerStateDesc& GetRasterizerState();
 
-	virtual void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
-	virtual Diligent::DepthStencilStateDesc& GetDepthStencilState();
+	void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
+	Diligent::DepthStencilStateDesc& GetDepthStencilState();
 
-	virtual void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
-	virtual std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
+	void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
+	std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
 
 	virtual void Bind();
 	virtual void UnBind();
@@ -1169,27 +1183,3 @@ public:
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
-
-template<>
-inline void ShaderParameter::Set<ConstantBuffer>(std::shared_ptr<ConstantBuffer> value)
-{
-	SetConstantBuffer(value);
-}
-
-template<>
-inline void ShaderParameter::Set<pgTexture>(std::shared_ptr<pgTexture> value)
-{
-	SetTexture(value);
-}
-
-template<>
-inline void ShaderParameter::Set<SamplerState>(std::shared_ptr<SamplerState> value)
-{
-	SetSampler(value);
-}
-
-template<>
-inline void ShaderParameter::Set<StructuredBuffer>(std::shared_ptr<StructuredBuffer> value)
-{
-	SetStructuredBuffer(value);
-}

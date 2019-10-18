@@ -239,7 +239,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
 	createRT();
 
-	m_renderingTechnique = RenderingTechnique::Deferred;
+	m_renderingTechnique = RenderingTechnique::ForwardPlus;
+	//m_renderingTechnique = RenderingTechnique::Deferred;
 	//m_renderingTechnique = RenderingTechnique::Forward;
 	//m_renderingTechnique = RenderingTechnique::Test;
 

@@ -105,3 +105,4 @@ void ShaderParameter::UnBind()
 		buffer->UnBind(m_uiSlotID, shaderType, m_ParameterType);
 	}
 }
+

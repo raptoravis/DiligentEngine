@@ -18,6 +18,8 @@ class AppTest final : public pgApp
 		Forward,
 		Deferred,
 		ForwardPlus,
+		LightPrepass,
+		GDR,
 		NumTechniques
 	};
 public:

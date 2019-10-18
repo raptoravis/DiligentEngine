@@ -92,6 +92,15 @@ void pgRenderTarget::Resize( uint16_t width, uint16_t height )
     //}
 }
 
+void pgRenderTarget::Bind() {
+	bind();
+}
+
+void pgRenderTarget::UnBind() {
+	UnBind();
+}
+
+
 void pgRenderTarget::bind()
 {
     if ( m_bCheckValidity )
