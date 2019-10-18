@@ -11,6 +11,10 @@ using namespace Diligent;
 class TechniqueForwardPlus : public pgTechnique {
 	typedef pgTechnique base;
 
+	std::shared_ptr<Shader> g_pVertexShader;
+	std::shared_ptr<Shader> g_pForwardPlusPixelShader;
+	std::shared_ptr<pgPipeline> g_pForwardPlusOpaquePipeline;
+	std::shared_ptr<pgPipeline> g_pForwardPlusTransparentPipeline;
 public:
 	TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~TechniqueForwardPlus();

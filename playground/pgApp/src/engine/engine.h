@@ -199,25 +199,391 @@ public:
 	}
 };
 
+// Defines either a semantic (HLSL) or an input index (GLSL/HLSL)
+// to bind an input buffer.
+struct pgBufferBinding
+{
+	pgBufferBinding()
+		: Index(0)
+	{}
+
+	pgBufferBinding(const std::string& name, unsigned int index)
+		: Name(name)
+		, Index(index)
+	{}
+
+	// Provide the < operator for STL containers.
+	bool operator<(const pgBufferBinding& rhs) const
+	{
+		if (Name < rhs.Name) return true;
+		if (Name > rhs.Name) return false;
+		// Names are equal...
+		if (Index < rhs.Index) return true;
+		if (Index > rhs.Index) return false;
+		// Indexes are equal...
+
+		return false;
+	}
+
+	std::string Name;
+	unsigned int Index;
+};
+
+
+
+class pgBuffer;
+class pgTexture;
+class ConstantBuffer;
+class StructuredBuffer;
+class SamplerState;
+
+class ShaderParameter : public pgObject
+{
+public:
+	typedef pgObject base;
+
+	enum class Type
+	{
+		Invalid,    // Invalid parameter. Doesn't store a type.
+		Texture,    // Texture.
+		Sampler,    // Texture sampler.
+		Buffer,     // Buffers, ConstantBuffers, StructuredBuffers.
+		RWTexture,  // Texture that can be written to in a shader (using Store operations).
+		RWBuffer,   // Read/write structured buffers.
+	};
+
+	ShaderParameter();
+
+	// Shader resource parameter.
+	ShaderParameter(const std::string& name, uint32_t slotID, const std::string& shaderType, Type parameterType);
+
+	bool IsValid() const;
+
+	template <typename T>
+	void Set(std::shared_ptr<T> value);
+
+	template <typename T>
+	std::shared_ptr<T> Get() const;
+
+	// Get the type of the stored parameter.
+	Type GetType() const;
+
+	// Bind the shader parameter to a specific slot for the given shader type.
+	virtual void Bind();
+	virtual void UnBind();
+
+protected:
+	virtual void SetConstantBuffer(std::shared_ptr<ConstantBuffer> constantBuffer);
+	virtual void SetTexture(std::shared_ptr<pgTexture> texture);
+	virtual void SetSampler(std::shared_ptr<SamplerState> sampler);
+	virtual void SetStructuredBuffer(std::shared_ptr<StructuredBuffer> rwBuffer);
+
+private:
+	std::string m_Name;
+
+	// Shader parameter does not take ownership of these types.
+	std::weak_ptr<pgTexture> m_pTexture;
+	std::weak_ptr<SamplerState> m_pSamplerState;
+	std::weak_ptr<ConstantBuffer> m_pConstantBuffer;
+	std::weak_ptr<StructuredBuffer> m_pStructuredBuffer;
+
+	uint32_t m_uiSlotID;
+	const std::string m_ShaderType;
+	Type m_ParameterType;
+
+};
+
+
+class Shader : public pgObject
+{
+public:
+	typedef pgObject base;
+
+	enum ShaderType
+	{
+		UnknownShaderType = 0,
+		VertexShader,
+		TessellationControlShader,      // Hull Shader in DirectX
+		TessellationEvaluationShader,   // Domain Shader in DirectX
+		GeometryShader,
+		PixelShader,
+		ComputeShader,
+	};
+
+	typedef std::map< std::string, std::string > ShaderMacros;
+
+	Shader();
+	virtual ~Shader();
+
+	virtual ShaderType GetType() const;
+
+	// Shader loading
+	virtual bool LoadShaderFromFile(ShaderType type, const std::string& fileName,
+		const std::string& entryPoint, const ShaderMacros& shaderMacros = Shader::ShaderMacros());
+
+	//virtual uint32_t GetConstantBufferIndex( const std::string& name );
+	virtual ShaderParameter& GetShaderParameterByName(const std::string& name) const;
+
+	//virtual ConstantBuffer* GetConstantBufferByName( const std::string& name ); 
+
+	// Query for the latest supported shader profile
+	virtual std::string GetLatestProfile(ShaderType type);
+
+	// Check to see if this shader supports a given semantic.
+	bool HasSemantic(const pgBufferBinding& binding) const;
+	uint32_t GetSlotIDBySemantic(const pgBufferBinding& binding) const;
+
+	virtual void Bind();
+	virtual void UnBind();
+
+	virtual void Dispatch(const Diligent::uint3& numGroups);
+
+protected:
+
+	// Destroy the contents of this shader (in case we are loading a new shader).
+	virtual void Destroy();
+
+private:
+	ShaderType	m_ShaderType;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pVertexShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pHullShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pDomainShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pGeometryShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pPixelShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pComputeShader;
+
+	typedef std::map<std::string, std::shared_ptr<ShaderParameter> > ParameterMap;
+	ParameterMap m_ShaderParameters;
+
+	// A map to convert a vertex attribute semantic to a slot.
+	typedef std::map<pgBufferBinding, uint32_t> SemanticMap;
+	SemanticMap m_InputSemantics;
+
+	// Parameters necessary to reload the shader at runtime if it is modified on disc.
+	ShaderMacros m_ShaderMacros;
+	std::string m_EntryPoint;
+	std::string m_Profile;
+	std::wstring m_ShaderFileName;
+};
+
 class pgBuffer : public pgObject
 {
-	const uint32_t m_count;
+	// The stride of the vertex buffer in bytes.
+	uint32_t m_uiStride;
+	// How this buffer should be bound.
+	uint32_t m_BindFlags;
+	// The number of elements in this buffer.
+	uint32_t m_uiCount;
+	bool	m_bIsBound;
 public:
+	enum BufferType
+	{
+		Unknown = 0,
+		VertexBuffer,
+		IndexBuffer,
+		StructuredBuffer,
+		ConstantBuffer
+	};
+
 	pgBuffer(int count)
-		: m_count(count)
+		: m_uiCount(count)
 	{
 	}
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
 	uint32_t getCount() const {
-		return m_count;
+		return m_uiCount;
 	}
 
 	Diligent::IBufferView* getUnorderedAccessView() {
 		auto uav = m_pBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
 		return uav ;
 	}
+
+	// Bind the buffer for rendering.
+	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
+	// Unbind the buffer for rendering.
+	virtual void UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
+
+	// Copy the contents of another buffer to this one.
+	// Buffers must be the same size in bytes.
+	virtual void Copy(std::shared_ptr<pgBuffer> other);
+
+	// Is this an index buffer or an attribute/vertex buffer?
+	BufferType GetType() const;
+	// How many elements does this buffer contain?
+	unsigned int GetElementCount() const {
+		return m_uiCount;
+	}
+
 };
+
+class ConstantBuffer : public pgBuffer
+{
+public:
+
+	// The contents of a constant buffer can also be updated.
+	template <typename T>
+	void Set(const T& data) {
+		Set(&data, sizeof(T));
+	}
+
+	// Always returns BufferType::ConstantBuffer
+	virtual BufferType GetType() const;
+	// Constant buffers only have 1 element.
+	virtual unsigned int GetElementCount() const;
+
+	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
+	virtual void UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
+
+	// Copy the contents of a buffer to this one.
+	// Buffers must be the same size.
+	virtual void Copy(std::shared_ptr<ConstantBuffer> other);
+
+	// Implementations must provide this method.
+	virtual void Set(const void* data, size_t size) = 0;
+
+protected:
+
+};
+
+
+class StructuredBuffer : public pgBuffer
+{
+public:
+	// Bind the buffer for rendering.
+	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+	// Unbind the buffer for rendering.
+	virtual void UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+
+	// Is this an index buffer or an attribute/vertex buffer?
+	virtual BufferType GetType() const = 0;
+	// How many elements does this buffer contain?
+	virtual unsigned int GetElementCount() const = 0;
+
+	// Copy the contents of another buffer to this one.
+	// Buffers must be the same size.
+	virtual void Copy(std::shared_ptr<StructuredBuffer> other) = 0;
+
+	// Set the buffer data.
+	template<typename T>
+	void Set(const std::vector<T>& value) {
+		SetData((void*)values.data(), sizeof(T), 0, values.size());
+	}
+
+	// Clear the contents of the buffer.
+	virtual void Clear() = 0;
+
+protected:
+	virtual void SetData(void* data, size_t elementSize, size_t offset, size_t numElements) = 0;
+
+};
+
+class SamplerState : public pgObject
+{
+public:
+	typedef pgObject base;
+
+	enum MinFilter
+	{
+		MinNearest,                // The nearest texel to the sampled texel.
+		MinLinear,                 // Linear average of the 4 closest texels.
+	};
+
+	enum MagFilter
+	{
+		MagNearest,                // The nearest texel to the sampled texel.
+		MagLinear,                 // Weighted average of the closest texels.
+	};
+
+	enum MipFilter
+	{
+		MipNearest,                // Choose the nearest mip level.
+		MipLinear,                 // Linear interpolate between the 2 nearest mip map levels.
+	};
+
+	enum WrapMode
+	{
+		Repeat,                 // Texture is repeated when texture coordinates are out of range.
+		Mirror,                 // Texture is mirrored when texture coordinates are out of range.
+		Clamp,                  // Texture coordinate is clamped to [0, 1] 
+		Border,                 // Texture border color is used when texture coordinates are out of range.
+	};
+
+
+	enum CompareMode
+	{
+		None,                   // Don't perform any comparison
+		CompareRefToTexture,    // Compare the reference value (usually the currently bound depth buffer) to the value in the texture.
+	};
+
+	enum CompareFunc
+	{
+		Never,                  // Never pass the comparison function.
+		Less,                   // Pass if the source data is less than the destination data.
+		Equal,                  // Pass if the source data is equal to the destination data.
+		LessEqual,              // Pass if the source data is less than or equal to the destination data.
+		Greater,                // Pass if the source data is greater than the destination data.
+		NotEqual,               // Pass if the source data is not equal to the destination data.
+		GreaterEqual,           // Pass if the source data is greater than or equal to the destination data.
+		Always,                 // Always pass the comparison function.
+	};
+
+	virtual void SetFilter(MinFilter minFilter, MagFilter magFilter, MipFilter mipFilter) = 0;
+	virtual void GetFilter(MinFilter& minFilter, MagFilter& magFilter, MipFilter& mipFilter) const = 0;
+
+	virtual void SetWrapMode(WrapMode u = WrapMode::Repeat, WrapMode v = WrapMode::Repeat, WrapMode w = WrapMode::Repeat) = 0;
+	virtual void GetWrapMode(WrapMode& u, WrapMode& v, WrapMode& w) const = 0;
+
+	virtual void SetCompareFunction(CompareFunc compareFunc) = 0;
+	virtual CompareFunc GetCompareFunc() const = 0;
+
+	/**
+	 * Set the offset from the calculated mipmap level.  For example, if mipmap texture 1 should be sampled and
+	 * LOD bias is set to 2, then the texture will be sampled at mipmap level 3.
+	 */
+	virtual void SetLODBias(float lodBias) = 0;
+	virtual float GetLODBias() const = 0;
+
+	/**
+	 * Set the minimum LOD level that will be sampled.  The highest resolution mip map is level 0.
+	 */
+	virtual void SetMinLOD(float minLOD) = 0;
+	virtual float GetMinLOD() const = 0;
+
+	/**
+	 * Set the maximum LOD level that will be sampled. The LOD level increases as the resolution of the mip-map decreases.
+	 */
+	virtual void SetMaxLOD(float maxLOD) = 0;
+	virtual float GetMaxLOD() const = 0;
+
+	/**
+	 * Sets the border color to use if the wrap mode is set to Border.
+	 */
+	virtual void SetBorderColor(const Diligent::float4& borderColor) = 0;
+	virtual Diligent::float4 GetBorderColor() const = 0;
+
+	/**
+	 * Enable Anisotropic filtering (where supported).
+	 */
+	virtual void EnableAnisotropicFiltering(bool enabled) = 0;
+	virtual bool IsAnisotropicFilteringEnabled() const = 0;
+
+	/**
+	 * When Anisotropic filtering is enabled, use this value to determine the maximum level
+	 * of anisotropic filtering to apply.  Valid values are in the range [1, 16].
+	 * May not be supported on all platforms.
+	 */
+	virtual void SetMaxAnisotropy(uint8_t maxAnisotropy) = 0;
+	virtual uint8_t GetMaxAnisotropy() const = 0;
+
+	// Bind this sampler state to the ID for a specific shader type.
+	virtual void Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+	// Unbind the sampler state.
+	virtual void UnBind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) = 0;
+
+};
+
 
 /**
  * Flags to specify which value should be cleared.
@@ -256,6 +622,9 @@ public:
 
 	void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
 	void Copy(pgTexture* dstTexture);
+
+	void Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
+	void UnBind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 
 	Diligent::ITexture* getTexture() {
 		return m_pTexture.RawPtr();
@@ -529,36 +898,6 @@ private:
 	bool    m_Dirty;
 };
 
-// Defines either a semantic (HLSL) or an input index (GLSL/HLSL)
-// to bind an input buffer.
-struct pgBufferBinding
-{
-	pgBufferBinding()
-		: Index(0)
-	{}
-
-	pgBufferBinding(const std::string& name, unsigned int index)
-		: Name(name)
-		, Index(index)
-	{}
-
-	// Provide the < operator for STL containers.
-	bool operator<(const pgBufferBinding& rhs) const
-	{
-		if (Name < rhs.Name) return true;
-		if (Name > rhs.Name) return false;
-		// Names are equal...
-		if (Index < rhs.Index) return true;
-		if (Index > rhs.Index) return false;
-		// Indexes are equal...
-
-		return false;
-	}
-
-	std::string Name;
-	unsigned int Index;
-};
-
 class pgSceneNode;
 
 // A mesh contains the geometry and materials required to render this mesh.
@@ -669,9 +1008,18 @@ protected:
 };
 
 class pgPipeline : public pgObject {
+	typedef std::map<Shader::ShaderType, std::shared_ptr<Shader> > ShaderMap;
+
 protected:
 	Diligent::RefCntAutoPtr<Diligent::IPipelineState>			m_pPSO;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>	m_pSRB;
+
+	ShaderMap m_Shaders;
+
+	Diligent::BlendStateDesc m_BlendState;
+	Diligent::RasterizerStateDesc m_RasterizerState;
+	Diligent::DepthStencilStateDesc m_DepthStencilState;
+
 	std::shared_ptr<pgRenderTarget>								m_pRT;
 public:
 	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
@@ -683,6 +1031,26 @@ public:
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+	//
+	virtual void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
+	virtual std::shared_ptr<Shader> GetShader(Shader::ShaderType type) const;
+	virtual const ShaderMap& GetShaders() const;
+
+	virtual void SetBlendState(const Diligent::BlendStateDesc& blendState);
+	virtual Diligent::BlendStateDesc& GetBlendState();
+
+	virtual void SetRasterizerState(const Diligent::RasterizerStateDesc& rasterizerState);
+	virtual Diligent::RasterizerStateDesc& GetRasterizerState();
+
+	virtual void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
+	virtual Diligent::DepthStencilStateDesc& GetDepthStencilState();
+
+	virtual void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
+	virtual std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
+
+	virtual void Bind();
+	virtual void UnBind();
+
 };
 
 
@@ -790,7 +1158,7 @@ public:
 	virtual void Initialize(Diligent::IEngineFactory*   pEngineFactory,
 		Diligent::IRenderDevice*    pDevice,
 		Diligent::IDeviceContext**  ppContexts,
-		Diligent::Uint32            NumDeferredCtx,
+		Diligent::Uint32			NumDeferredCtx,
 		Diligent::ISwapChain*       pSwapChain) override;
 
 	virtual void Render() override;
@@ -800,3 +1168,28 @@ public:
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
+
+
+template<>
+inline void ShaderParameter::Set<ConstantBuffer>(std::shared_ptr<ConstantBuffer> value)
+{
+	SetConstantBuffer(value);
+}
+
+template<>
+inline void ShaderParameter::Set<pgTexture>(std::shared_ptr<pgTexture> value)
+{
+	SetTexture(value);
+}
+
+template<>
+inline void ShaderParameter::Set<SamplerState>(std::shared_ptr<SamplerState> value)
+{
+	SetSampler(value);
+}
+
+template<>
+inline void ShaderParameter::Set<StructuredBuffer>(std::shared_ptr<StructuredBuffer> value)
+{
+	SetStructuredBuffer(value);
+}

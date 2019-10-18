@@ -26,23 +26,52 @@ void TechniqueForwardPlus::render(pgRenderEventArgs& e) {
 
 
 void TechniqueForwardPlus::init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights) {
-	std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(m_pRT);
-	addPass(pSetRTPass);
+	g_pVertexShader = std::make_shared<Shader>();
+	g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main");
 
-	std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(m_pRT);
-	addPass(pClearRTPass);
+	g_pForwardPlusPixelShader = std::make_shared<Shader>();
+	g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::Shader::VertexShader, "ForwardPlusRendering.hlsl", "PS_main");
 
-	std::shared_ptr<PassOpaque> pOpaquePass = std::make_shared<PassOpaque>(prci);
-	addPass(pOpaquePass);
+	g_pForwardPlusOpaquePipeline = std::make_shared<pgPipeline>(m_pRT);
 
-	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(prci);
-	addPass(pTransparentPass);
+	g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
+	g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
+	g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRT);
 
-	{
-		auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
-		auto dstTexture = m_pBackBuffer;
+	Diligent::DepthStencilStateDesc DepthStencilDesc;
+	DepthStencilDesc.DepthEnable = True;
+	DepthStencilDesc.DepthWriteEnable = True;
+	// We need to set depth mode to <= because we have a depth prepass in Forward+
+	DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
 
-		std::shared_ptr<PassCopyTexture> pCopyTexPass = std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
-		addPass(pCopyTexPass);
-	}
+	g_pForwardPlusOpaquePipeline->SetDepthStencilState(DepthStencilDesc);
+
+
+	g_pForwardPlusTransparentPipeline = std::make_shared<pgPipeline>(m_pRT);
+	g_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
+	g_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
+	g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRT);
+
+	DepthStencilDesc.DepthEnable = True;
+	DepthStencilDesc.DepthWriteEnable = False;
+	// We need to set depth mode to <= because we have a depth prepass in Forward+
+	DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
+
+	g_pForwardPlusTransparentPipeline->SetDepthStencilState(DepthStencilDesc);
+
+	Diligent::RasterizerStateDesc RasterizerDesc;
+
+	RasterizerDesc.CullMode = CULL_MODE_NONE;
+	g_pForwardPlusTransparentPipeline->SetRasterizerState(RasterizerDesc);
+
+	Diligent::BlendStateDesc BlendDesc;
+
+	BlendDesc.RenderTargets[0].BlendEnable = True;
+	BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
+	BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
+	BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
+	BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
+
+	g_pForwardPlusTransparentPipeline->SetBlendState(BlendDesc);
+
 }

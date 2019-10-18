@@ -102,3 +102,11 @@ void pgTexture::Copy(pgTexture* dstTexture) {
 
 	pgApp::s_ctx->CopyTexture(CopyAttribs);
 }
+
+void pgTexture::Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+	//
+}
+
+void pgTexture::UnBind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+	//
+}

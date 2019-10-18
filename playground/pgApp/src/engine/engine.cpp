@@ -37,6 +37,24 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
+pgBuffer::BufferType pgBuffer::GetType() const {
+	return pgBuffer::Unknown;
+}
+
+// Bind the buffer for rendering.
+bool pgBuffer::Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+	return true;
+}
+
+// Unbind the buffer for rendering.
+void pgBuffer::UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+	//
+}
+
+void pgBuffer::Copy(std::shared_ptr<pgBuffer> other) {
+	//
+}
+
 pgPass::pgPass(std::shared_ptr<pgScene> scene)
 	: m_bEnabled(true)
 	, m_scene(scene)
@@ -66,40 +84,6 @@ void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
 
 void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
-	//
-}
-
-
-pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt)
-	: m_pRT(rt)
-{
-	//
-}
-
-pgPipeline::~pgPipeline() {
-	//
-}
-
-void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	if (flag & pgBindFlag::pgBindFlag_Pass) {
-		if (m_pRT) {
-			m_pRT->bind();
-		}
-	}
-
-	e.pApp->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-	if (flag & pgBindFlag::pgBindFlag_Mesh) {
-		// Set the pipeline state
-		pgApp::s_ctx->SetPipelineState(m_pPSO);
-
-		// Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode 
-		// makes sure that resources are transitioned to required states.
-		pgApp::s_ctx->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
-}
-
-void pgPipeline::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
 
