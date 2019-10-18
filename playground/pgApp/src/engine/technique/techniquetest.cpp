@@ -1,15 +1,15 @@
 #include "techniquetest.h"
 
-#include "engine/render/pass/passgltfmodel.h"
-#include "engine/render/mesh/meshcube.h"
-#include "engine/render/mesh/meshcubetex.h"
+#include "engine/pass/passgltfmodel.h"
+#include "engine/mesh/meshcube.h"
+#include "engine/mesh/meshcubetex.h"
 
-#include "engine/render/pipeline/pipelinecolorvertex.h"
-#include "engine/render/pipeline/pipelinetexvertex.h"
+#include "engine/pipeline/pipelinecolorvertex.h"
+#include "engine/pipeline/pipelinetexvertex.h"
 
-#include "engine/render/pass/passsetrt.h"
-#include "engine/render/pass/passclearrt.h"
-#include "engine/render/pass/passcopytexture.h"
+#include "engine/pass/passsetrt.h"
+#include "engine/pass/passclearrt.h"
+#include "engine/pass/passcopytexture.h"
 
 TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
 	: base(rt, backBuffer)

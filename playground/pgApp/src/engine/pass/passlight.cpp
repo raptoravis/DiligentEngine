@@ -1,7 +1,7 @@
 #include "passlight.h"
-#include "../../scene/sceneass.h"
+#include "../scene/sceneass.h"
 
-#include "../../mathutils.h"
+#include "../utils/mathutils.h"
 
 PassLight::PassLight(IBuffer* PerObjectConstants, 
 	IBuffer* LightParamsCB,

@@ -1,4 +1,4 @@
-#include "engine.h"
+#include "../engine.h"
 
 pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt)
 	: m_pRT(rt), m_bDirty(true)

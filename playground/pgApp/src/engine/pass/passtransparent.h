@@ -2,25 +2,20 @@
 
 #include "SampleBase.h"
 
-#include "../../engine.h"
+#include "../engine.h"
 
 #include "passrender.h"
-#include "../light.h"
+#include "../utils/light.h"
 
 using namespace Diligent;
 
-class PassGeometry : public pgPassRender {
+class PassTransparent : public pgPassRender {
 	typedef pgPassRender base;
 
-protected:
-	void CreatePipelineState(PipelineStateDesc& PSODesc);
-
-	std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-
 public:
-	PassGeometry(const pgPassRenderCreateInfo& ci, std::shared_ptr<pgRenderTarget> rt);
+	PassTransparent(const pgPassRenderCreateInfo& ci);
 
-	virtual ~PassGeometry();
+	virtual ~PassTransparent();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

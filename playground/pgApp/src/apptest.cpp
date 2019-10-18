@@ -1,9 +1,9 @@
 #include "apptest.h"
 
-#include "engine/render/technique/techniquetest.h"
-#include "engine/render/technique/techniquedeferred.h"
-#include "engine/render/technique/techniqueforward.h"
-#include "engine/render/technique/techniqueforwardplus.h"
+#include "engine/technique/techniquetest.h"
+#include "engine/technique/techniquedeferred.h"
+#include "engine/technique/techniqueforward.h"
+#include "engine/technique/techniqueforwardplus.h"
 
 #include "MapHelper.h"
 #include "BasicMath.h"
@@ -17,7 +17,7 @@
 
 #include <windows.h>
 
-#include "engine/mathutils.h"
+#include "engine/utils/mathutils.h"
 
 #include "scenetest.h"
 

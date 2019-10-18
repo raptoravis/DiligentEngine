@@ -5,7 +5,7 @@
 #include "BasicMath.h"
 
 #include "engine/engine.h"
-#include "engine/render/light.h"
+#include "engine/utils/light.h"
 
 using namespace Diligent;
 

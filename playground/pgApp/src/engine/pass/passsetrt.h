@@ -2,17 +2,16 @@
 
 #include "SampleBase.h"
 
-#include "../../engine.h"
+#include "../engine.h"
 
-class PassCopyTexture : public pgPass {
+class PassSetRT : public pgPass {
 	typedef pgPass base;
 
-	std::shared_ptr<pgTexture>         m_srcTexture;
-	std::shared_ptr<pgTexture>         m_dstTexture;
+	std::shared_ptr<pgRenderTarget> m_pRT;
 
 public:
-	PassCopyTexture(std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
-	virtual ~PassCopyTexture();
+	PassSetRT(std::shared_ptr<pgRenderTarget> rt);
+	virtual ~PassSetRT();
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);

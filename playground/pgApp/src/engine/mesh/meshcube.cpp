@@ -1,5 +1,5 @@
 #include "meshcube.h"
-#include "../../scene/sceneass.h"
+#include "../scene/sceneass.h"
 
 using namespace Diligent;
 

@@ -2,7 +2,7 @@
 
 #include "engine/engine.h"
 #include "engine/scene/sceneass.h"
-#include "engine/render/light.h"
+#include "engine/utils/light.h"
 
 class SceneTest : public pgSceneAss {
 public:
