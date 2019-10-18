@@ -79,10 +79,26 @@ inline std::string ConvertString(const std::wstring& wstring)
 
 class pgObject
 {
+	static uint32_t s_uuid;
+protected:
+	uint32_t m_uuid;
 public:
+	pgObject();
 	virtual ~pgObject() {
 		//
 	}
+};
+
+class pgScene;
+class pgSceneNode;
+class pgMesh;
+
+class Visitor : public pgObject
+{
+public:
+	virtual void Visit(pgScene& scene) = 0;
+	virtual void Visit(pgSceneNode& node) = 0;
+	virtual void Visit(pgMesh& mesh) = 0;
 };
 
 
@@ -140,9 +156,14 @@ public:
 class pgApp;
 class pgTechnique;
 class pgPass;
+class pgPipeline;
 class pgScene;
 class pgSceneNode;
 class pgMaterial;
+class pgMesh;
+
+class pgScene;
+class pgSceneNode;
 class pgMesh;
 
 enum pgBindFlag {
@@ -180,6 +201,7 @@ public:
 	//
 	pgTechnique*										pTechnique;
 	pgPass*												pPass;
+	pgPipeline*											pPipeline;
 	pgScene*											pScene;
 	pgSceneNode*										pSceneNode;
 	pgMaterial*											pMaterial;
@@ -262,10 +284,8 @@ public:
 		RWBuffer,   // Read/write structured buffers.
 	};
 
-	ShaderParameter();
-
 	// Shader resource parameter.
-	ShaderParameter(const std::string& name, uint32_t slotID, const std::string& shaderType, Type parameterType);
+	ShaderParameter(const std::string& name, const std::string& shaderType, Type parameterType);
 
 	bool IsValid() const;
 
@@ -318,19 +338,20 @@ public:
 	Shader();
 	virtual ~Shader();
 
-	virtual ShaderType GetType() const;
+	ShaderType GetType() const;
 
 	// Shader loading
-	virtual bool LoadShaderFromFile(ShaderType type, const std::string& fileName,
-		const std::string& entryPoint, const ShaderMacros& shaderMacros = Shader::ShaderMacros());
+	bool LoadShaderFromFile(ShaderType type, const std::string& fileName, const std::string& searchPaths,
+		const std::string& entryPoint = "main", const ShaderMacros& shaderMacros = Shader::ShaderMacros());
+
+	Diligent::RefCntAutoPtr<Diligent::IShader> GetShader() {
+		return m_pShader;
+	}
 
 	//virtual uint32_t GetConstantBufferIndex( const std::string& name );
-	virtual ShaderParameter& GetShaderParameterByName(const std::string& name) const;
+	ShaderParameter& GetShaderParameterByName(const std::string& name) const;
 
 	//virtual ConstantBuffer* GetConstantBufferByName( const std::string& name ); 
-
-	// Query for the latest supported shader profile
-	virtual std::string GetLatestProfile(ShaderType type);
 
 	// Check to see if this shader supports a given semantic.
 	bool HasSemantic(const pgBufferBinding& binding) const;
@@ -348,12 +369,7 @@ protected:
 
 private:
 	ShaderType	m_ShaderType;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pVertexShader;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pHullShader;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pDomainShader;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pGeometryShader;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pPixelShader;
-	Diligent::RefCntAutoPtr<Diligent::IShader> m_pComputeShader;
+	Diligent::RefCntAutoPtr<Diligent::IShader> m_pShader;
 
 	typedef std::map<std::string, std::shared_ptr<ShaderParameter> > ParameterMap;
 	ParameterMap m_ShaderParameters;
@@ -819,8 +835,12 @@ public:
 	std::shared_ptr<pgTexture> GetTexture(TextureType ID) const;
 	void SetTexture(TextureType type, std::shared_ptr<pgTexture> texture);
 
+	void Bind(std::weak_ptr<Shader> wpShader);
+
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+
+	void UpdateConstantBuffer();
 
 	static uint32_t getConstantBufferSize() {
 		return sizeof(MaterialProperties);
@@ -938,6 +958,8 @@ public:
 
 	void _render(pgRenderEventArgs& e);
 
+	virtual void Render();
+	virtual void Accept(Visitor& visitor);
 protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
@@ -974,6 +996,8 @@ public:
 	void RemoveMesh(std::shared_ptr<pgMesh> mesh);
 
 	void _render(pgRenderEventArgs& e);
+
+	virtual void Accept(Visitor& visitor);
 protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
@@ -1002,6 +1026,7 @@ private:
 };
 
 class pgScene : public pgObject {
+	typedef pgObject base;
 protected:
 	std::shared_ptr<pgSceneNode> m_pRootNode; 
 public:
@@ -1016,6 +1041,8 @@ public:
 	}
 
 	void _render(pgRenderEventArgs& e);
+
+	virtual void Accept(Visitor& visitor);
 protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
@@ -1067,7 +1094,6 @@ public:
 
 };
 
-
 class pgPass : public pgObject
 {
 	bool m_bEnabled;
@@ -1076,8 +1102,9 @@ class pgPass : public pgObject
 	friend class pgMaterial;
 protected:
 	std::shared_ptr<pgScene>							m_scene;
+	std::shared_ptr<pgPipeline>							m_pPipeline;
 public:
-	pgPass(std::shared_ptr<pgScene> scene);
+	pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline = 0);
 	virtual ~pgPass();
 
 	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
@@ -1089,6 +1116,10 @@ public:
 		return m_bEnabled;
 	}
 
+	std::shared_ptr<pgPipeline> getPileline() {
+		return m_pPipeline;
+	}
+
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e) = 0;
 	void _render(pgRenderEventArgs& e);
@@ -1097,6 +1128,8 @@ public:
 	virtual bool meshFilter(pgMesh* mesh) {
 		return true;
 	}
+
+	virtual void Render();
 protected:
 	virtual void render(pgRenderEventArgs& e) = 0;
 
@@ -1115,11 +1148,15 @@ public:
 
 	// Render the pass. This should only be called by the pgTechnique.
 	virtual void update(pgRenderEventArgs& e);
+
+	virtual void Render();
 protected:
 	virtual void render(pgRenderEventArgs& e);
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
+
+class RenderPass;
 
 class pgTechnique : public pgObject
 {
@@ -1139,6 +1176,10 @@ public:
 
 	// Render the scene using the passes that have been configured.
 	void _render(pgRenderEventArgs& e);
+
+	unsigned int addPass(std::shared_ptr<RenderPass> pass);
+	void Render();
+
 protected:
 	void render(pgRenderEventArgs& e);
 
@@ -1148,6 +1189,8 @@ private:
 	typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
 	RenderPassList m_Passes;
 
+	typedef std::vector<std::shared_ptr<RenderPass>> _RenderPassList;
+	_RenderPassList _m_Passes;
 };
 
 class pgApp : public Diligent::SampleBase {
@@ -1160,6 +1203,7 @@ public:
 	static std::shared_ptr<pgTexture>							s_backBuffer;
 
 	static Diligent::SwapChainDesc								s_desc;
+	static pgRenderEventArgs									s_eventArgs;
 
 protected:
 	std::shared_ptr<pgCamera>							m_pCamera;
@@ -1183,3 +1227,110 @@ public:
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
+
+//
+class RenderPass : public Visitor
+{
+public:
+	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
+	virtual void SetEnabled(bool enabled) = 0;
+	virtual bool IsEnabled() const = 0;
+
+	// Render the pass. This should only be called by the RenderTechnique.
+	virtual void PreRender() = 0;
+	virtual void Render() = 0;
+	virtual void PostRender() = 0;
+
+	// Inherited from Visitor
+	virtual void Visit(pgScene& scene) = 0;
+	virtual void Visit(pgSceneNode& node) = 0;
+	virtual void Visit(pgMesh& mesh) = 0;
+};
+
+class AbstractPass : public RenderPass
+{
+public:
+	AbstractPass();
+	virtual ~AbstractPass();
+
+	// Enable or disable the pass. If a pass is disabled, the technique will skip it.
+	virtual void SetEnabled(bool enabled);
+	virtual bool IsEnabled() const;
+
+	// Render the pass. This should only be called by the RenderTechnique.
+	virtual void PreRender();
+	virtual void Render() = 0;
+	virtual void PostRender();
+
+	// Inherited from Visitor
+	virtual void Visit(pgScene& scene);
+	virtual void Visit(pgSceneNode& node);
+	virtual void Visit(pgMesh& mesh);
+
+private:
+	bool m_Enabled;
+};
+
+// Base pass provides implementations for functions used by most passes.
+class BasePass : public AbstractPass
+{
+public:
+	typedef AbstractPass base;
+
+	BasePass();
+	BasePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+	virtual ~BasePass();
+
+	// Render the pass. This should only be called by the RenderTechnique.
+	virtual void PreRender();
+	virtual void Render();
+	virtual void PostRender();
+
+	// Inherited from Visitor
+	virtual void Visit(pgScene& scene);
+	virtual void Visit(pgSceneNode& node);
+	virtual void Visit(pgMesh& mesh);
+
+protected:
+	// PerObject constant buffer data.
+	__declspec(align(16)) struct PerObject
+	{
+		Diligent::float4x4 ModelViewProjection;
+		Diligent::float4x4 ModelView;
+	};
+
+	void SetRenderEventArgs(pgRenderEventArgs& e);
+	pgRenderEventArgs& GetRenderEventArgs() const;
+
+	// Set and bind the constant buffer data.
+	void SetPerObjectConstantBufferData(PerObject& perObjectData);
+	// Bind the constant to the shader.
+	void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
+
+private:
+
+	PerObject* m_PerObjectData;
+	std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
+
+	// The pipeline state that should be used to render this pass.
+	std::shared_ptr<pgPipeline> m_Pipeline;
+
+	// The scene to render.
+	std::shared_ptr< pgScene > m_Scene;
+};
+
+// A pass that renders the opaque geometry in the scene.
+class OpaquePass : public BasePass
+{
+public:
+	typedef BasePass base;
+
+	OpaquePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+	virtual ~OpaquePass();
+
+	virtual void Visit(pgMesh& mesh);
+
+protected:
+
+private:
+};

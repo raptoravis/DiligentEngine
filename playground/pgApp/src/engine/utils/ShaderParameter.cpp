@@ -3,14 +3,9 @@
 #include <limits>
 
 
-ShaderParameter::ShaderParameter()
-	: m_uiSlotID(std::numeric_limits<uint32_t>::max())
-	, m_ParameterType(Type::Invalid)
-{}
-
-ShaderParameter::ShaderParameter(const std::string& name, uint32_t slotID, const std::string& shaderType, Type parameterType)
+ShaderParameter::ShaderParameter(const std::string& name, const std::string& shaderType, Type parameterType)
 	: m_Name(name)
-	, m_uiSlotID(slotID)
+	, m_uiSlotID((uint32_t)-1)
 	, m_ShaderType(shaderType)
 	, m_ParameterType(parameterType)
 {}

@@ -111,3 +111,44 @@ void pgMesh::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 void pgMesh::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	e.pPass->unbind(e, flag);
 }
+
+void pgMesh::Render() {
+	std::shared_ptr<Shader> pVS;
+
+	// Clone this mesh's material in case we want to override the 
+	// shaders in the mesh's default material.
+	//Material material( *m_pMaterial );
+
+	// Use the vertex shader to convert the buffer semantics to slot ID's
+	auto pipeline = pgApp::s_eventArgs.pPass->getPileline();
+	if (pipeline)
+	{
+		pVS = pipeline->GetShader(Shader::VertexShader);
+
+		if (pVS)
+		{
+			for (BufferMap::value_type buffer : m_VertexBuffers)
+			{
+				pgBufferBinding binding = buffer.first;
+				if (pVS->HasSemantic(binding))
+				{
+					uint32_t slotID = pVS->GetSlotIDBySemantic(binding);
+					// Bind the vertex buffer to a particular slot ID.
+					buffer.second->Bind(slotID, Shader::VertexShader, ShaderParameter::Type::Buffer);
+				}
+			}
+		}
+
+		if (m_pMaterial)
+		{
+			for (auto shader : pipeline->GetShaders())
+			{
+				m_pMaterial->Bind(shader.second);
+			}
+		}
+	}
+}
+
+void pgMesh::Accept(Visitor& visitor) {
+	visitor.Visit(*this);
+}

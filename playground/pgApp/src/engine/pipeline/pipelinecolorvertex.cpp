@@ -5,81 +5,19 @@ using namespace Diligent;
 PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt) 
 	: base(rt)
 {
-	CreatePipelineState();
-}
+	//CreatePipelineState();
+	m_pVS = std::make_shared<Shader>();
+	m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cube.vsh", "main");
 
-PipelineColorVertex::~PipelineColorVertex() {
+	m_pPS = std::make_shared<Shader>();
+	m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cube.psh", "main");
 
-}
+	m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
+	m_pVS->GetShaderParameterByName("Constants").SetConstantBuffer(m_VSConstants);
 
-void PipelineColorVertex::CreatePipelineState()
-{
-	// Pipeline state object encompasses configuration of all GPU stages
+	SetShader(Shader::Shader::VertexShader, m_pVS);
+	SetShader(Shader::Shader::PixelShader, m_pPS);
 
-	PipelineStateDesc PSODesc;
-	// Pipeline state name is used by the engine to report issues.
-	// It is always a good idea to give objects descriptive names.
-	PSODesc.Name = "Cube PSO";
-
-	// This is a graphics pipeline
-	PSODesc.IsComputePipeline = false;
-
-	// This tutorial will render to a single render target
-	PSODesc.GraphicsPipeline.NumRenderTargets = 1;
-	// Set render target format which is the format of the swap chain's color buffer
-	PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
-	// Set depth buffer format which is the format of the swap chain's back buffer
-	PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
-	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
-	PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	// Cull back faces
-	PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
-	// Enable depth testing
-	PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
-
-	ShaderCreateInfo ShaderCI;
-	// Tell the system that the shader source code is in HLSL.
-	// For OpenGL, the engine will convert this into GLSL under the hood.
-	ShaderCI.SourceLanguage = SHADER_SOURCE_LANGUAGE_HLSL;
-
-	// OpenGL backend requires emulated combined HLSL texture samplers (g_Texture + g_Texture_sampler combination)
-	ShaderCI.UseCombinedTextureSamplers = true;
-
-	// In this tutorial, we will load shaders from file. To be able to do that,
-	// we need to create a shader source stream factory
-	RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(nullptr, &pShaderSourceFactory);
-	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
-	// Create a vertex shader
-	RefCntAutoPtr<IShader> pVS;
-	{
-		ShaderCI.Desc.ShaderType = SHADER_TYPE_VERTEX;
-		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = "Cube VS";
-		ShaderCI.FilePath = "cube.vsh";
-		pgApp::s_device->CreateShader(ShaderCI, &pVS);
-		// Create dynamic uniform buffer that will store our transformation matrix
-		// Dynamic buffers can be frequently updated by the CPU
-		BufferDesc CBDesc;
-		CBDesc.Name = "VS constants CB";
-		CBDesc.uiSizeInBytes = sizeof(float4x4);
-		CBDesc.Usage = USAGE_DYNAMIC;
-		CBDesc.BindFlags = BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = CPU_ACCESS_WRITE;
-		pgApp::s_device->CreateBuffer(CBDesc, nullptr, &m_VSConstants);
-	}
-
-	// Create a pixel shader
-	RefCntAutoPtr<IShader> pPS;
-	{
-		ShaderCI.Desc.ShaderType = SHADER_TYPE_PIXEL;
-		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = "Cube PS";
-		ShaderCI.FilePath = "cube.psh";
-		pgApp::s_device->CreateShader(ShaderCI, &pPS);
-	}
-
-	// Define vertex shader input layout
 	LayoutElement LayoutElems[] =
 	{
 		// Attribute 0 - vertex position
@@ -87,24 +25,12 @@ void PipelineColorVertex::CreatePipelineState()
 		// Attribute 1 - vertex color
 		LayoutElement{1, 0, 4, VT_FLOAT32, False}
 	};
-	PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
-	PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 
-	PSODesc.GraphicsPipeline.pVS = pVS;
-	PSODesc.GraphicsPipeline.pPS = pPS;
+	SetLayoutElement(_countof(LayoutElems), LayoutElems);
+}
 
-	// Define variable type that will be used by default
-	PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
+PipelineColorVertex::~PipelineColorVertex() {
 
-	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
-
-	// Since we did not explcitly specify the type for 'Constants' variable, default
-	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables never 
-	// change and are bound directly through the pipeline state object.
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
-
-	// Create a shader resource binding object and bind all static resources in it
-	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 }
 
 void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
@@ -124,7 +50,7 @@ void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 			{
 				// Map the buffer and write current world-view-projection matrix
-				MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants, MAP_WRITE, MAP_FLAG_DISCARD);
+				MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants->m_pBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
 				*CBConstants = worldViewProjMatrix.Transpose();
 			}
 

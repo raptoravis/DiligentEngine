@@ -64,6 +64,19 @@ void pgPipeline::SetLayoutElement(uint32_t layoutElementCount, const Diligent::L
 void pgPipeline::SetShader( Shader::ShaderType type, std::shared_ptr<Shader> pShader )
 {
     m_Shaders[type] = pShader;
+
+	auto shader = pShader->GetShader();
+
+	if (type == Shader::ShaderType::VertexShader) {
+		m_PSODesc.GraphicsPipeline.pVS = shader;
+	} else if (type == Shader::ShaderType::PixelShader) {
+		m_PSODesc.GraphicsPipeline.pPS = shader;
+	} else if (type == Shader::ShaderType::ComputeShader) {
+		m_PSODesc.ComputePipeline.pCS = shader;
+	} else {
+		assert(0);
+	}
+
 	m_bDirty = true;
 }
 

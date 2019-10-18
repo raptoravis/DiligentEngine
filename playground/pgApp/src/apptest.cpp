@@ -272,21 +272,21 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 	prci.LightsBufferSRV = m_LightsBufferSRV.RawPtr();
 	prci.scene = testScene;
 
-	//if (m_renderingTechnique == RenderingTechnique::Forward) 
-	{
-		auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
-		forwardTech->init(prci, m_Lights);
-	}
-	//else if (m_renderingTechnique == RenderingTechnique::Deferred) 
-	{
-		auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
-		deferredTech->init(prci, m_Lights);
-	}
-	//else if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
-	{
-		auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
-		fpTech->init(prci, m_Lights);
-	}
+	////if (m_renderingTechnique == RenderingTechnique::Forward) 
+	//{
+	//	auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
+	//	forwardTech->init(prci, m_Lights);
+	//}
+	////else if (m_renderingTechnique == RenderingTechnique::Deferred) 
+	//{
+	//	auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
+	//	deferredTech->init(prci, m_Lights);
+	//}
+	////else if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
+	//{
+	//	auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
+	//	fpTech->init(prci, m_Lights);
+	//}
 
 	// always init test technique
 	{
@@ -312,7 +312,8 @@ void AppTest::Render()
 	//pgApp::s_ctx->ClearDepthStencil(nullptr, CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 	if (m_renderingTechnique == RenderingTechnique::Test) {
-		m_pTechnique->_render(m_evtArgs);
+		//m_pTechnique->_render(m_evtArgs);
+		m_pTechnique->Render();
 	}
 
 	if (m_renderingTechnique == RenderingTechnique::Forward) {
@@ -339,6 +340,9 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 	m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
 	m_evtArgs.set((float)CurrTime, (float)ElapsedTime,
+		this, m_pCamera.get(), pgApp::s_ctx);
+
+	pgApp::s_eventArgs.set((float)CurrTime, (float)ElapsedTime,
 		this, m_pCamera.get(), pgApp::s_ctx);
 
 	int technique = (int)m_renderingTechnique;

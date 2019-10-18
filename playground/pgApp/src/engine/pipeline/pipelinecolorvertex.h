@@ -5,10 +5,10 @@
 class PipelineColorVertex : public pgPipeline {
 	typedef pgPipeline base;
 private:
-	Diligent::RefCntAutoPtr<Diligent::IBuffer>               m_VSConstants;
+	std::shared_ptr<ConstantBuffer>             m_VSConstants;
 
-private:
-	void CreatePipelineState();
+	std::shared_ptr<Shader>						m_pVS;
+	std::shared_ptr<Shader>						m_pPS;
 
 public:
 	PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt);

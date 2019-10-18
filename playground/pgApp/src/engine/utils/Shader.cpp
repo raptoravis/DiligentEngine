@@ -1,8 +1,5 @@
 #include "../engine.h"
 
-// This parameter will be returned if an invalid shader parameter is requested.
-static ShaderParameter gs_InvalidShaderParameter;
-
 Shader::Shader()
     : m_ShaderType( UnknownShaderType )
 {
@@ -15,12 +12,7 @@ Shader::~Shader()
 
 void Shader::Destroy()
 {
-    m_pPixelShader.Release();
-    m_pDomainShader.Release();
-    m_pHullShader.Release();
-    m_pGeometryShader.Release();
-    m_pVertexShader.Release();
-    m_pComputeShader.Release();
+    m_pShader.Release();
 
     m_ShaderParameters.clear();
     m_InputSemantics.clear();
@@ -31,15 +23,8 @@ Shader::ShaderType Shader::GetType() const
     return m_ShaderType;
 }
 
-
-std::string Shader::GetLatestProfile( ShaderType type )
-{
-    // Throw an exception?
-    return "";
-}
-
 bool Shader::LoadShaderFromFile( ShaderType shaderType, 
-	const std::string& fileName, 
+	const std::string& fileName, const std::string& searchPaths,
 	const std::string& entryPoint, const ShaderMacros& shaderMacros)
 {
 	Diligent::ShaderCreateInfo ShaderCI;
@@ -52,30 +37,70 @@ bool Shader::LoadShaderFromFile( ShaderType shaderType,
 
 	// Create a shader source stream factory to load shaders from files.
 	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> pShaderSourceFactory;
-	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory("./resources/shaders", &pShaderSourceFactory);
+	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(searchPaths.c_str(), &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
+
+	std::string shaderTypeStr = "";
 
 	if (shaderType == ShaderType::VertexShader)	{
 		ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
 		ShaderCI.EntryPoint = entryPoint.c_str();
 		ShaderCI.Desc.Name = entryPoint.c_str();
 		ShaderCI.FilePath = fileName.c_str();
-		pgApp::s_device->CreateShader(ShaderCI, &m_pVertexShader);
+		pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+		shaderTypeStr = "vs";
 	} else if (shaderType == ShaderType::PixelShader) {
 		ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
 		ShaderCI.EntryPoint = entryPoint.c_str();
 		ShaderCI.Desc.Name = entryPoint.c_str();
 		ShaderCI.FilePath = fileName.c_str();
-		pgApp::s_device->CreateShader(ShaderCI, &m_pPixelShader);
+		pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+		shaderTypeStr = "ps";
 	} else if (shaderType == ShaderType::ComputeShader) {
 		ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
 		ShaderCI.EntryPoint = entryPoint.c_str();
 		ShaderCI.Desc.Name = entryPoint.c_str();
 		ShaderCI.FilePath = fileName.c_str();
-		pgApp::s_device->CreateShader(ShaderCI, &m_pComputeShader);
+		pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+		shaderTypeStr = "cs";
 	}
 	else {
 		assert(0);
+	}
+
+	if (m_pShader) {
+		auto resCount = m_pShader->GetResourceCount();
+		for (uint32_t i = 0; i < resCount; ++i) {
+			auto res = m_pShader->GetResource(i);
+
+			std::string resourceName = res.Name;
+
+			ShaderParameter::Type parameterType = ShaderParameter::Type::Invalid;
+
+			switch (res.Type)
+			{
+			case Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV:
+				parameterType = ShaderParameter::Type::Texture;
+				break;
+			case Diligent::SHADER_RESOURCE_TYPE_SAMPLER:
+				parameterType = ShaderParameter::Type::Sampler;
+				break;
+			case Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER:
+			case Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV:
+				parameterType = ShaderParameter::Type::Buffer;
+				break;
+			case Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV:
+				parameterType = ShaderParameter::Type::RWBuffer;
+				break;
+			case Diligent::SHADER_RESOURCE_TYPE_TEXTURE_UAV:
+				parameterType = ShaderParameter::Type::RWTexture;
+				break;
+			}
+
+			// Create an empty shader parameter that should be filled-in by the application.
+			std::shared_ptr<ShaderParameter> shaderParameter = std::make_shared<ShaderParameter>(resourceName, shaderTypeStr, parameterType);
+			m_ShaderParameters.insert(ParameterMap::value_type(resourceName, shaderParameter));
+		}
 	}
 
 	return true;
@@ -89,8 +114,13 @@ ShaderParameter& Shader::GetShaderParameterByName( const std::string& name ) con
         return *( iter->second );
     }
 
+	assert(0);
+
+	static ShaderParameter gs_InvalidShaderParameter("invalid", "vs", ShaderParameter::Type::Invalid);
+
     return gs_InvalidShaderParameter;
 }
+
 
 bool Shader::HasSemantic( const pgBufferBinding& binding ) const
 {

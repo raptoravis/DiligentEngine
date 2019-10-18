@@ -11,6 +11,7 @@
 #include "engine/pass/passclearrt.h"
 #include "engine/pass/passcopytexture.h"
 
+
 TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
 	: base(rt, backBuffer)
 {
@@ -45,7 +46,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr
 		std::shared_ptr<PipelineColorVertex> pipelineColorVertex = std::make_shared<PipelineColorVertex>(m_pRT);
 		std::shared_ptr<PipelineTexVertex> pipelineTexVertex = std::make_shared<PipelineTexVertex>(m_pRT);
 
-		std::shared_ptr<pgPassPilpeline> pCubePass = std::make_shared<pgPassPilpeline>(sceneCube, pipelineColorVertex);
+		std::shared_ptr<OpaquePass> pCubePass = std::make_shared<OpaquePass>(sceneCube, pipelineColorVertex);
 		addPass(pCubePass);
 
 		std::shared_ptr<pgPassPilpeline> pCubeTexPass = std::make_shared<pgPassPilpeline>(sceneCubeTex, pipelineTexVertex);

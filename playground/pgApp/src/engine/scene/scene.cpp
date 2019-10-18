@@ -212,6 +212,21 @@ void pgSceneNode::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
 
+void pgSceneNode::Accept(Visitor& visitor) {
+	visitor.Visit(*this);
+
+	// Visit meshes.
+	for (auto mesh : m_Meshes)
+	{
+		mesh->Accept(visitor);
+	}
+
+	// Now visit children
+	for (auto child : m_Children)
+	{
+		child->Accept(visitor);
+	}
+}
 
 pgScene::pgScene() {
 	//
@@ -248,4 +263,12 @@ void pgScene::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 void pgScene::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
+}
+
+void pgScene::Accept(Visitor& visitor) {
+	visitor.Visit(*this);
+	if (m_pRootNode)
+	{
+		m_pRootNode->Accept(visitor);
+	}
 }

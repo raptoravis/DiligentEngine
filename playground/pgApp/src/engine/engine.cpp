@@ -10,6 +10,7 @@ std::shared_ptr<pgRenderTarget>						pgApp::s_rt;
 std::shared_ptr<pgTexture>							pgApp::s_backBuffer;
 
 Diligent::SwapChainDesc								pgApp::s_desc;
+pgRenderEventArgs									pgApp::s_eventArgs;
 
 
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function, const std::string& message)
@@ -37,6 +38,14 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 	throw new std::exception(message.c_str());
 }
 
+uint32_t pgObject::s_uuid = 0;
+
+pgObject::pgObject()
+	: m_uuid(++pgObject::s_uuid)
+{
+}
+
+
 pgBuffer::BufferType pgBuffer::GetType() const {
 	return pgBuffer::Unknown;
 }
@@ -55,9 +64,10 @@ void pgBuffer::Copy(std::shared_ptr<pgBuffer> other) {
 	//
 }
 
-pgPass::pgPass(std::shared_ptr<pgScene> scene)
+pgPass::pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 	: m_bEnabled(true)
 	, m_scene(scene)
+	, m_pPipeline(pipeline)
 {
 }
 
@@ -85,6 +95,10 @@ void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
+}
+
+void pgPass::Render() {
+
 }
 
 pgPassPilpeline::pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
@@ -115,76 +129,9 @@ void pgPassPilpeline::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 void pgPassPilpeline::update(pgRenderEventArgs& e) {
 }
 
+void pgPassPilpeline::Render() {
 
-pgTechnique::pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
-		: m_pRT(rt)
-		, m_pBackBuffer(backBuffer)
-{
 }
-
-pgTechnique::~pgTechnique() {
-	m_Passes.clear();
-}
-
-unsigned int pgTechnique::addPass(std::shared_ptr<pgPass> pass) {
-	// No check for duplicate passes (it may be intended to render the same pass multiple times?)
-	m_Passes.push_back(pass);
-	return static_cast<unsigned int>(m_Passes.size()) - 1;
-}
-
-std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const {
-	if (ID < m_Passes.size())
-	{
-		return m_Passes[ID];
-	}
-
-	return 0;
-}
-
-void pgTechnique::update(pgRenderEventArgs& e) {
-	for (auto pass : m_Passes)
-	{
-		if (pass->isEnabled())
-		{
-			pass->update(e);
-		}
-	}
-}
-
-// Render the scene using the passes that have been configured.
-void pgTechnique::_render(pgRenderEventArgs& e) {
-	// keep to restore it
-	auto oldTechnique = e.pTechnique;
-
-	auto currentTechnique = this;
-	e.pTechnique = currentTechnique;
-
-	currentTechnique->bind(e, pgBindFlag::pgBindFlag_Technique);
-
-	render(e);
-
-	currentTechnique->unbind(e, pgBindFlag::pgBindFlag_Technique);
-	e.pTechnique = oldTechnique;
-}
-
-void pgTechnique::render(pgRenderEventArgs& e) {
-	for (auto pass : m_Passes)
-	{
-		if (pass->isEnabled())
-		{
-			pass->_render(e);
-		}
-	}
-}
-
-void pgTechnique::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	//
-}
-
-void pgTechnique::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
-	//
-}
-
 
 pgApp::pgApp() {
 	//

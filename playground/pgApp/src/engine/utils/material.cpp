@@ -195,6 +195,10 @@ bool pgMaterial::IsTransparent() const
 		m_pProperties->m_AlphaThreshold <= 0.0f); // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
 }
 
+void pgMaterial::UpdateConstantBuffer()
+{
+}
+
 
 void pgMaterial::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	e.pPass->bind(e, flag);
@@ -204,4 +208,36 @@ void pgMaterial::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	e.pPass->unbind(e, flag);
 }
 
+void pgMaterial::Bind(std::weak_ptr<Shader> wpShader) {
+	std::shared_ptr<Shader> pShader = wpShader.lock();
+	if (!pShader) return;
 
+	if (m_Dirty)
+	{
+		// Make sure the constant buffer associated to this material is updated.
+		this->UpdateConstantBuffer();
+		this->m_Dirty = false;
+	}
+
+	// OOPS.. Dangerous. Just blindly set all textures associated to this material.
+	// Maybe I should check the names of the textures in the shader before doing this?
+	// I could be replacing textures that are bound to the shader that shouldn't be changed!?
+	// (Because they have been specified by the user for example).
+	for (auto texture : m_Textures)
+	{
+		std::shared_ptr<pgTexture> pTexture = texture.second;
+		pTexture->Bind((uint32_t)texture.first, pShader->GetType(), ShaderParameter::Type::Texture);
+	}
+
+	// If the shader has a parameter called "pgMaterial".
+	ShaderParameter& materialParameter = pShader->GetShaderParameterByName("pgMaterial");
+	if (materialParameter.IsValid())
+	{
+		// Assign this material's constant buffer to it.
+		//materialParameter.SetConstantBuffer(m_pConstantBuffer);
+
+		// If the shader parameter is modified, they have to be 
+		// rebound to update the rendering pipeline.
+		materialParameter.Bind();
+	}
+}
