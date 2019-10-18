@@ -12,6 +12,12 @@ std::shared_ptr<pgTexture>							pgApp::s_backBuffer;
 Diligent::SwapChainDesc								pgApp::s_desc;
 pgRenderEventArgs									pgApp::s_eventArgs;
 
+std::shared_ptr<pgObject>							pgApp::s_reources[pgApp::RESOURCE_SLOT::RESOURCE_SLOT_COUNT];
+const char*											pgApp::s_reourceNames[pgApp::RESOURCE_SLOT::RESOURCE_SLOT_COUNT] = {
+	"PerObject", 
+	"Material", 
+	"Lights"
+};
 
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function, const std::string& message)
 {
@@ -45,13 +51,37 @@ pgObject::pgObject()
 {
 }
 
+pgBuffer::pgBuffer(uint32_t stride, uint32_t count)
+	: m_uiCount(count)
+	, m_uiStride(stride)
+	, m_BindFlags(0)
+	, m_bIsBound(false)
+{
+}
+
+uint32_t pgBuffer::getCount() const {
+	return m_uiCount;
+}
+
 
 pgBuffer::BufferType pgBuffer::GetType() const {
 	return pgBuffer::Unknown;
 }
 
+Diligent::IBufferView* pgBuffer::getUnorderedAccessView() {
+	auto uav = m_pBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS);
+	return uav;
+}
+
+
 // Bind the buffer for rendering.
-bool pgBuffer::Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+bool pgBuffer::Bind(unsigned int slot, Shader::ShaderType shaderType, ShaderParameter::Type parameterType) {
+	Diligent::Uint32 offset[] = { 0 };
+	Diligent::IBuffer *pBuffs[] = { m_pBuffer.RawPtr() };
+	const uint32_t buffs = 1;
+
+	pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
+
 	return true;
 }
 
@@ -66,7 +96,7 @@ void pgBuffer::Copy(std::shared_ptr<pgBuffer> other) {
 
 pgPass::pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 	: m_bEnabled(true)
-	, m_scene(scene)
+	, m_pScene(scene)
 	, m_pPipeline(pipeline)
 {
 }
@@ -89,6 +119,15 @@ void pgPass::_render(pgRenderEventArgs& e) {
 	e.pPass = oldPass;
 }
 
+void pgPass::update(pgRenderEventArgs& e) {
+	//
+}
+
+void pgPass::render(pgRenderEventArgs& e) {
+	//
+}
+
+
 void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
@@ -97,9 +136,30 @@ void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
 }
 
-void pgPass::Render() {
-
+void pgPass::PreRender() {
+	//
 }
+
+void pgPass::Render() {
+	//
+}
+
+void pgPass::PostRender() {
+	//
+}
+
+void pgPass::Visit(pgScene& scene) {
+	//
+}
+
+void pgPass::Visit(pgSceneNode& node) {
+	//
+}
+
+void pgPass::Visit(pgMesh& mesh) {
+	//
+}
+
 
 pgPassPilpeline::pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 	: base(scene)
@@ -114,7 +174,7 @@ pgPassPilpeline::~pgPassPilpeline()
 
 // Render a frame
 void pgPassPilpeline::render(pgRenderEventArgs& e) {
-	m_scene->_render(e);
+	m_pScene->_render(e);
 }
 
 void pgPassPilpeline::bind(pgRenderEventArgs& e, pgBindFlag flag) {
@@ -130,7 +190,10 @@ void pgPassPilpeline::update(pgRenderEventArgs& e) {
 }
 
 void pgPassPilpeline::Render() {
-
+	if (m_pScene)
+	{
+		m_pScene->Accept(*this);
+	}
 }
 
 pgApp::pgApp() {

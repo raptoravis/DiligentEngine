@@ -97,7 +97,7 @@ void pgRenderTarget::Bind() {
 }
 
 void pgRenderTarget::UnBind() {
-	UnBind();
+	unbind();
 }
 
 

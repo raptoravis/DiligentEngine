@@ -120,7 +120,7 @@ void pgMesh::Render() {
 	//Material material( *m_pMaterial );
 
 	// Use the vertex shader to convert the buffer semantics to slot ID's
-	auto pipeline = pgApp::s_eventArgs.pPass->getPileline();
+	auto pipeline = pgApp::s_eventArgs.pPipeline;
 	if (pipeline)
 	{
 		pVS = pipeline->GetShader(Shader::VertexShader);
@@ -130,13 +130,16 @@ void pgMesh::Render() {
 			for (BufferMap::value_type buffer : m_VertexBuffers)
 			{
 				pgBufferBinding binding = buffer.first;
-				if (pVS->HasSemantic(binding))
-				{
-					uint32_t slotID = pVS->GetSlotIDBySemantic(binding);
-					// Bind the vertex buffer to a particular slot ID.
-					buffer.second->Bind(slotID, Shader::VertexShader, ShaderParameter::Type::Buffer);
-				}
+				//if (pVS->HasSemantic(binding))
+				//{
+				//	uint32_t slotID = pVS->GetSlotIDBySemantic(binding);
+				//	// Bind the vertex buffer to a particular slot ID.
+				//	buffer.second->Bind(slotID, Shader::VertexShader, ShaderParameter::Type::Buffer);
+				//}
+				buffer.second->Bind(binding.Index, Shader::VertexShader, ShaderParameter::Type::Buffer);
 			}
+
+			pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
 		if (m_pMaterial)
@@ -146,6 +149,17 @@ void pgMesh::Render() {
 				m_pMaterial->Bind(shader.second);
 			}
 		}
+
+		auto count = m_pIndexBuffer->getCount();
+
+		DrawAttribs DrawAttrs;
+		DrawAttrs.IsIndexed = true;      // This is an indexed draw call
+		DrawAttrs.IndexType = VT_UINT32; // Index type
+		DrawAttrs.NumIndices = count;
+		// Verify the state of vertex and index buffers
+		DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
+
+		pgApp::s_ctx->Draw(DrawAttrs);
 	}
 }
 

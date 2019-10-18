@@ -25,15 +25,11 @@ std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const {
 	return 0;
 }
 
-unsigned int pgTechnique::addPass(std::shared_ptr<RenderPass> pass) {
-	_m_Passes.push_back(pass);
-	return static_cast<unsigned int>(_m_Passes.size()) - 1;
-}
 
 void pgTechnique::update(pgRenderEventArgs& e) {
 	for (auto pass : m_Passes)
 	{
-		if (pass->isEnabled())
+		if (pass->IsEnabled())
 		{
 			pass->update(e);
 		}
@@ -59,7 +55,7 @@ void pgTechnique::_render(pgRenderEventArgs& e) {
 void pgTechnique::render(pgRenderEventArgs& e) {
 	for (auto pass : m_Passes)
 	{
-		if (pass->isEnabled())
+		if (pass->IsEnabled())
 		{
 			pass->_render(e);
 		}
@@ -75,7 +71,7 @@ void pgTechnique::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
 
 void pgTechnique::Render() {
-	for (auto pass : _m_Passes)
+	for (auto pass : m_Passes)
 	{
 		if (pass->IsEnabled())
 		{

@@ -23,3 +23,9 @@ void PassSetRT::update(pgRenderEventArgs& e) {
 
 void PassSetRT::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
+
+void PassSetRT::Render() {
+	if (m_pRT) {
+		m_pRT->bind();
+	}
+}

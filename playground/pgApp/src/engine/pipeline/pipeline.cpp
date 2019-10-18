@@ -8,12 +8,18 @@ pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt)
 	// This is a graphics pipeline
 	m_PSODesc.IsComputePipeline = false;
 
+	auto color0 = rt->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+	auto color0Format = color0->m_pTexture->GetDesc().Format;
+
+	auto ds = rt->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+	auto dsFormat = ds->m_pTexture->GetDesc().Format;
+
 	// This tutorial will render to a single render target
 	m_PSODesc.GraphicsPipeline.NumRenderTargets = 1;
 	// Set render target format which is the format of the swap chain's color buffer
-	m_PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
+	m_PSODesc.GraphicsPipeline.RTVFormats[0] = color0Format;
 	// Set depth buffer format which is the format of the swap chain's back buffer
-	m_PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
+	m_PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
 	// Primitive topology defines what kind of primitives will be rendered by this pipeline state
 	m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	// Cull back faces
@@ -144,6 +150,40 @@ void pgPipeline::Bind()
 {
 	if (m_bDirty) {
 		pgApp::s_device->CreatePipelineState(m_PSODesc, &m_pPSO);
+
+		// Static variables never change and are bound directly through the pipeline state object.
+		//m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants)
+		for (auto shader : m_Shaders)
+		{
+			std::shared_ptr<Shader> pShader = shader.second;
+			if (pShader)
+			{
+				Diligent::SHADER_TYPE st = Diligent::SHADER_TYPE_UNKNOWN;
+				if (pShader->GetType() == Shader::ShaderType::VertexShader) {
+					st = Diligent::SHADER_TYPE_VERTEX;
+				} else if (pShader->GetType() == Shader::ShaderType::PixelShader) {
+					st = Diligent::SHADER_TYPE_PIXEL;
+				} else if (pShader->GetType() == Shader::ShaderType::PixelShader) {
+					st = Diligent::SHADER_TYPE_COMPUTE;
+				}
+				else {
+					CHECK_ERR(0);
+				}
+
+				auto cbs = pShader->GetConstantBuffers();
+
+				if (cbs.size() > 0)
+				{
+					for (auto p : cbs)
+					{
+						if (std::shared_ptr<ConstantBuffer> cb = p->GetConstantBuffer().lock())
+						{
+							m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())->Set(cb->m_pBuffer);
+						}
+					}
+				}
+			}
+		}
 
 		// Create a shader resource binding object and bind all static resources in it
 		m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);

@@ -12,9 +12,6 @@ PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt)
 	m_pPS = std::make_shared<Shader>();
 	m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cube.psh", "main");
 
-	m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
-	m_pVS->GetShaderParameterByName("Constants").SetConstantBuffer(m_VSConstants);
-
 	SetShader(Shader::Shader::VertexShader, m_pVS);
 	SetShader(Shader::Shader::PixelShader, m_pPS);
 
@@ -48,11 +45,11 @@ void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 			// Compute world-view-projection matrix
 			float4x4 worldViewProjMatrix = CubeWorldView * Proj;
 
-			{
-				// Map the buffer and write current world-view-projection matrix
-				MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants->m_pBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
-				*CBConstants = worldViewProjMatrix.Transpose();
-			}
+			//{
+			//	// Map the buffer and write current world-view-projection matrix
+			//	MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants->m_pBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
+			//	*CBConstants = worldViewProjMatrix.Transpose();
+			//}
 
 			// Set the pipeline state
 			pgApp::s_ctx->SetPipelineState(m_pPSO);

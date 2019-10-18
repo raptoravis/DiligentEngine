@@ -5,8 +5,6 @@
 class PipelineColorVertex : public pgPipeline {
 	typedef pgPipeline base;
 private:
-	std::shared_ptr<ConstantBuffer>             m_VSConstants;
-
 	std::shared_ptr<Shader>						m_pVS;
 	std::shared_ptr<Shader>						m_pPS;
 

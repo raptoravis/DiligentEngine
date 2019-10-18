@@ -35,3 +35,13 @@ void PassClearRT::update(pgRenderEventArgs& e) {
 
 void PassClearRT::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 }
+
+void PassClearRT::Render() {
+	if (m_RenderTarget) {
+		m_RenderTarget->Clear(m_ClearFlags, m_ClearColor, m_ClearDepth, m_ClearStencil);
+	}
+
+	if (m_Texture) {
+		m_Texture->Clear(m_ClearFlags, m_ClearColor, m_ClearDepth, m_ClearStencil);
+	}
+}

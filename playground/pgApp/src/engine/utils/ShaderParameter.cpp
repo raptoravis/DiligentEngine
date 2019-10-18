@@ -10,6 +10,16 @@ ShaderParameter::ShaderParameter(const std::string& name, const std::string& sha
 	, m_ParameterType(parameterType)
 {}
 
+std::weak_ptr<ConstantBuffer> ShaderParameter::GetConstantBuffer()
+{
+	return m_pConstantBuffer;
+}
+
+std::weak_ptr<SamplerState> ShaderParameter::GetSampler()
+{
+	return m_pSamplerState;
+}
+
 void ShaderParameter::SetConstantBuffer(std::shared_ptr<ConstantBuffer> buffer)
 {
 	m_pConstantBuffer = buffer;
@@ -39,6 +49,11 @@ ShaderParameter::Type ShaderParameter::GetType() const
 {
 	return m_ParameterType;
 }
+
+const std::string& ShaderParameter::GetName() const {
+	return m_Name;
+}
+
 
 static Shader::ShaderType getShaderType(const std::string& shaderType) {
 	if (shaderType == "vs") {

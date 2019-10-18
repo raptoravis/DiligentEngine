@@ -166,3 +166,7 @@ void PassLight::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 void PassLight::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::unbind(e, flag);
 }
+
+void PassLight::Render() {
+
+}

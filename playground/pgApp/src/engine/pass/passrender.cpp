@@ -144,7 +144,7 @@ void pgPassRender::LoadTexture()
 
 // Render a frame
 void pgPassRender::render(pgRenderEventArgs& e) {
-	m_scene->_render(e);
+	m_pScene->_render(e);
 }
 
 void pgPassRender::update(pgRenderEventArgs& e) {
@@ -166,4 +166,8 @@ void pgPassRender::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 void pgPassRender::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	//
+}
+
+void pgPassRender::Render() {
+
 }

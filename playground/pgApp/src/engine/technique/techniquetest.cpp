@@ -43,14 +43,19 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr
 		std::shared_ptr<pgScene> sceneCubeTex = std::make_shared<pgScene>();
 		sceneCubeTex->setRootNode(root2);
 
+		//
+		pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_PEROBJECT] = "Constants";
+		m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
+		pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT] = m_VSConstants;
+
 		std::shared_ptr<PipelineColorVertex> pipelineColorVertex = std::make_shared<PipelineColorVertex>(m_pRT);
 		std::shared_ptr<PipelineTexVertex> pipelineTexVertex = std::make_shared<PipelineTexVertex>(m_pRT);
 
-		std::shared_ptr<OpaquePass> pCubePass = std::make_shared<OpaquePass>(sceneCube, pipelineColorVertex);
+		std::shared_ptr<TestPass> pCubePass = std::make_shared<TestPass>(sceneCube, pipelineColorVertex);
 		addPass(pCubePass);
 
-		std::shared_ptr<pgPassPilpeline> pCubeTexPass = std::make_shared<pgPassPilpeline>(sceneCubeTex, pipelineTexVertex);
-		addPass(pCubeTexPass);
+		//std::shared_ptr<TestPass> pCubeTexPass = std::make_shared<TestPass>(sceneCubeTex, pipelineTexVertex);
+		//addPass(pCubeTexPass);
 
 		//
 		{

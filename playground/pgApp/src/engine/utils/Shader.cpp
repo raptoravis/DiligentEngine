@@ -40,6 +40,8 @@ bool Shader::LoadShaderFromFile( ShaderType shaderType,
 	pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(searchPaths.c_str(), &pShaderSourceFactory);
 	ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 
+	m_ShaderType = shaderType;
+
 	std::string shaderTypeStr = "";
 
 	if (shaderType == ShaderType::VertexShader)	{
@@ -69,6 +71,7 @@ bool Shader::LoadShaderFromFile( ShaderType shaderType,
 	}
 
 	if (m_pShader) {
+		LOG_INFO_MESSAGE("===============loading ", fileName, " ", shaderTypeStr);
 		auto resCount = m_pShader->GetResourceCount();
 		for (uint32_t i = 0; i < resCount; ++i) {
 			auto res = m_pShader->GetResource(i);
@@ -86,6 +89,8 @@ bool Shader::LoadShaderFromFile( ShaderType shaderType,
 				parameterType = ShaderParameter::Type::Sampler;
 				break;
 			case Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER:
+				parameterType = ShaderParameter::Type::CBuffer;
+				break;
 			case Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV:
 				parameterType = ShaderParameter::Type::Buffer;
 				break;
@@ -100,6 +105,8 @@ bool Shader::LoadShaderFromFile( ShaderType shaderType,
 			// Create an empty shader parameter that should be filled-in by the application.
 			std::shared_ptr<ShaderParameter> shaderParameter = std::make_shared<ShaderParameter>(resourceName, shaderTypeStr, parameterType);
 			m_ShaderParameters.insert(ParameterMap::value_type(resourceName, shaderParameter));
+
+			LOG_INFO_MESSAGE("===============ShaderParamter:", resourceName.c_str());
 		}
 	}
 
@@ -114,7 +121,7 @@ ShaderParameter& Shader::GetShaderParameterByName( const std::string& name ) con
         return *( iter->second );
     }
 
-	assert(0);
+	CHECK_ERR(0, name.c_str(), " does not exist");
 
 	static ShaderParameter gs_InvalidShaderParameter("invalid", "vs", ShaderParameter::Type::Invalid);
 
@@ -139,6 +146,23 @@ uint32_t Shader::GetSlotIDBySemantic( const pgBufferBinding& binding ) const
     // Some kind of error code or exception...
     return (uint32_t)-1;
 }
+
+Shader::ParametersList Shader::GetConstantBuffers()
+{
+	Shader::ParametersList ret;
+
+	for (ParameterMap::value_type value : m_ShaderParameters)
+	{
+		auto p = value.second;
+		if (p->GetType() == ShaderParameter::Type::CBuffer)
+		{ 
+			ret.push_back(p);
+		}
+	}
+
+	return ret;
+}
+
 
 void Shader::Bind()
 {

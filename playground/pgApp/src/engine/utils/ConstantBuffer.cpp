@@ -1,20 +1,13 @@
 #include "../engine.h"
 
 ConstantBuffer::ConstantBuffer(uint32_t size, void* data)
-	: base(size)
+	: base(size, 1)
 {
-	// Create a vertex buffer that stores cube vertices
-	Diligent::BufferDesc VertBuffDesc;
-	VertBuffDesc.Name = "Float vertex buffer";
-	VertBuffDesc.Usage = Diligent::USAGE_STATIC;
-	VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-	VertBuffDesc.uiSizeInBytes = size;
-
-	Diligent::BufferData VBData;
-	VBData.pData = data;
-	VBData.DataSize = size;
-
-	pgApp::s_device->CreateBuffer(VertBuffDesc, &VBData, &m_pBuffer);
+	CreateUniformBuffer(pgApp::s_device, size, "VS constants CB", &m_pBuffer, 
+		Diligent::USAGE_DYNAMIC, 
+		Diligent::BIND_UNIFORM_BUFFER, 
+		Diligent::CPU_ACCESS_WRITE, 
+		data);
 }
 
 ConstantBuffer::~ConstantBuffer() {
@@ -48,5 +41,14 @@ void ConstantBuffer::Copy(std::shared_ptr<ConstantBuffer> other) {
 
 // Implementations must provide this method.
 void ConstantBuffer::Set(const void* data, size_t size) {
+	{
+		// Map the buffer and write current world-view-projection matrix
+		struct dummy_t {
+			char m;
+		};
+		Diligent::MapHelper<dummy_t> CBConstants(pgApp::s_ctx, m_pBuffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+		auto p = &CBConstants->m;
+		memcpy((char*)p, data, size);
+	}
 
 }

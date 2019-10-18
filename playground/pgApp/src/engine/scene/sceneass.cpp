@@ -481,7 +481,7 @@ std::shared_ptr<pgBuffer> pgSceneAss::createFloatVertexBuffer(Diligent::IRenderD
 	VBData.pData = data;
 	VBData.DataSize = stride * count;
 
-	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(count);
+	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(stride, count);
 
 	device->CreateBuffer(VertBuffDesc, &VBData, &buffer->m_pBuffer);
 
@@ -501,7 +501,7 @@ std::shared_ptr<pgBuffer> pgSceneAss::createUIntIndexBuffer(Diligent::IRenderDev
 	IBData.pData = data;
 	IBData.DataSize = sizeof(uint32_t) * count;
 
-	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(count);
+	std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>((uint32_t)sizeof(uint32_t), count);
 
 	device->CreateBuffer(IndBuffDesc, &IBData, &buffer->m_pBuffer);
 

@@ -142,7 +142,7 @@ void PassGeometry::render(pgRenderEventArgs& e) {
 	m_pGBufferRT->bind();
 	m_pGBufferRT->Clear(pgClearFlags::All, float4(0.39f, 0.58f, 0.93f, 1.0f), 1.0f, 0);
 
-	m_scene->_render(e);
+	m_pScene->_render(e);
 }
 
 void PassGeometry::update(pgRenderEventArgs& e) {

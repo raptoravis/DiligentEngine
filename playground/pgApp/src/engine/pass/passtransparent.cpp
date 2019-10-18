@@ -26,7 +26,7 @@ bool PassTransparent::meshFilter(pgMesh* mesh) {
 
 // Render a frame
 void PassTransparent::render(pgRenderEventArgs& e) {
-	m_scene->_render(e);
+	m_pScene->_render(e);
 }
 
 void PassTransparent::update(pgRenderEventArgs& e) {
