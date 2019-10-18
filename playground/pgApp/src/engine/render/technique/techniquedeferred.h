@@ -2,9 +2,9 @@
 
 #include "SampleBase.h"
 
-#include "../engine.h"
-#include "pass/passrender.h"
-#include "light.h"
+#include "../../engine.h"
+#include "../pass/passrender.h"
+#include "../light.h"
 
 using namespace Diligent;
 

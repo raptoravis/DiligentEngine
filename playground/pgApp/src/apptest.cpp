@@ -1,9 +1,9 @@
 #include "apptest.h"
 
-#include "techniquetest.h"
-#include "engine/render/techniquedeferred.h"
-#include "engine/render/techniqueforward.h"
-#include "engine/render/techniqueforwardplus.h"
+#include "engine/render/technique/techniquetest.h"
+#include "engine/render/technique/techniquedeferred.h"
+#include "engine/render/technique/techniqueforward.h"
+#include "engine/render/technique/techniqueforwardplus.h"
 
 #include "MapHelper.h"
 #include "BasicMath.h"
@@ -239,10 +239,10 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
 	createRT();
 
-	m_renderingTechnique = RenderingTechnique::ForwardPlus;
+	//m_renderingTechnique = RenderingTechnique::ForwardPlus;
 	//m_renderingTechnique = RenderingTechnique::Deferred;
 	//m_renderingTechnique = RenderingTechnique::Forward;
-	//m_renderingTechnique = RenderingTechnique::Test;
+	m_renderingTechnique = RenderingTechnique::Test;
 
 	Diligent::float3 pos = Diligent::float3(0, 0, 0);
 	if (m_renderingTechnique != RenderingTechnique::Test) {

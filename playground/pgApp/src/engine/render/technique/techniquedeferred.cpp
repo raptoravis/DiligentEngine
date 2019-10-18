@@ -1,15 +1,15 @@
 #include "techniquedeferred.h"
 
-#include "pass/passtransparent.h"
-#include "pass/passgeometry.h"
-#include "pass/passlight.h"
-#include "pass/passsetrt.h"
-#include "pass/passclearrt.h"
-#include "pass/passcopytexture.h"
+#include "../pass/passtransparent.h"
+#include "../pass/passgeometry.h"
+#include "../pass/passlight.h"
+#include "../pass/passsetrt.h"
+#include "../pass/passclearrt.h"
+#include "../pass/passcopytexture.h"
 
-#include "pipeline/pipelinelightfront.h"
-#include "pipeline/pipelinelightback.h"
-#include "pipeline/pipelinelightdir.h"
+#include "../pipeline/pipelinelightfront.h"
+#include "../pipeline/pipelinelightback.h"
+#include "../pipeline/pipelinelightdir.h"
 
 
 TechniqueDeferred::TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)

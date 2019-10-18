@@ -1,10 +1,10 @@
 #include "techniqueforward.h"
 
-#include "pass/passopaque.h"
-#include "pass/passtransparent.h"
-#include "pass/passsetrt.h"
-#include "pass/passclearrt.h"
-#include "pass/passcopytexture.h"
+#include "../pass/passopaque.h"
+#include "../pass/passtransparent.h"
+#include "../pass/passsetrt.h"
+#include "../pass/passclearrt.h"
+#include "../pass/passcopytexture.h"
 
 TechniqueForward::TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
 	: base(rt, backBuffer)
