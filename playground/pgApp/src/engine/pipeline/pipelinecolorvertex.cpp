@@ -15,7 +15,7 @@ PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt)
 	SetShader(Shader::Shader::VertexShader, m_pVS);
 	SetShader(Shader::Shader::PixelShader, m_pPS);
 
-	LayoutElement LayoutElems[] =
+	static LayoutElement LayoutElems[] =
 	{
 		// Attribute 0 - vertex position
 		LayoutElement{0, 0, 3, VT_FLOAT32, False},
@@ -23,7 +23,8 @@ PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt)
 		LayoutElement{1, 0, 4, VT_FLOAT32, False}
 	};
 
-	SetLayoutElement(_countof(LayoutElems), LayoutElems);
+	m_PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
+	m_PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 }
 
 PipelineColorVertex::~PipelineColorVertex() {
@@ -47,7 +48,7 @@ void PipelineColorVertex::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 			//{
 			//	// Map the buffer and write current world-view-projection matrix
-			//	MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants->m_pBuffer, MAP_WRITE, MAP_FLAG_DISCARD);
+			//	MapHelper<float4x4> CBConstants(pgApp::s_ctx, m_VSConstants->GetBuffer(), MAP_WRITE, MAP_FLAG_DISCARD);
 			//	*CBConstants = worldViewProjMatrix.Transpose();
 			//}
 

@@ -26,7 +26,7 @@ void BasePass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 		const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_PEROBJECT];
 
 		auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
-		shader->GetShaderParameterByName(perObjectCBName).SetConstantBuffer(perObjectCB);
+		shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
 	}
 }
 
@@ -115,7 +115,7 @@ void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 		const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_PEROBJECT];
 
 		auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
-		shader->GetShaderParameterByName(perObjectCBName).SetConstantBuffer(perObjectCB);
+		shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
 	}
 }
 

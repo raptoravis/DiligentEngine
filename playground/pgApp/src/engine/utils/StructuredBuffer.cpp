@@ -2,7 +2,7 @@
 
 StructuredBuffer::StructuredBuffer(const void* data, uint32_t count,
 	uint32_t stride, CPUAccess cpuAccess, bool bUAV)
-	: base(stride, count)
+	: base(stride, count, nullptr)
 {
 	Diligent::BufferDesc BuffDesc;
 	BuffDesc.Name = "Lights StructuredBuffer";

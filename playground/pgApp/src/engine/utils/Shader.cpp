@@ -164,6 +164,22 @@ Shader::ParametersList Shader::GetConstantBuffers()
 }
 
 
+Shader::ParametersList Shader::GetNonConstantBuffers()
+{
+	Shader::ParametersList ret;
+
+	for (ParameterMap::value_type value : m_ShaderParameters)
+	{
+		auto p = value.second;
+		if (p->GetType() != ShaderParameter::Type::CBuffer)
+		{
+			ret.push_back(p);
+		}
+	}
+
+	return ret;
+}
+
 void Shader::Bind()
 {
     for ( ParameterMap::value_type value : m_ShaderParameters )

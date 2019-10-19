@@ -2,25 +2,30 @@
 
 uint16_t pgTexture::GetWidth() const
 {
+	auto tex = m_pTexture;
 	auto& desc = m_pTexture->GetDesc();
 	return (uint16_t)desc.Width;
 }
 
 uint16_t pgTexture::GetHeight() const
 {
-	auto& desc = m_pTexture->GetDesc();
+	auto tex = m_pTexture;
+
+	auto& desc = tex->GetDesc();
 	return (uint16_t)desc.Height;
 }
 
 uint16_t pgTexture::GetDepth() const
 {
-	auto& desc = m_pTexture->GetDesc();
+	auto tex = m_pTexture;
+
+	auto& desc = tex->GetDesc();
 	return (uint16_t)desc.Depth;
 }
 
 uint8_t pgTexture::GetBPP() const
 {
-	//auto& desc = m_pTexture->GetDesc();
+	//auto& desc = m_pResource->GetDesc();
 	//desc.Format;
 
 	return 4;
@@ -28,43 +33,57 @@ uint8_t pgTexture::GetBPP() const
 
 bool pgTexture::IsTransparent() const
 {
-	//auto& desc = m_pTexture->GetDesc();
+	//auto& desc = m_pResource->GetDesc();
 	//desc.Format;
 
 	return false;
 }
 
 pgTexture::pgTexture(Diligent::ITexture* texture)
-	: m_pTexture(texture)
 {
+	m_pTexture.Attach(texture);
+	m_pTexture->AddRef();
 }
 
 pgTexture::~pgTexture() {
 	//
 }
 
+Diligent::ITexture* pgTexture::GetTexture() {
+	return m_pTexture;
+}
+
+
 Diligent::ITextureView* pgTexture::getShaderResourceView()
 {
-	auto srv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+	auto tex = m_pTexture;
+
+	auto srv = tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	return srv;
 }
 
 Diligent::ITextureView* pgTexture::getDepthStencilView() 
 {
-	auto dsv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+	auto tex = m_pTexture;
+
+	auto dsv = tex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
 	return dsv;
 }
 
 Diligent::ITextureView* pgTexture::getRenderTargetView() 
 {
-	auto rtv = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+	auto tex = m_pTexture;
+
+	auto rtv = tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
 
 	return rtv;
 }
 
 Diligent::ITextureView* pgTexture::getUnorderedAccessView() 
 {
-	auto uav = m_pTexture->GetDefaultView(Diligent::TEXTURE_VIEW_UNORDERED_ACCESS);
+	auto tex = m_pTexture;
+
+	auto uav = tex->GetDefaultView(Diligent::TEXTURE_VIEW_UNORDERED_ACCESS);
 	return uav;
 }
 
@@ -94,8 +113,8 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 }
 
 void pgTexture::Copy(pgTexture* dstTexture) {
-	Diligent::CopyTextureAttribs CopyAttribs(this->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
-		dstTexture->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	Diligent::CopyTextureAttribs CopyAttribs(this->GetTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+		dstTexture->GetTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	CopyAttribs.SrcMipLevel = 0;
 	CopyAttribs.DstMipLevel = 0;
 	CopyAttribs.DstSlice = 0;

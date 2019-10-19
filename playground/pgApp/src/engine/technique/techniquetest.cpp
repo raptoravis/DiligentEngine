@@ -54,8 +54,8 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr
 		std::shared_ptr<TestPass> pCubePass = std::make_shared<TestPass>(sceneCube, pipelineColorVertex);
 		addPass(pCubePass);
 
-		//std::shared_ptr<TestPass> pCubeTexPass = std::make_shared<TestPass>(sceneCubeTex, pipelineTexVertex);
-		//addPass(pCubeTexPass);
+		std::shared_ptr<TestPass> pCubeTexPass = std::make_shared<TestPass>(sceneCubeTex, pipelineTexVertex);
+		addPass(pCubeTexPass);
 
 		//
 		{

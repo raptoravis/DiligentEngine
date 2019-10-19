@@ -298,27 +298,18 @@ public:
 	virtual void Bind();
 	virtual void UnBind();
 
-	std::weak_ptr<ConstantBuffer> GetConstantBuffer();
-	std::weak_ptr<SamplerState> GetSampler();
-
-	void SetConstantBuffer(std::shared_ptr<ConstantBuffer> constantBuffer);
-	void SetTexture(std::shared_ptr<pgTexture> texture);
-	void SetSampler(std::shared_ptr<SamplerState> sampler);
-	void SetStructuredBuffer(std::shared_ptr<StructuredBuffer> rwBuffer);
+	std::weak_ptr<pgObject> GetResource();
+	void SetResource(std::shared_ptr<pgObject> resource);
 
 private:
-	std::string m_Name;
+	std::string					m_Name;
+
+	uint32_t					m_uiSlotID;
+	const std::string			m_ShaderType;
+	Type						m_ParameterType;
 
 	// Shader parameter does not take ownership of these types.
-	std::weak_ptr<pgTexture> m_pTexture;
-	std::weak_ptr<SamplerState> m_pSamplerState;
-	std::weak_ptr<ConstantBuffer> m_pConstantBuffer;
-	std::weak_ptr<StructuredBuffer> m_pStructuredBuffer;
-
-	uint32_t m_uiSlotID;
-	const std::string m_ShaderType;
-	Type m_ParameterType;
-
+	std::weak_ptr<pgObject>		m_pResource;
 };
 
 
@@ -364,6 +355,7 @@ public:
 
 	typedef std::vector< std::shared_ptr<ShaderParameter>> ParametersList;
 	ParametersList GetConstantBuffers();
+	ParametersList GetNonConstantBuffers();
 
 	void Bind();
 	void UnBind();
@@ -393,7 +385,11 @@ private:
 	std::wstring m_ShaderFileName;
 };
 
-class pgBuffer : public pgObject
+class pgResource : public pgObject {
+	//
+};
+
+class pgBuffer : public pgResource
 {
 protected:
 	// The stride of the vertex buffer in bytes.
@@ -403,6 +399,8 @@ protected:
 	// The number of elements in this buffer.
 	uint32_t m_uiCount;
 	bool	m_bIsBound;
+
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
 public:
 	enum BufferType
 	{
@@ -413,11 +411,13 @@ public:
 		ConstantBuffer
 	};
 
-	pgBuffer(uint32_t stride, uint32_t count);
+	pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer);
+
+	Diligent::IBuffer* GetBuffer();
+
 	uint32_t getCount() const;
 	Diligent::IBufferView* getUnorderedAccessView();
-
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
+	Diligent::IBufferView* getShaderResourceView();
 
 	// Bind the buffer for rendering.
 	virtual bool Bind(unsigned int id, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
@@ -506,10 +506,10 @@ protected:
 
 };
 
-class SamplerState : public pgObject
+class SamplerState : public pgResource
 {
 public:
-	typedef pgObject base;
+	typedef pgResource base;
 
 	enum MinFilter
 	{
@@ -625,9 +625,16 @@ enum class pgClearFlags : uint8_t
 };
 
 
-class pgTexture : public pgObject
+class pgTexture : public pgResource
 {
+protected:
+	Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
 public:
+	pgTexture(Diligent::ITexture* texture);
+	virtual ~pgTexture();
+
+	Diligent::ITexture* GetTexture();
+
 	// Get the width of the textures in texels.
 	uint16_t GetWidth() const;
 	// Get the height of the texture in texles.
@@ -653,14 +660,6 @@ public:
 	void Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 	void UnBind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 
-	Diligent::ITexture* getTexture() {
-		return m_pTexture.RawPtr();
-	}
-
-	pgTexture(Diligent::ITexture* texture);
-	virtual ~pgTexture();
-
-	Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
 };
 
 class pgRenderTarget : public pgObject
@@ -1060,6 +1059,11 @@ protected:
 
 	std::shared_ptr<pgRenderTarget>								m_pRT;
 	bool														m_bDirty;
+
+	virtual void InitPSODesc();
+private:
+	void SetStaticVariables();
+	void SetVariables();
 public:
 	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~pgPipeline();
@@ -1070,8 +1074,8 @@ public:
 
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+
 	//
-	void SetLayoutElement(uint32_t layoutElementCount, const Diligent::LayoutElement* pLayoutElements);
 	void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
 	std::shared_ptr<Shader> GetShader(Shader::ShaderType type) const;
 	const ShaderMap& GetShaders() const;

@@ -1,9 +1,9 @@
 #include "../engine.h"
 
 ConstantBuffer::ConstantBuffer(uint32_t size, void* data)
-	: base(size, 1)
+	: base(size, 1, nullptr)
 {
-	CreateUniformBuffer(pgApp::s_device, size, "VS constants CB", &m_pBuffer, 
+	CreateUniformBuffer(pgApp::s_device, size, "VS constants CB", &m_pBuffer,
 		Diligent::USAGE_DYNAMIC, 
 		Diligent::BIND_UNIFORM_BUFFER, 
 		Diligent::CPU_ACCESS_WRITE, 
@@ -46,7 +46,7 @@ void ConstantBuffer::Set(const void* data, size_t size) {
 		struct dummy_t {
 			char m;
 		};
-		Diligent::MapHelper<dummy_t> CBConstants(pgApp::s_ctx, m_pBuffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+		Diligent::MapHelper<dummy_t> CBConstants(pgApp::s_ctx, GetBuffer(), Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 		auto p = &CBConstants->m;
 		memcpy((char*)p, data, size);
 	}

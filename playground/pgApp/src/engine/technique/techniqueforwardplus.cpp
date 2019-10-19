@@ -59,9 +59,9 @@ void TechniqueForwardPlus::init(const pgPassRenderCreateInfo& prci, const std::v
 	g_pComputeFrustumsComputeShader->LoadShaderFromFile(Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums");
 
 	std::shared_ptr<pgTexture> depthStencilBuffer = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
-	g_pLightCullingComputeShader->GetShaderParameterByName("DepthTextureVS").SetTexture(depthStencilBuffer);
-	g_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexCounter").SetStructuredBuffer(g_pLightListIndexCounterOpaque);
-	g_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexCounter").SetStructuredBuffer(g_pLightListIndexCounterTransparent);
+	g_pLightCullingComputeShader->GetShaderParameterByName("DepthTextureVS").SetResource(depthStencilBuffer);
+	g_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexCounter").SetResource(g_pLightListIndexCounterOpaque);
+	g_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexCounter").SetResource(g_pLightListIndexCounterTransparent);
 
 	//
 	g_pForwardPlusOpaquePipeline = std::make_shared<pgPipeline>(m_pRT);

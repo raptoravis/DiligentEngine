@@ -85,12 +85,12 @@ void pgMesh::render(pgRenderEventArgs& e)
 		pgBufferBinding binding = buffer.first;
 		uint32_t slot = getSlot(binding);
 
-		pBuffs[0] = buffer.second->m_pBuffer.RawPtr();
+		pBuffs[0] = buffer.second->GetBuffer();
 
 		pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset, RESOURCE_STATE_TRANSITION_MODE_TRANSITION, SET_VERTEX_BUFFERS_FLAG_NONE);
 	}
 
-	pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->GetBuffer(), 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 	auto count = m_pIndexBuffer->getCount();
 
@@ -139,7 +139,7 @@ void pgMesh::Render() {
 				buffer.second->Bind(binding.Index, Shader::VertexShader, ShaderParameter::Type::Buffer);
 			}
 
-			pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->m_pBuffer, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->GetBuffer(), 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
 		if (m_pMaterial)
