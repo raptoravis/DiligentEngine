@@ -11,7 +11,10 @@ class TechniqueTest : public pgTechnique {
 
 	std::shared_ptr<ConstantBuffer>             m_VSConstants;
 
-public:
+	std::shared_ptr<pgScene>					m_pSceneCube;
+    std::shared_ptr<pgScene>					m_pSceneCubeTex;
+
+  public:
 	TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
 	virtual ~TechniqueTest();
 
@@ -22,4 +25,5 @@ public:
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
+	virtual void Render();
 };

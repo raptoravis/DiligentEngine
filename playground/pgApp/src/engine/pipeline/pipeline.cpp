@@ -145,6 +145,11 @@ std::shared_ptr<pgRenderTarget> pgPipeline::GetRenderTarget() const
 void pgPipeline::Bind()
 {
 	if (m_bDirty) {
+		auto vars = GetVariableDecalarations();
+
+		m_PSODesc.ResourceLayout.Variables = vars.data();
+		m_PSODesc.ResourceLayout.NumVariables = (Diligent::Uint32)vars.size();
+
 		pgApp::s_device->CreatePipelineState(m_PSODesc, &m_pPSO);
 
 		SetStaticVariables();
@@ -234,6 +239,53 @@ void pgPipeline::SetStaticVariables() {
 			}
 		}
 	}
+}
+
+std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetVariableDecalarations() const {
+	std::vector<Diligent::ShaderResourceVariableDesc> vars;
+
+	for (auto shader : m_Shaders)
+	{
+		std::shared_ptr<Shader> pShader = shader.second;
+		if (pShader)
+		{
+			Diligent::SHADER_TYPE st = Diligent::SHADER_TYPE_UNKNOWN;
+			if (pShader->GetType() == Shader::ShaderType::VertexShader) {
+				st = Diligent::SHADER_TYPE_VERTEX;
+			}
+			else if (pShader->GetType() == Shader::ShaderType::PixelShader) {
+				st = Diligent::SHADER_TYPE_PIXEL;
+			}
+			else if (pShader->GetType() == Shader::ShaderType::PixelShader) {
+				st = Diligent::SHADER_TYPE_COMPUTE;
+			}
+			else {
+				CHECK_ERR(0);
+			}
+
+			auto ncbs = pShader->GetNonConstantBuffers();
+
+			if (ncbs.size() > 0)
+			{
+				Diligent::ShaderResourceVariableDesc var;
+
+				var.ShaderStages = st;
+				var.Type = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
+
+				for (auto p : ncbs)
+				{
+					if (p->GetType() != ShaderParameter::Type::Sampler)
+					{
+						var.Name = p->GetName().c_str();
+
+						vars.push_back(var);
+					}
+				}
+			}
+		}
+	}
+
+	return vars;
 }
 
 void pgPipeline::SetVariables() {

@@ -37,14 +37,15 @@ PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt)
 	m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
 	m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
 
-	// Shader variables should typically be mutable, which means they are expected
-	// to change on a per-instance basis
-	static ShaderResourceVariableDesc Vars[] =
-	{
-		{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
-	};
-	m_PSODesc.ResourceLayout.Variables = Vars;
-	m_PSODesc.ResourceLayout.NumVariables = _countof(Vars);
+	// Variables will be assigned automatically by pgPipeline::Bind
+	//// Shader variables should typically be mutable, which means they are expected
+	//// to change on a per-instance basis
+	//static ShaderResourceVariableDesc Vars[] =
+	//{
+	//	{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+	//};
+	//m_PSODesc.ResourceLayout.Variables = Vars;
+	//m_PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 	
 	// Define static sampler for g_Texture. Static samplers should be used whenever possible
 	SamplerDesc SamLinearClampDesc

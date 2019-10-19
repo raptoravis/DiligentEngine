@@ -1064,6 +1064,7 @@ protected:
 private:
 	void SetStaticVariables();
 	void SetVariables();
+	std::vector<Diligent::ShaderResourceVariableDesc> GetVariableDecalarations() const;
 public:
 	pgPipeline(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~pgPipeline();
@@ -1188,7 +1189,7 @@ public:
 	void _render(pgRenderEventArgs& e);
 
 	unsigned int addPass(std::shared_ptr<RenderPass> pass);
-	void Render();
+	virtual void Render();
 
 protected:
 	void render(pgRenderEventArgs& e);
