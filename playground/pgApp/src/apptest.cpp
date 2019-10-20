@@ -157,8 +157,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     createRT();
 
     // m_renderingTechnique = RenderingTechnique::ForwardPlus;
-    // m_renderingTechnique = RenderingTechnique::Deferred;
-    m_renderingTechnique = RenderingTechnique::Forward;
+    //m_renderingTechnique = RenderingTechnique::Deferred;
+     m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
@@ -169,6 +169,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     m_pCamera = std::make_shared<pgCamera>(pos, Diligent::float3(0, 0, -1));
 
     // technique will clean up passed added in it
+    m_pTechnique = std::make_shared<TechniqueTest>(m_pRT, m_pBackBuffer);
+
     m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRT, m_pBackBuffer);
     m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRT, m_pBackBuffer);
     m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(m_pRT, m_pBackBuffer);
@@ -182,12 +184,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     initLightData();
     initBuffers();
 
-    // always init test technique
+    // if (m_renderingTechnique == RenderingTechnique::Forward)
     {
-        m_pTechnique = std::make_shared<TechniqueTest>(m_pRT, m_pBackBuffer);
-    }
-
-    if (m_renderingTechnique == RenderingTechnique::Forward) {
         auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
         forwardTech->init(testScene, m_Lights);
 

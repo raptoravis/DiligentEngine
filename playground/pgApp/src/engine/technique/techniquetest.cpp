@@ -10,7 +10,7 @@
 #include "engine/pass/passclearrt.h"
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
-#include "engine/pass.h"
+#include "engine/pass/passtest.h"
 
 TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
                              std::shared_ptr<pgTexture> backBuffer)
