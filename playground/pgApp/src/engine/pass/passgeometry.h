@@ -19,7 +19,8 @@ class PassGeometry : public pgPassRender
     std::shared_ptr<pgRenderTarget> m_pGBufferRT;
 
   public:
-    PassGeometry(const std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+    PassGeometry(pgTechnique* parentTechnique, const std::shared_ptr<pgScene> scene,
+                 std::shared_ptr<pgPipeline> pipeline,
                  const std::vector<pgLight>& lights, std::shared_ptr<pgRenderTarget> rt);
 
     virtual ~PassGeometry();

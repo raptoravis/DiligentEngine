@@ -10,7 +10,7 @@ class PassSetRT : public pgPass {
 	std::shared_ptr<pgRenderTarget> m_pRT;
 
 public:
-	PassSetRT(std::shared_ptr<pgRenderTarget> rt);
+	PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PassSetRT();
 
 	// Render the pass. This should only be called by the pgTechnique.

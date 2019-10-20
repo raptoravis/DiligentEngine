@@ -15,7 +15,7 @@ class PassClearRT : public pgPass {
 	uint8_t				m_ClearStencil;
 
 public:
-	PassClearRT(std::shared_ptr<pgRenderTarget> rt, 
+    PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt, 
 		pgClearFlags clearFlags = pgClearFlags::All, 
 		Diligent::float4 clearColor = Diligent::float4(0.39f, 0.58f, 0.93f, 1.0f), 
 		float clearDepth = 1.0f, 

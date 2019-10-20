@@ -1074,19 +1074,16 @@ class pgPass : public Visitor
     friend class pgMaterial;
 
   protected:
-    std::shared_ptr<pgScene> m_pScene;
-    std::shared_ptr<pgPipeline> m_pPipeline;
+    pgTechnique* m_parentTechnique;
 
   public:
-    pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline = 0);
+    pgPass(pgTechnique* parentTechnique);
     virtual ~pgPass();
 
     // Enable or disable the pass. If a pass is disabled, the technique will skip it.
     virtual void SetEnabled(bool enabled) { m_bEnabled = enabled; }
 
     virtual bool IsEnabled() const { return m_bEnabled; }
-
-    std::shared_ptr<pgPipeline> getPileline() { return m_pPipeline; }
 
     // Render the pass. This should only be called by the pgTechnique.
     virtual void update(pgRenderEventArgs& e);
@@ -1116,10 +1113,12 @@ class pgPassPilpeline : public pgPass
     typedef pgPass base;
 
   protected:
+    std::shared_ptr<pgScene> m_pScene;
     std::shared_ptr<pgPipeline> m_pPipeline;
 
   public:
-    pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+    pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                    std::shared_ptr<pgPipeline> pipeline);
     virtual ~pgPassPilpeline();
 
     // Render the pass. This should only be called by the pgTechnique.
@@ -1220,8 +1219,13 @@ class BasePass : public pgPass
 {
     typedef pgPass base;
 
+  protected:
+    std::shared_ptr<pgScene> m_pScene;
+    std::shared_ptr<pgPipeline> m_pPipeline;
+
   public:
-    BasePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+    BasePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+             std::shared_ptr<pgPipeline> pipeline);
     virtual ~BasePass();
 
     // Render the pass. This should only be called by the RenderTechnique.
@@ -1255,8 +1259,13 @@ class TestPass : public pgPass
 {
     typedef pgPass base;
 
+  protected:
+    std::shared_ptr<pgScene> m_pScene;
+    std::shared_ptr<pgPipeline> m_pPipeline;
+
   public:
-    TestPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+    TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+             std::shared_ptr<pgPipeline> pipeline);
     virtual ~TestPass();
 
     // Render the pass. This should only be called by the RenderTechnique.
@@ -1291,7 +1300,8 @@ class OpaquePass : public BasePass
   public:
     typedef BasePass base;
 
-    OpaquePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline);
+    OpaquePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+               std::shared_ptr<pgPipeline> pipeline);
     virtual ~OpaquePass();
 
     virtual void Visit(pgMesh& mesh);

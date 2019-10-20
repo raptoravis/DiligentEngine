@@ -1,7 +1,9 @@
 #include "passcopytexture.h"
 
-PassCopyTexture::PassCopyTexture(std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture)
-	: base(0)
+PassCopyTexture::PassCopyTexture(pgTechnique* parentTechnique,
+                                 std::shared_ptr<pgTexture> dstTexture,
+                                 std::shared_ptr<pgTexture> srcTexture)
+	: base(parentTechnique)
 	, m_dstTexture(dstTexture)
 	, m_srcTexture(srcTexture)
 {

@@ -1,11 +1,11 @@
 #include "passclearrt.h"
 
-PassClearRT::PassClearRT(std::shared_ptr<pgRenderTarget> rt,
+PassClearRT::PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt,
 	pgClearFlags clearFlags,
 	Diligent::float4 clearColor,
 	float clearDepth,
 	uint8_t clearStencil) 
-	: base(0)
+	: base(parentTechnique)
 	, m_RenderTarget(rt)
 	, m_ClearFlags(clearFlags)
 	, m_ClearColor(clearColor)

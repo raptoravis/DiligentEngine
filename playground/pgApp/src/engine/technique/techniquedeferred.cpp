@@ -141,7 +141,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
     // std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
     // addPass(pClearRTPass);
     std::shared_ptr<PassGeometry> pGeometryPass =
-        std::make_shared<PassGeometry>(scene, nullptr, lights, m_pGBufferRT);
+        std::make_shared<PassGeometry>(this, scene, nullptr, lights, m_pGBufferRT);
     addPass(pGeometryPass);
 
     {
@@ -149,7 +149,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
         auto dstTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
-            std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
+            std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
         addPass(pCopyTexPass);
     }
 
@@ -163,10 +163,11 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
     std::shared_ptr<pgPipeline> pDir = std::make_shared<PipelineLightDir>(m_pRT, m_pGBufferRT);
 
     std::shared_ptr<PassLight> pLightPass =
-        std::make_shared<PassLight>(pFront, pBack, pDir, &lights);
+        std::make_shared<PassLight>(this, pFront, pBack, pDir, &lights);
     addPass(pLightPass);
 
-    std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(scene, nullptr, lights);
+    std::shared_ptr<PassTransparent> pTransparentPass =
+        std::make_shared<PassTransparent>(this, scene, nullptr, lights);
     addPass(pTransparentPass);
 
     {
@@ -174,7 +175,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
-            std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
+            std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
         addPass(pCopyTexPass);
     }
 }

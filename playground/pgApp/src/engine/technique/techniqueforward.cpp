@@ -30,10 +30,10 @@ void TechniqueForward::render(pgRenderEventArgs& e)
 
 void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights)
 {
-    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(m_pRT);
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
     addPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(m_pRT);
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRT);
     addPass(pClearRTPass);
 
     g_pVertexShader = std::make_shared<Shader>();
@@ -50,7 +50,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pg
     g_pOpaquePipeline->SetRenderTarget(m_pRT);
 
     std::shared_ptr<PassOpaque> pOpaquePass =
-        std::make_shared<PassOpaque>(scene, g_pOpaquePipeline, lights);
+        std::make_shared<PassOpaque>(this, scene, g_pOpaquePipeline, lights);
     addPass(pOpaquePass);
 
     g_pTransparentPipeline = std::make_shared<PipelineBase>(m_pRT);
@@ -81,7 +81,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pg
     g_pTransparentPipeline->SetRenderTarget(m_pRT);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
-        std::make_shared<PassTransparent>(scene, g_pTransparentPipeline, lights);
+        std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);
 
     addPass(pTransparentPass);
 
@@ -90,7 +90,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pg
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
-            std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
+            std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
         addPass(pCopyTexPass);
     }
 }

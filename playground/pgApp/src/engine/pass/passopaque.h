@@ -17,7 +17,7 @@ class PassOpaque : public pgPassRender
     // void CreatePipelineState(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture>
     // backBuffer);
   public:
-    PassOpaque(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+    PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
                const std::vector<pgLight>& lights);
 
     virtual ~PassOpaque();

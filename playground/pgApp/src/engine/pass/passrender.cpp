@@ -1,8 +1,8 @@
 #include "passrender.h"
 
-pgPassRender::pgPassRender(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
                            const std::vector<pgLight>& lights)
-    : base(scene, pipeline), m_Lights(lights)
+    : base(parentTechnique, scene, pipeline), m_Lights(lights)
 {
 }
 

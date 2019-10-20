@@ -3,34 +3,39 @@
 
 #include "../utils/mathutils.h"
 
-PassLight::PassLight(std::shared_ptr<pgPipeline> front, std::shared_ptr<pgPipeline> back,
-                     std::shared_ptr<pgPipeline> dir, const std::vector<pgLight>* Lights)
-    : base(0), m_pLights(Lights), m_LightPipeline0(front), m_LightPipeline1(back),
+PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgPipeline> front,
+                     std::shared_ptr<pgPipeline> back, std::shared_ptr<pgPipeline> dir,
+                     const std::vector<pgLight>* Lights)
+    : base(parentTechnique), m_pLights(Lights), m_LightPipeline0(front), m_LightPipeline1(back),
       m_DirectionalLightPipeline(dir)
 {
     m_pPointLightScene = pgSceneAss::CreateSphere(1.0f);
     m_pSpotLightScene = pgSceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
     m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, -1);
 
-    m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(m_pPointLightScene, m_LightPipeline0);
-    m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(m_pPointLightScene, m_LightPipeline1);
-
-    m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(m_pSpotLightScene, m_LightPipeline0);
-    m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(m_pSpotLightScene, m_LightPipeline1);
-
-    m_pSubPassDir =
-        std::make_shared<pgPassPilpeline>(m_pDirectionalLightScene, m_DirectionalLightPipeline);
-
     m_pTechniqueSphere = std::make_shared<pgTechnique>(nullptr, nullptr);
+    m_pTechniqueSpot = std::make_shared<pgTechnique>(nullptr, nullptr);
+    m_pTechniqueDir = std::make_shared<pgTechnique>(nullptr, nullptr);
+
+    m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(m_pTechniqueSphere.get(),
+                                                          m_pPointLightScene, m_LightPipeline0);
+    m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(m_pTechniqueSphere.get(),
+                                                          m_pPointLightScene, m_LightPipeline1);
+
+    m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
+                                                        m_LightPipeline0);
+    m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
+                                                        m_LightPipeline1);
+
+    m_pSubPassDir = std::make_shared<pgPassPilpeline>(
+        m_pTechniqueDir.get(), m_pDirectionalLightScene, m_DirectionalLightPipeline);
+
     m_pTechniqueSphere->addPass(m_pSubPassSphere0);
     m_pTechniqueSphere->addPass(m_pSubPassSphere1);
 
-    m_pTechniqueSpot = std::make_shared<pgTechnique>(nullptr, nullptr);
     m_pTechniqueSpot->addPass(m_pSubPassSpot0);
     m_pTechniqueSpot->addPass(m_pSubPassSpot1);
 
-
-    m_pTechniqueDir = std::make_shared<pgTechnique>(nullptr, nullptr);
     m_pTechniqueDir->addPass(m_pSubPassDir);
 }
 

@@ -115,8 +115,9 @@ void pgBuffer::Copy(std::shared_ptr<pgBuffer> other) {
 	//
 }
 
-pgPassPilpeline::pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-	: base(scene)
+pgPassPilpeline::pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                                 std::shared_ptr<pgPipeline> pipeline)
+    : base(parentTechnique)
 	, m_pPipeline(pipeline)
 {
 	assert(m_pPipeline);

@@ -11,7 +11,7 @@ class PassCopyTexture : public pgPass {
 	std::shared_ptr<pgTexture>         m_dstTexture;
 
 public:
-	PassCopyTexture(std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
+	PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
 	virtual ~PassCopyTexture();
 
 	// Render the pass. This should only be called by the pgTechnique.

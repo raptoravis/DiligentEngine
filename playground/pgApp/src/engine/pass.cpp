@@ -1,7 +1,7 @@
 #include "engine.h"
 
-pgPass::pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-    : m_bEnabled(true), m_pScene(scene), m_pPipeline(pipeline)
+pgPass::pgPass(pgTechnique* parentTechnique)
+    : m_bEnabled(true), m_parentTechnique(parentTechnique)
 {
 }
 
@@ -77,8 +77,9 @@ void pgPass::Visit(pgMesh& mesh)
 }
 
 
-BasePass::BasePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-    : base(scene, pipeline)
+BasePass::BasePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                   std::shared_ptr<pgPipeline> pipeline)
+    : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
 {
     m_PerObjectData = (PerObject*)_aligned_malloc(sizeof(PerObject), 16);
 }
@@ -159,14 +160,13 @@ void BasePass::Visit(pgMesh& mesh)
 }
 
 
-TestPass::TestPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-    : base(scene, pipeline)
+TestPass::TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                   std::shared_ptr<pgPipeline> pipeline)
+    : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
 {
 }
 
-TestPass::~TestPass()
-{
-}
+TestPass::~TestPass() {}
 
 void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
@@ -230,8 +230,8 @@ void TestPass::Visit(pgSceneNode& node)
 
         Diligent::float4x4 worldViewProjMatrix = worldView * projMatrix;
         perObjectData.ModelViewProjection = worldViewProjMatrix.Transpose();
-        //Diligent::float4x4 worldViewProjMatrix = projMatrix * viewMatrix * local;
-        //perObjectData.ModelViewProjection = worldViewProjMatrix;
+        // Diligent::float4x4 worldViewProjMatrix = projMatrix * viewMatrix * local;
+        // perObjectData.ModelViewProjection = worldViewProjMatrix;
 
         // Update the constant buffer data
         SetPerObjectConstantBufferData(perObjectData);
@@ -244,8 +244,9 @@ void TestPass::Visit(pgMesh& mesh)
 }
 
 
-OpaquePass::OpaquePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-    : base(scene, pipeline)
+OpaquePass::OpaquePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                       std::shared_ptr<pgPipeline> pipeline)
+    : base(parentTechnique, scene, pipeline)
 {
 }
 

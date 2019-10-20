@@ -16,10 +16,10 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
                              std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer)
 {
-    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(m_pRT);
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
     addPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(m_pRT);
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRT);
     addPass(pClearRTPass);
 
     bool bTestGltf = false;
@@ -57,11 +57,11 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
             std::make_shared<PipelineTexVertex>(m_pRT);
 
         std::shared_ptr<TestPass> pCubePass =
-            std::make_shared<TestPass>(m_pSceneCube, pipelineColorVertex);
+            std::make_shared<TestPass>(this, m_pSceneCube, pipelineColorVertex);
         addPass(pCubePass);
 
         std::shared_ptr<TestPass> pCubeTexPass =
-            std::make_shared<TestPass>(m_pSceneCubeTex, pipelineTexVertex);
+            std::make_shared<TestPass>(this, m_pSceneCubeTex, pipelineTexVertex);
         addPass(pCubeTexPass);
 
         //
@@ -70,7 +70,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
             auto dstTexture = m_pBackBuffer;
 
             std::shared_ptr<PassCopyTexture> pCopyTexPass =
-                std::make_shared<PassCopyTexture>(dstTexture, srcTexture);
+                std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
             addPass(pCopyTexPass);
         }
     }

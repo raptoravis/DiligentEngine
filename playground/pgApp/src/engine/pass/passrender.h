@@ -8,9 +8,9 @@
 
 using namespace Diligent;
 
-class pgPassRender : public pgPass
+class pgPassRender : public pgPassPilpeline
 {
-    typedef pgPass base;
+    typedef pgPassPilpeline base;
 
   public:
     // PerObject constant buffer data.
@@ -34,7 +34,7 @@ class pgPassRender : public pgPass
     void BindLightsBuffer(std::shared_ptr<Shader> shader);
 
   public:
-    pgPassRender::pgPassRender(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+    pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
                                const std::vector<pgLight>& lights);
     virtual ~pgPassRender();
 
