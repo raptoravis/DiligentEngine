@@ -129,15 +129,15 @@ void PipelineLightDir::CreatePipelineState()
 
     pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
-    //m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
-    //m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
-    //m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")
+    // m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
+    // m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
+    // m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")
     //    ->Set(m_ScreenToViewParamsCB);
 
     // Create a shader resource binding object and bind all static resources in it
     m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-    //m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
+    // m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
     auto GbufferRT = m_pGBufferRT;
     auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
     m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")
@@ -154,19 +154,4 @@ void PipelineLightDir::CreatePipelineState()
     auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
     m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DepthTextureVS")
         ->Set(depthTex->getShaderResourceView());
-}
-
-
-void PipelineLightDir::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    pgApp::s_ctx->SetStencilRef(1);
-
-    base::bind(e, flag);
-}
-
-void PipelineLightDir::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    pgApp::s_ctx->SetStencilRef(1);
-
-    base::unbind(e, flag);
 }

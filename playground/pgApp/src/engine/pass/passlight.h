@@ -54,8 +54,8 @@ protected:
 		
 	void createBuffers();
 
-	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
-	void updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag);
+	void updateLightParams(const LightParams& lightParam, const pgLight& light);
+	void updateScreenToViewParams();
 public:
     PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgPipeline> front, 
 		std::shared_ptr<pgPipeline> back, 
@@ -63,14 +63,6 @@ public:
 		const std::vector<pgLight>*	Lights);
 
 	virtual ~PassLight();
-
-	// Render the pass. This should only be called by the pgTechnique.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
-
-	virtual bool meshFilter(pgMesh* mesh);
 
 	virtual void Render();
 

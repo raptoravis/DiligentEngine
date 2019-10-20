@@ -12,7 +12,4 @@ class PipelineLightFront : public pgPipeline
   public:
     PipelineLightFront(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineLightFront();
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };

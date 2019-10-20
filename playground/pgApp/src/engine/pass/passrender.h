@@ -43,12 +43,6 @@ class pgPassRender : public pgPassPilpeline
                                const std::vector<pgLight>& lights);
     virtual ~pgPassRender();
 
-    // Render the pass. This should only be called by the pgTechnique.
-    virtual void update(pgRenderEventArgs& e);
-    virtual void render(pgRenderEventArgs& e);
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
-
     // Render the pass. This should only be called by the RenderTechnique.
     virtual void PreRender();
     virtual void Render();

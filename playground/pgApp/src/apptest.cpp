@@ -77,46 +77,6 @@ void AppTest::initBuffers()
                                            (uint32_t)sizeof(pgLight), CPUAccess::None, true);
 }
 
-void AppTest::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    CHECK_ERR(0);
-
-    if (flag & pgBindFlag::pgBindFlag_Mesh) {
-    }
-
-    if (flag & pgBindFlag::pgBindFlag_Material) {
-        // Map the buffer and write current world-view-projection matrix
-        MapHelper<pgMaterial::MaterialProperties> CBConstants(
-            e.pDeviceContext, m_MaterialConstants->GetBuffer(), MAP_WRITE, MAP_FLAG_DISCARD);
-
-        auto matProperties = e.pMaterial->GetMaterialProperties();
-
-        // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
-        // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
-        memcpy((void*)&CBConstants->m_GlobalAmbient, matProperties,
-               sizeof(pgMaterial::MaterialProperties));
-    }
-
-    if (flag & pgBindFlag::pgBindFlag_Pass) {
-        const float4x4 viewMatrix = e.pCamera->getViewMatrix();
-
-        // Update the viewspace vectors of the light.
-        for (uint32_t i = 0; i < m_Lights.size(); i++) {
-            // Update the lights so that their position and direction are in view space.
-            pgLight& light = m_Lights[i];
-            light.m_PositionVS = float4(light.m_PositionWS, 1) * viewMatrix;
-            light.m_DirectionVS = normalize(float4(light.m_DirectionWS, 0) * viewMatrix);
-        }
-
-        {
-            // Map the buffer and write current world-view-projection matrix
-            MapHelper<pgLight> lightBuffer(e.pDeviceContext, m_LightsStructuredBuffer->GetBuffer(),
-                                           MAP_WRITE, MAP_FLAG_DISCARD);
-
-            memcpy(&lightBuffer->m_PositionWS, m_Lights.data(), sizeof(pgLight) * m_Lights.size());
-        }
-    }
-}
 
 void AppTest::createRT()
 {
@@ -231,7 +191,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
         forwardTech->init(testScene, m_Lights);
 
-		forwardTech->SetResource("PerObject", m_PerObjectConstants);
+        forwardTech->SetResource("PerObject", m_PerObjectConstants);
         forwardTech->SetResource("Material", m_MaterialConstants);
         forwardTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
@@ -240,7 +200,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
         deferredTech->init(testScene, m_Lights);
 
-		deferredTech->SetResource("PerObject", m_PerObjectConstants);
+        deferredTech->SetResource("PerObject", m_PerObjectConstants);
         deferredTech->SetResource("Material", m_MaterialConstants);
         deferredTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
@@ -249,7 +209,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
         fpTech->init(testScene, m_Lights);
 
-		fpTech->SetResource("PerObject", m_PerObjectConstants);
+        fpTech->SetResource("PerObject", m_PerObjectConstants);
         fpTech->SetResource("Material", m_MaterialConstants);
         fpTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
@@ -345,22 +305,6 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         } else {
             m_pCamera->reset(float3(0, 0, -25), float3(0, 0, -1));
         }
-    }
-
-    if (m_renderingTechnique == RenderingTechnique::Test) {
-        m_pTechnique->update(pgApp::s_eventArgs);
-    }
-
-    if (m_renderingTechnique == RenderingTechnique::Forward) {
-        m_pForwardTechnique->update(pgApp::s_eventArgs);
-    }
-
-    if (m_renderingTechnique == RenderingTechnique::Deferred) {
-        m_pDeferredTechnique->update(pgApp::s_eventArgs);
-    }
-
-    if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
-        m_pForwardPlusTechnique->update(pgApp::s_eventArgs);
     }
 
     ImGui::End();

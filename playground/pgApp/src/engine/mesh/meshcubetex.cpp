@@ -99,6 +99,3 @@ void MeshCubeTex::CreateIndexBuffer()
 		Indices, 36);
 }
 
-void MeshCubeTex::render(pgRenderEventArgs& e) {
-	pgMesh::render(e);
-}

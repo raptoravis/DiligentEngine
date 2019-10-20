@@ -122,42 +122,6 @@ pgPass::~pgPass()
     //
 }
 
-void pgPass::_render(pgRenderEventArgs& e)
-{
-    // keep to restore it
-    auto oldPass = e.pPass;
-
-    auto currentPass = this;
-    e.pPass = currentPass;
-    currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-    currentPass->render(e);
-
-    currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
-    e.pPass = oldPass;
-}
-
-void pgPass::update(pgRenderEventArgs& e)
-{
-    //
-}
-
-void pgPass::render(pgRenderEventArgs& e)
-{
-    //
-}
-
-
-void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
 void pgPass::PreRender()
 {
     //
@@ -198,25 +162,6 @@ pgPassPilpeline::pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<p
 
 pgPassPilpeline::~pgPassPilpeline() {}
 
-// Render a frame
-void pgPassPilpeline::render(pgRenderEventArgs& e)
-{
-    m_pScene->_render(e);
-}
-
-void pgPassPilpeline::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    m_pPipeline->bind(e, flag);
-}
-
-void pgPassPilpeline::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    m_pPipeline->unbind(e, flag);
-}
-
-
-void pgPassPilpeline::update(pgRenderEventArgs& e) {}
-
 void pgPassPilpeline::Render()
 {
     if (m_pScene) {
@@ -252,12 +197,3 @@ void pgApp::Update(double CurrTime, double ElapsedTime)
     //
 }
 
-void pgApp::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void pgApp::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}

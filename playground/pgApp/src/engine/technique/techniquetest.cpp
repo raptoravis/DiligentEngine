@@ -81,27 +81,6 @@ TechniqueTest::~TechniqueTest()
     //
 }
 
-void TechniqueTest::update(pgRenderEventArgs& e)
-{
-    base::update(e);
-}
-
-// Render the scene using the passes that have been configured.
-void TechniqueTest::render(pgRenderEventArgs& e)
-{
-    base::render(e);
-}
-
-void TechniqueTest::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void TechniqueTest::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
 void TechniqueTest::Render()
 {
     const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;

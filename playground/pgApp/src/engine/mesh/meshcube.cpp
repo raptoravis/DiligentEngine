@@ -76,7 +76,3 @@ void MeshCube::CreateIndexBuffer()
 		Indices, 36);
 }
 
-
-void MeshCube::render(pgRenderEventArgs& e) {
-	pgMesh::render(e);
-}

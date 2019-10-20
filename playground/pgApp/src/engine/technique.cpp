@@ -27,51 +27,6 @@ std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
 }
 
 
-void pgTechnique::update(pgRenderEventArgs& e)
-{
-    for (auto pass : m_Passes) {
-        if (pass->IsEnabled()) {
-            pass->update(e);
-        }
-    }
-}
-
-// Render the scene using the passes that have been configured.
-void pgTechnique::_render(pgRenderEventArgs& e)
-{
-    // keep to restore it
-    auto oldTechnique = e.pTechnique;
-
-    auto currentTechnique = this;
-    e.pTechnique = currentTechnique;
-
-    currentTechnique->bind(e, pgBindFlag::pgBindFlag_Technique);
-
-    render(e);
-
-    currentTechnique->unbind(e, pgBindFlag::pgBindFlag_Technique);
-    e.pTechnique = oldTechnique;
-}
-
-void pgTechnique::render(pgRenderEventArgs& e)
-{
-    for (auto pass : m_Passes) {
-        if (pass->IsEnabled()) {
-            pass->_render(e);
-        }
-    }
-}
-
-void pgTechnique::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void pgTechnique::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
 void pgTechnique::SetResource(const std::string& name, std::shared_ptr<pgObject> res)
 {
     m_resourceMap[name] = res;

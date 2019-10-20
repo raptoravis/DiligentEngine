@@ -8,24 +8,6 @@ pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene
 
 pgPassRender::~pgPassRender() {}
 
-// Render a frame
-void pgPassRender::render(pgRenderEventArgs& e)
-{
-    m_pScene->_render(e);
-}
-
-void pgPassRender::update(pgRenderEventArgs& e)
-{
-    //
-}
-
-void pgPassRender::bind(pgRenderEventArgs& e, pgBindFlag flag) {}
-
-void pgPassRender::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
 void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB =
@@ -129,7 +111,7 @@ void pgPassRender::Visit(pgScene& scene)
 
 void pgPassRender::Visit(pgSceneNode& node)
 {
-    auto e = pgApp::s_eventArgs;
+    pgRenderEventArgs& e = pgApp::s_eventArgs;
 
     const float4x4 view = e.pCamera->getViewMatrix();
     // TODO: change to use world

@@ -14,7 +14,4 @@ class PipelineLightDir : public pgPipeline
     PipelineLightDir(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgRenderTarget> GBufferRT);
 
     virtual ~PipelineLightDir();
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };

@@ -92,17 +92,6 @@ void TechniqueDeferred::createGBuffers()
 }
 
 
-void TechniqueDeferred::update(pgRenderEventArgs& e)
-{
-    base::update(e);
-}
-
-// Render the scene using the passes that have been configured.
-void TechniqueDeferred::render(pgRenderEventArgs& e)
-{
-    base::render(e);
-}
-
 void TechniqueDeferred::createBuffers()
 {
     {

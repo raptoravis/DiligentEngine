@@ -12,5 +12,4 @@ public:
 	MeshCube();
 	virtual ~MeshCube();
 
-	virtual void render(pgRenderEventArgs& e);
 };

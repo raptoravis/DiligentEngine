@@ -16,18 +16,6 @@ TechniqueForward::TechniqueForward(std::shared_ptr<pgRenderTarget> rt,
 
 TechniqueForward::~TechniqueForward() {}
 
-void TechniqueForward::update(pgRenderEventArgs& e)
-{
-    base::update(e);
-}
-
-// Render the scene using the passes that have been configured.
-void TechniqueForward::render(pgRenderEventArgs& e)
-{
-    base::render(e);
-}
-
-
 void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights)
 {
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);

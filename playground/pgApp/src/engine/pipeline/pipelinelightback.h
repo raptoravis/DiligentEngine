@@ -15,7 +15,4 @@ class PipelineLightBack : public pgPipeline
                       std::shared_ptr<pgRenderTarget> GBufferRT);
 
     virtual ~PipelineLightBack();
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };

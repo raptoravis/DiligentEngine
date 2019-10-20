@@ -27,9 +27,4 @@ class TechniqueDeferred : public pgTechnique
     virtual ~TechniqueDeferred();
 
     void init(const std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights);
-
-    virtual void update(pgRenderEventArgs& e);
-
-    // Render the scene using the passes that have been configured.
-    virtual void render(pgRenderEventArgs& e);
 };

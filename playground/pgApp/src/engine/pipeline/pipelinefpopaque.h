@@ -14,8 +14,4 @@ public:
 	PipelineFPOpaque(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineFPOpaque();
 
-	//virtual void update(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
-
 };

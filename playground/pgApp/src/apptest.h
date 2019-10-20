@@ -35,8 +35,6 @@ public:
 	virtual void Update(double CurrTime, double ElapsedTime)override final;
 	virtual const Char* GetSampleName()const override final { return "AppTest"; }
 
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-
 private:
 	void initLightData();
 	void initBuffers();

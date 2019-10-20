@@ -2,22 +2,19 @@
 
 #include "engine/engine.h"
 
-class PipelineTexVertex : public pgPipeline {
-	typedef pgPipeline base;
-private:
-	std::shared_ptr<Shader>							m_pVS;
-	std::shared_ptr<Shader>							m_pPS;
+class PipelineTexVertex : public pgPipeline
+{
+    typedef pgPipeline base;
 
-	std::shared_ptr<pgTexture>						m_Texture;
+  private:
+    std::shared_ptr<Shader> m_pVS;
+    std::shared_ptr<Shader> m_pPS;
 
-public:
-	PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt);
-	virtual ~PipelineTexVertex();
+    std::shared_ptr<pgTexture> m_Texture;
 
-	void LoadTexture();
+  public:
+    PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt);
+    virtual ~PipelineTexVertex();
 
-	//virtual void update(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
-
+    void LoadTexture();
 };

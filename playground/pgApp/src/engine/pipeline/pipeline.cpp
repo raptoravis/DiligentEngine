@@ -4,8 +4,8 @@ pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt) : m_pRT(rt), m_bDirty
 
 pgPipeline::~pgPipeline()
 {
-	// virtual function can not be called in the constructor
-    //InitPSODesc();
+    // virtual function can not be called in the constructor
+    // InitPSODesc();
 }
 
 void pgPipeline::InitPSODesc()
@@ -36,32 +36,6 @@ void pgPipeline::InitPSODesc()
 
     // Define variable type that will be used by default
     m_PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
-}
-
-void pgPipeline::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    if (flag & pgBindFlag::pgBindFlag_Pass) {
-        if (m_pRT) {
-            m_pRT->bind();
-        }
-    }
-
-    e.pApp->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-    if (flag & pgBindFlag::pgBindFlag_Mesh) {
-        // Set the pipeline state
-        pgApp::s_ctx->SetPipelineState(m_pPSO);
-
-        // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
-        // makes sure that resources are transitioned to required states.
-        pgApp::s_ctx->CommitShaderResources(m_pSRB,
-                                            Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    }
-}
-
-void pgPipeline::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
 }
 
 

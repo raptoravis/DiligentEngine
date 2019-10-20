@@ -14,8 +14,4 @@ public:
 	PipelineFPTransparent(std::shared_ptr<pgRenderTarget> rt);
 	virtual ~PipelineFPTransparent();
 
-	//virtual void update(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	//virtual void render(pgRenderEventArgs& e);
-
 };

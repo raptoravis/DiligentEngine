@@ -7,24 +7,20 @@
 
 class PassDispatch : public pgPass
 {
-	typedef pgPass base;
-public:
-	PassDispatch(std::shared_ptr<Shader> computeShader, const Diligent::uint3& numGroups);
-	virtual ~PassDispatch();
+    typedef pgPass base;
 
-	void SetNumGroups(const Diligent::uint3& numGroups);
-	Diligent::uint3 GetNumGroups() const;
+  public:
+    PassDispatch(std::shared_ptr<Shader> computeShader, const Diligent::uint3& numGroups);
+    virtual ~PassDispatch();
 
-	// Render the pass. This should only be called by the pgTechnique.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+    void SetNumGroups(const Diligent::uint3& numGroups);
+    Diligent::uint3 GetNumGroups() const;
 
-private:
+    virtual void Render();
 
-	std::shared_ptr<Shader> m_pComputeShader;
+  private:
+    std::shared_ptr<Shader> m_pComputeShader;
 
-	// The number of groups to dispatch for the compute shader kernel.
-	Diligent::uint3 m_NumGroups;
-
+    // The number of groups to dispatch for the compute shader kernel.
+    Diligent::uint3 m_NumGroups;
 };

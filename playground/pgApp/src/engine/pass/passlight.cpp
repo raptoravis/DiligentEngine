@@ -41,17 +41,12 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgPipeline> f
 
 PassLight::~PassLight() {}
 
-bool PassLight::meshFilter(pgMesh* mesh)
-{
-    auto mat = mesh->getMaterial();
-    auto bTransparent = mat->IsTransparent();
-    return !bTransparent;
-}
 
-
-void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam,
+void PassLight::updateLightParams(const LightParams& lightParam,
                                   const pgLight& light)
 {
+    pgRenderEventArgs& e = pgApp::s_eventArgs;
+
     {
         // Map the buffer and write current world-view-projection matrix
         MapHelper<LightParams> CBConstants(e.pDeviceContext, m_LightParamsCB, MAP_WRITE,
@@ -107,8 +102,9 @@ void PassLight::updateLightParams(pgRenderEventArgs& e, const LightParams& light
     }
 }
 
-void PassLight::updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag)
+void PassLight::updateScreenToViewParams()
 {
+    pgRenderEventArgs& e = pgApp::s_eventArgs;
     {
         // Map the buffer and write current world-view-projection matrix
         MapHelper<ScreenToViewParams> CBConstants(e.pDeviceContext, m_ScreenToViewParamsCB,
@@ -124,9 +120,9 @@ void PassLight::updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag)
 }
 
 // Render a frame
-void PassLight::render(pgRenderEventArgs& e)
+void PassLight::Render()
 {
-    updateScreenToViewParams(e, pgBindFlag::pgBindFlag_Pass);
+    updateScreenToViewParams();
 
     if (m_pLights) {
         LightParams lightParams;
@@ -136,7 +132,7 @@ void PassLight::render(pgRenderEventArgs& e)
         for (const pgLight& light : *m_pLights) {
             if (light.m_Enabled) {
                 // Update the constant buffer for the per-light data.
-                updateLightParams(e, lightParams, light);
+                updateLightParams(lightParams, light);
 
                 // Clear the stencil buffer for the next light
                 m_LightPipeline0->getRenderTarget()->Clear(pgClearFlags::Stencil,
@@ -146,13 +142,13 @@ void PassLight::render(pgRenderEventArgs& e)
 
                 switch (light.m_Type) {
                 case pgLight::LightType::Point:
-                    m_pTechniqueSphere->_render(e);
+                    m_pTechniqueSphere->Render();
                     break;
                 case pgLight::LightType::Spot:
-                    m_pTechniqueSpot->_render(e);
+                    m_pTechniqueSpot->Render();
                     break;
                 case pgLight::LightType::Directional:
-                    m_pTechniqueDir->_render(e);
+                    m_pTechniqueDir->Render();
                     break;
                 }
             }
@@ -162,19 +158,3 @@ void PassLight::render(pgRenderEventArgs& e)
     }
 }
 
-void PassLight::update(pgRenderEventArgs& e)
-{
-    //
-}
-
-void PassLight::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    base::bind(e, flag);
-}
-
-void PassLight::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    base::unbind(e, flag);
-}
-
-void PassLight::Render() {}

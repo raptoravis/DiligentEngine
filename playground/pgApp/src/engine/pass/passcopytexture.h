@@ -14,11 +14,6 @@ public:
 	PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
 	virtual ~PassCopyTexture();
 
-	// Render the pass. This should only be called by the pgTechnique.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-
 	virtual void Render();
 
 };

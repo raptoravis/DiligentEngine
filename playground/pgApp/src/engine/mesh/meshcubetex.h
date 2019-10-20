@@ -12,5 +12,4 @@ public:
 	MeshCubeTex();
 	virtual ~MeshCubeTex();
 
-	virtual void render(pgRenderEventArgs& e);
 };

@@ -4,12 +4,10 @@ BasePass::BasePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                    std::shared_ptr<pgPipeline> pipeline)
     : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
 {
-    m_PerObjectData = (PerObject*)_aligned_malloc(sizeof(PerObject), 16);
 }
 
 BasePass::~BasePass()
 {
-    _aligned_free(m_PerObjectData);
 }
 
 void BasePass::SetPerObjectConstantBufferData(PerObject& perObjectData)

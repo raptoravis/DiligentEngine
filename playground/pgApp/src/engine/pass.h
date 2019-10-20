@@ -41,10 +41,6 @@ class BasePass : public pgPass
     void SetPerObjectConstantBufferData(PerObject& perObjectData);
     // Bind the constant to the shader.
     void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
-
-  private:
-    PerObject* m_PerObjectData;
-    std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
 };
 
 class TestPass : public pgPass

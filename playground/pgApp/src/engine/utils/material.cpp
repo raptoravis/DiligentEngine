@@ -195,29 +195,9 @@ bool pgMaterial::IsTransparent() const
 		m_pProperties->m_AlphaThreshold <= 0.0f); // Objects with an alpha threshold > 0 should be drawn in the opaque pass.
 }
 
-void pgMaterial::UpdateConstantBuffer()
-{
-}
-
-
-void pgMaterial::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	e.pPass->bind(e, flag);
-}
-
-void pgMaterial::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
-	e.pPass->unbind(e, flag);
-}
-
 void pgMaterial::Bind(std::weak_ptr<Shader> wpShader) {
 	std::shared_ptr<Shader> pShader = wpShader.lock();
 	if (!pShader) return;
-
-	if (m_Dirty)
-	{
-		// Make sure the constant buffer associated to this material is updated.
-		this->UpdateConstantBuffer();
-		this->m_Dirty = false;
-	}
 
 	// OOPS.. Dangerous. Just blindly set all textures associated to this material.
 	// Maybe I should check the names of the textures in the shader before doing this?

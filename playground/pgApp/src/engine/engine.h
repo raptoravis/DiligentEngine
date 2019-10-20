@@ -158,17 +158,6 @@ class pgScene;
 class pgSceneNode;
 class pgMesh;
 
-enum pgBindFlag {
-    pgBindFlag_None = 0,
-    pgBindFlag_Technique = 1,
-    pgBindFlag_Pass = 2,
-    pgBindFlag_SceneNode = 4,
-    pgBindFlag_Material = 8,
-    pgBindFlag_Mesh = 16,
-    pgBindFlag_Scene = 32,
-    pgBindFlag_User3 = 64
-};
-
 // CPU Access. Used for textures and Buffers
 enum class CPUAccess {
     None = 0,            // No CPU access to this texture is necessary.
@@ -814,11 +803,6 @@ class pgMaterial : public pgObject
 
     void Bind(std::weak_ptr<Shader> wpShader);
 
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
-
-    void UpdateConstantBuffer();
-
     // This material defines a transparent material
     // if the opacity value is < 1, or there is an opacity map, or the diffuse texture has an alpha
     // channel.
@@ -916,15 +900,8 @@ class pgMesh : public pgObject
     virtual void setMaterial(std::shared_ptr<pgMaterial> material);
     virtual std::shared_ptr<pgMaterial> getMaterial() const;
 
-    void _render(pgRenderEventArgs& e);
-
     virtual void Render();
     virtual void Accept(Visitor& visitor);
-
-  protected:
-    virtual void render(pgRenderEventArgs& e);
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -956,14 +933,7 @@ class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgScene
     void addMesh(std::shared_ptr<pgMesh> mesh);
     void RemoveMesh(std::shared_ptr<pgMesh> mesh);
 
-    void _render(pgRenderEventArgs& e);
-
     virtual void Accept(Visitor& visitor);
-
-  protected:
-    virtual void render(pgRenderEventArgs& e);
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
   protected:
     Diligent::float4x4 GetParentWorldTransform() const;
@@ -1000,14 +970,7 @@ class pgScene : public pgObject
     std::shared_ptr<pgSceneNode> getRootNode() const { return m_pRootNode; }
     void setRootNode(std::shared_ptr<pgSceneNode> root) { m_pRootNode = root; }
 
-    void _render(pgRenderEventArgs& e);
-
     virtual void Accept(Visitor& visitor);
-
-  protected:
-    virtual void render(pgRenderEventArgs& e);
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 class pgPipeline : public pgObject
@@ -1038,9 +1001,6 @@ class pgPipeline : public pgObject
     virtual ~pgPipeline();
 
     std::shared_ptr<pgRenderTarget> getRenderTarget() { return m_pRT; }
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
     //
     void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
@@ -1082,13 +1042,6 @@ class pgPass : public Visitor
 
     virtual bool IsEnabled() const { return m_bEnabled; }
 
-    // Render the pass. This should only be called by the pgTechnique.
-    virtual void update(pgRenderEventArgs& e);
-    void _render(pgRenderEventArgs& e);
-
-    // return true if to render
-    virtual bool meshFilter(pgMesh* mesh) { return true; }
-
     virtual void PreRender();
     virtual void Render();
     virtual void PostRender();
@@ -1096,12 +1049,6 @@ class pgPass : public Visitor
     virtual void Visit(pgScene& scene);
     virtual void Visit(pgSceneNode& node);
     virtual void Visit(pgMesh& mesh);
-
-  protected:
-    virtual void render(pgRenderEventArgs& e);
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 
@@ -1118,15 +1065,7 @@ class pgPassPilpeline : public pgPass
                     std::shared_ptr<pgPipeline> pipeline);
     virtual ~pgPassPilpeline();
 
-    // Render the pass. This should only be called by the pgTechnique.
-    virtual void update(pgRenderEventArgs& e);
-
     virtual void Render();
-
-  protected:
-    virtual void render(pgRenderEventArgs& e);
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
 
 class RenderPass;
@@ -1146,22 +1085,10 @@ class pgTechnique : public pgObject
     unsigned int addPass(std::shared_ptr<pgPass> pass);
     std::shared_ptr<pgPass> getPass(unsigned int ID) const;
 
-    void update(pgRenderEventArgs& e);
-
-    // Render the scene using the passes that have been configured.
-    void _render(pgRenderEventArgs& e);
-
-    unsigned int addPass(std::shared_ptr<RenderPass> pass);
     virtual void Render();
 
     void SetResource(const std::string& name, std::shared_ptr<pgObject> res);
     std::shared_ptr<pgObject> GetResource(const std::string& name);
-
-  protected:
-    void render(pgRenderEventArgs& e);
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
   private:
     typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
@@ -1199,7 +1126,4 @@ class pgApp : public Diligent::SampleBase
     virtual void Render() override;
     virtual void Update(double CurrTime, double ElapsedTime) override;
     virtual const Diligent::Char* GetSampleName() const override { return "pgApp"; }
-
-    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 };
