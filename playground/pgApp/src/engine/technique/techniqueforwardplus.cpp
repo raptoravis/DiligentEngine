@@ -27,7 +27,7 @@ void TechniqueForwardPlus::render(pgRenderEventArgs& e) {
 }
 
 
-void TechniqueForwardPlus::init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights) {
+void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights) {
 	g_pVertexShader = std::make_shared<Shader>();
 	g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main");
 

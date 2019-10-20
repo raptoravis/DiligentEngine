@@ -1,7 +1,10 @@
 #include "passgeometry.h"
 
-PassGeometry::PassGeometry(const pgPassRenderCreateInfo& ci, std::shared_ptr<pgRenderTarget> rt)
-	: base(ci)
+PassGeometry::PassGeometry(const std::shared_ptr<pgScene> scene,
+                           std::shared_ptr<pgPipeline> pipeline,
+                           const std::vector<pgLight>& lights, 
+	std::shared_ptr<pgRenderTarget> rt)
+	: base(scene, pipeline, lights)
 	, m_pGBufferRT(rt)
 {
 // 	PipelineStateDesc PSODesc;

@@ -319,7 +319,7 @@ class Shader : public pgObject
     bool LoadShaderFromFile(ShaderType type, const std::string& fileName,
                             const std::string& entryPoint = "main",
                             const std::string& searchPaths = "",
-							bool UseCombinedTextureSamplers = false, 
+                            bool UseCombinedTextureSamplers = false,
                             const ShaderMacros& shaderMacros = Shader::ShaderMacros());
 
     Diligent::RefCntAutoPtr<Diligent::IShader> GetShader() { return m_pShader; }
@@ -473,7 +473,7 @@ class StructuredBuffer : public pgBuffer
 
     // Set the buffer data.
     template <typename T>
-    void Set(const std::vector<T>& value)
+    void Set(const std::vector<T>& values)
     {
         SetData((void*)values.data(), sizeof(T), 0, values.size());
     }
@@ -878,13 +878,14 @@ class pgMaterial : public pgObject
                                        //-------------------------- ( 16 bytes )
     };                                 //--------------------------- ( 16 * 10 = 160 bytes )
 
+  protected:
+    void pgMaterial::SetMaterialConstantBufferData();
+
   private:
     // Material properties have to be 16 byte aligned.
     // To guarantee alignment, we'll use _aligned_malloc to allocate memory
     // for the material properties.
     MaterialProperties* m_pProperties;
-
-    Diligent::RefCntAutoPtr<Diligent::IRenderDevice> m_RenderDevice;
 
     // Textures are stored by which texture unit (or texture register)
     // they are bound to.
@@ -1016,7 +1017,8 @@ class pgPipeline : public pgObject
 {
     typedef std::map<Shader::ShaderType, std::shared_ptr<Shader>> ShaderMap;
 
-	bool m_bInited = false;
+    bool m_bInited = false;
+
   protected:
     Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pPSO;
     Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_pSRB;

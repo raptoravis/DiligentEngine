@@ -4,30 +4,31 @@
 
 #include "../engine.h"
 
-#include "passrender.h"
 #include "../utils/light.h"
+#include "passrender.h"
 
 using namespace Diligent;
 
-class PassGeometry : public pgPassRender {
-	typedef pgPassRender base;
+class PassGeometry : public pgPassRender
+{
+    typedef pgPassRender base;
 
-protected:
-	//void CreatePipelineState(PipelineStateDesc& PSODesc);
+  protected:
+    // void CreatePipelineState(PipelineStateDesc& PSODesc);
 
-	std::shared_ptr<pgRenderTarget> m_pGBufferRT;
+    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
 
-public:
-	PassGeometry(const pgPassRenderCreateInfo& ci, std::shared_ptr<pgRenderTarget> rt);
+  public:
+    PassGeometry(const std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+                 const std::vector<pgLight>& lights, std::shared_ptr<pgRenderTarget> rt);
 
-	virtual ~PassGeometry();
+    virtual ~PassGeometry();
 
-	// Render the pass. This should only be called by the pgTechnique.
-	virtual void update(pgRenderEventArgs& e);
-	virtual void render(pgRenderEventArgs& e);
-	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
-	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
+    // Render the pass. This should only be called by the pgTechnique.
+    virtual void update(pgRenderEventArgs& e);
+    virtual void render(pgRenderEventArgs& e);
+    virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
+    virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
-	virtual bool meshFilter(pgMesh* mesh);
+    virtual bool meshFilter(pgMesh* mesh);
 };
-

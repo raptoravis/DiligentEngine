@@ -28,15 +28,8 @@ void TechniqueForward::render(pgRenderEventArgs& e)
 }
 
 
-void TechniqueForward::init(pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights)
+void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights)
 {
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = "PerObject";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = prci.PerObjectConstants;
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_MATERIAL] = "Material";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_MATERIAL] = prci.MaterialConstants;
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_SB_LIGHTS] = "Lights";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_SB_LIGHTS] = prci.LightsStructuredBuffer;
-
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(m_pRT);
     addPass(pSetRTPass);
 
@@ -56,8 +49,8 @@ void TechniqueForward::init(pgPassRenderCreateInfo& prci, const std::vector<pgLi
     g_pOpaquePipeline->SetShader(Shader::PixelShader, g_pPixelShader);
     g_pOpaquePipeline->SetRenderTarget(m_pRT);
 
-    prci.pipeline = g_pOpaquePipeline;
-    std::shared_ptr<PassOpaque> pOpaquePass = std::make_shared<PassOpaque>(prci);
+    std::shared_ptr<PassOpaque> pOpaquePass =
+        std::make_shared<PassOpaque>(scene, g_pOpaquePipeline, lights);
     addPass(pOpaquePass);
 
     g_pTransparentPipeline = std::make_shared<PipelineBase>(m_pRT);
@@ -87,9 +80,9 @@ void TechniqueForward::init(pgPassRenderCreateInfo& prci, const std::vector<pgLi
     g_pTransparentPipeline->SetRasterizerState(RasterizerDesc);
     g_pTransparentPipeline->SetRenderTarget(m_pRT);
 
-    prci.pipeline = g_pTransparentPipeline;
+    std::shared_ptr<PassTransparent> pTransparentPass =
+        std::make_shared<PassTransparent>(scene, g_pTransparentPipeline, lights);
 
-    std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(prci);
     addPass(pTransparentPass);
 
     {

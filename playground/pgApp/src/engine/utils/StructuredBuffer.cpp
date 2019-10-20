@@ -35,6 +35,16 @@ void StructuredBuffer::UnBind(unsigned int ID, Shader::ShaderType shaderType, Sh
 
 void StructuredBuffer::SetData(void* data, size_t elementSize, size_t offset, size_t numElements)
 {
+    struct dummy_t {
+        char m;
+    };
+
+    size_t size = elementSize * numElements;
+
+    Diligent::MapHelper<dummy_t> buffer(pgApp::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
+                                             Diligent::MAP_FLAG_DISCARD);
+    auto p = (&buffer->m + offset);
+    memcpy((char*)p, data, size);
 }
 
 void StructuredBuffer::Copy(std::shared_ptr<StructuredBuffer> other)

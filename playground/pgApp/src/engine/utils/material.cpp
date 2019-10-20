@@ -235,9 +235,18 @@ void pgMaterial::Bind(std::weak_ptr<Shader> wpShader) {
 	{
 		// Assign this material's constant buffer to it.
 		//materialParameter.SetConstantBuffer(m_pConstantBuffer);
+        SetMaterialConstantBufferData();
 
 		// If the shader parameter is modified, they have to be 
 		// rebound to update the rendering pipeline.
 		materialParameter.Bind();
 	}
+}
+
+void pgMaterial::SetMaterialConstantBufferData()
+{
+    auto materialCB = std::dynamic_pointer_cast<ConstantBuffer>(
+        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_MATERIAL]);
+
+    materialCB->Set(m_pProperties);
 }

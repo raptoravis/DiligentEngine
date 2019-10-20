@@ -1,10 +1,8 @@
 #include "passrender.h"
 
-pgPassRender::pgPassRender(const pgPassRenderCreateInfo& ci)
-    : base(ci.scene, ci.pipeline)
-	, m_PerObjectConstants(ci.PerObjectConstants)
-	, m_MaterialConstants(ci.MaterialConstants)
-	, m_LightsStructuredBuffer(ci.LightsStructuredBuffer)
+pgPassRender::pgPassRender(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+                           const std::vector<pgLight>& lights)
+    : base(scene, pipeline), m_Lights(lights)
 {
 }
 
@@ -47,14 +45,6 @@ void pgPassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
     }
 }
 
-void pgPassRender::SetMaterialConstantBufferData(pgMaterial::MaterialProperties& materialData)
-{
-    auto materialCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_MATERIAL]);
-
-    materialCB->Set(materialData);
-}
-
 void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
@@ -66,6 +56,35 @@ void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
     }
 }
 
+void pgPassRender::SetLightsBufferData(std::vector<pgLight>& lights)
+{
+    const float4x4 viewMatrix = pgApp::s_eventArgs.pCamera->getViewMatrix();
+
+    // Update the viewspace vectors of the light.
+    for (uint32_t i = 0; i < lights.size(); i++) {
+        // Update the lights so that their position and direction are in view space.
+        pgLight& light = lights[i];
+        light.m_PositionVS = float4(light.m_PositionWS, 1) * viewMatrix;
+        light.m_DirectionVS = normalize(float4(light.m_DirectionWS, 0) * viewMatrix);
+    }
+
+
+    auto lightsBuffer = std::dynamic_pointer_cast<StructuredBuffer>(
+        pgApp::s_reources[pgApp::RESOURCE_SLOT_SB_LIGHTS]);
+
+    lightsBuffer->Set((const std::vector<pgLight>&)lights);
+}
+
+void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
+{
+    if (shader) {
+        const char* lightsBufferName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_SB_LIGHTS];
+
+        auto lightsBuffer = std::dynamic_pointer_cast<StructuredBuffer>(
+            pgApp::s_reources[pgApp::RESOURCE_SLOT_SB_LIGHTS]);
+        shader->GetShaderParameterByName(lightsBufferName).SetResource(lightsBuffer);
+    }
+}
 
 
 void pgPassRender::PreRender()
@@ -77,6 +96,9 @@ void pgPassRender::PreRender()
         // Make sure the per object constant buffer is bound to the vertex shader.
         BindPerObjectConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
         BindMaterialConstantBuffer(m_pPipeline->GetShader(Shader::PixelShader));
+        BindLightsBuffer(m_pPipeline->GetShader(Shader::PixelShader));
+        SetLightsBufferData(m_Lights);
+
         m_pPipeline->Bind();
     }
 }
@@ -106,7 +128,7 @@ void pgPassRender::Visit(pgSceneNode& node)
     auto e = pgApp::s_eventArgs;
 
     const float4x4 view = e.pCamera->getViewMatrix();
-	// TODO: change to use world
+    // TODO: change to use world
     const float4x4 local = node.getLocalTransform();
 
     // Set cube world view matrix

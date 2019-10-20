@@ -13,7 +13,8 @@ class PassTransparent : public pgPassRender {
 	typedef pgPassRender base;
 
 public:
-	PassTransparent(const pgPassRenderCreateInfo& ci);
+    PassTransparent(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+               const std::vector<pgLight>& lights);
 
 	virtual ~PassTransparent();
 

@@ -1,6 +1,10 @@
 #include "passopaque.h"
 
-PassOpaque::PassOpaque(const PassOpaqueCreateInfo& ci) : base(ci) {}
+PassOpaque::PassOpaque(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
+                       const std::vector<pgLight>& lights)
+    : base(scene, pipeline, lights)
+{
+}
 
 PassOpaque::~PassOpaque() {}
 

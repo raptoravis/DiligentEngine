@@ -94,14 +94,13 @@ void pgMesh::render(pgRenderEventArgs& e)
 
 	auto count = m_pIndexBuffer->getCount();
 
-	DrawAttribs DrawAttrs;
-	DrawAttrs.IsIndexed = true;      // This is an indexed draw call
+	DrawIndexedAttribs DrawAttrs;
 	DrawAttrs.IndexType = VT_UINT32; // Index type
 	DrawAttrs.NumIndices = count;
 	// Verify the state of vertex and index buffers
 	DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
-	pgApp::s_ctx->Draw(DrawAttrs);
+	pgApp::s_ctx->DrawIndexed(DrawAttrs);
 }
 
 void pgMesh::bind(pgRenderEventArgs& e, pgBindFlag flag) {
@@ -154,14 +153,13 @@ void pgMesh::Render() {
 
 		auto count = m_pIndexBuffer->getCount();
 
-		DrawAttribs DrawAttrs;
-		DrawAttrs.IsIndexed = true;      // This is an indexed draw call
+		DrawIndexedAttribs DrawAttrs;
 		DrawAttrs.IndexType = VT_UINT32; // Index type
 		DrawAttrs.NumIndices = count;
 		// Verify the state of vertex and index buffers
 		DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
-		pgApp::s_ctx->Draw(DrawAttrs);
+		pgApp::s_ctx->DrawIndexed(DrawAttrs);
 	}
 }
 

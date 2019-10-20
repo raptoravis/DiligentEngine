@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "SampleBase.h"
 
@@ -8,27 +8,28 @@
 
 using namespace Diligent;
 
-class TechniqueDeferred : public pgTechnique {
-	typedef pgTechnique base;
+class TechniqueDeferred : public pgTechnique
+{
+    typedef pgTechnique base;
 
-	void createGBuffers();
-	void createBuffers();
+    void createGBuffers();
+    void createBuffers();
 
-	std::shared_ptr<pgRenderTarget>		 m_pGBufferRT;
-	std::shared_ptr<pgRenderTarget>		 m_pDepthOnlyRT;
-	std::shared_ptr<pgTexture>			 m_depthStencilTexture;
+    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
+    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRT;
+    std::shared_ptr<pgTexture> m_depthStencilTexture;
 
-	RefCntAutoPtr<IBuffer>				 m_LightParamsCB;
-	RefCntAutoPtr<IBuffer>				 m_ScreenToViewParamsCB;
-public:
-	TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
-	virtual ~TechniqueDeferred();
+    RefCntAutoPtr<IBuffer> m_LightParamsCB;
+    RefCntAutoPtr<IBuffer> m_ScreenToViewParamsCB;
 
-	void init(const pgPassRenderCreateInfo& prci, const std::vector<pgLight>& lights);
+  public:
+    TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    virtual ~TechniqueDeferred();
 
-	virtual void update(pgRenderEventArgs& e);
+    void init(const std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights);
 
-	// Render the scene using the passes that have been configured.
-	virtual void render(pgRenderEventArgs& e);
+    virtual void update(pgRenderEventArgs& e);
 
+    // Render the scene using the passes that have been configured.
+    virtual void render(pgRenderEventArgs& e);
 };

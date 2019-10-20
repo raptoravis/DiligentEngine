@@ -222,11 +222,12 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     initLightData();
     initBuffers();
 
-    pgPassRenderCreateInfo prci;
-    prci.PerObjectConstants = m_PerObjectConstants;
-    prci.MaterialConstants = m_MaterialConstants;
-    prci.LightsStructuredBuffer = m_LightsStructuredBuffer;
-    prci.scene = testScene;
+    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = "PerObject";
+    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = m_PerObjectConstants;
+    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_MATERIAL] = "Material";
+    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_MATERIAL] = m_MaterialConstants;
+    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_SB_LIGHTS] = "Lights";
+    pgApp::s_reources[pgApp::RESOURCE_SLOT_SB_LIGHTS] = m_LightsStructuredBuffer;
 
     // always init test technique
     {
@@ -235,17 +236,17 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     if (m_renderingTechnique == RenderingTechnique::Forward) {
         auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
-        forwardTech->init(prci, m_Lights);
+        forwardTech->init(testScene, m_Lights);
     }
 
     if (m_renderingTechnique == RenderingTechnique::Deferred) {
         auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
-        deferredTech->init(prci, m_Lights);
+        deferredTech->init(testScene, m_Lights);
     }
 
     if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
-        fpTech->init(prci, m_Lights);
+        fpTech->init(testScene, m_Lights);
     }
 }
 
