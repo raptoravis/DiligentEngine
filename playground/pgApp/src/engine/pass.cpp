@@ -1,81 +1,4 @@
-#include "engine.h"
-
-pgPass::pgPass(pgTechnique* parentTechnique)
-    : m_bEnabled(true), m_parentTechnique(parentTechnique)
-{
-}
-
-pgPass::~pgPass()
-{
-    //
-}
-
-void pgPass::_render(pgRenderEventArgs& e)
-{
-    // keep to restore it
-    auto oldPass = e.pPass;
-
-    auto currentPass = this;
-    e.pPass = currentPass;
-    currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-    currentPass->render(e);
-
-    currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
-    e.pPass = oldPass;
-}
-
-void pgPass::update(pgRenderEventArgs& e)
-{
-    //
-}
-
-void pgPass::render(pgRenderEventArgs& e)
-{
-    //
-}
-
-
-void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag)
-{
-    //
-}
-
-void pgPass::PreRender()
-{
-    //
-}
-
-void pgPass::Render()
-{
-    //
-}
-
-void pgPass::PostRender()
-{
-    //
-}
-
-void pgPass::Visit(pgScene& scene)
-{
-    //
-}
-
-void pgPass::Visit(pgSceneNode& node)
-{
-    //
-}
-
-void pgPass::Visit(pgMesh& mesh)
-{
-    //
-}
-
+#include "pass.h"
 
 BasePass::BasePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                    std::shared_ptr<pgPipeline> pipeline)
@@ -91,8 +14,8 @@ BasePass::~BasePass()
 
 void BasePass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
-    auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
+    auto perObjectCB =
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
@@ -100,11 +23,10 @@ void BasePass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void BasePass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
-        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT];
-
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
-        shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
+            m_parentTechnique->GetResource(kPerObjectName));
+
+        shader->GetShaderParameterByName(kPerObjectName).SetResource(perObjectCB);
     }
 }
 
@@ -170,8 +92,8 @@ TestPass::~TestPass() {}
 
 void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
-    auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
+    auto perObjectCB =
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
@@ -179,11 +101,9 @@ void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
-        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT];
-
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
-        shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
+            m_parentTechnique->GetResource(kPerObjectName));
+        shader->GetShaderParameterByName(kPerObjectName).SetResource(perObjectCB);
     }
 }
 

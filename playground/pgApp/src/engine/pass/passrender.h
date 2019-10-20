@@ -13,6 +13,10 @@ class pgPassRender : public pgPassPilpeline
     typedef pgPassPilpeline base;
 
   public:
+    const char* kPerObjectName = "PerObject";
+    const char* kMaterialName = "Material";
+    const char* kLightsName = "Lights";
+
     // PerObject constant buffer data.
     __declspec(align(16)) struct PerObject {
         float4x4 ModelViewProjection;
@@ -33,6 +37,7 @@ class pgPassRender : public pgPassPilpeline
 
     void BindLightsBuffer(std::shared_ptr<Shader> shader);
 
+	void SetMaterialData(pgMaterial* mat);
   public:
     pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
                                const std::vector<pgLight>& lights);

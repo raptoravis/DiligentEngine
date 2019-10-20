@@ -89,7 +89,7 @@ void AppTest::bind(pgRenderEventArgs& e, pgBindFlag flag)
         MapHelper<pgMaterial::MaterialProperties> CBConstants(
             e.pDeviceContext, m_MaterialConstants->GetBuffer(), MAP_WRITE, MAP_FLAG_DISCARD);
 
-        auto matProperties = e.pMaterial->getConstantBuffer();
+        auto matProperties = e.pMaterial->GetMaterialProperties();
 
         // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
         // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
@@ -222,13 +222,6 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     initLightData();
     initBuffers();
 
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = "PerObject";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = m_PerObjectConstants;
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_MATERIAL] = "Material";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_MATERIAL] = m_MaterialConstants;
-    pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_SB_LIGHTS] = "Lights";
-    pgApp::s_reources[pgApp::RESOURCE_SLOT_SB_LIGHTS] = m_LightsStructuredBuffer;
-
     // always init test technique
     {
         m_pTechnique = std::make_shared<TechniqueTest>(m_pRT, m_pBackBuffer);
@@ -237,16 +230,28 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     if (m_renderingTechnique == RenderingTechnique::Forward) {
         auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
         forwardTech->init(testScene, m_Lights);
+
+		forwardTech->SetResource("PerObject", m_PerObjectConstants);
+        forwardTech->SetResource("Material", m_MaterialConstants);
+        forwardTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
 
     if (m_renderingTechnique == RenderingTechnique::Deferred) {
         auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
         deferredTech->init(testScene, m_Lights);
+
+		deferredTech->SetResource("PerObject", m_PerObjectConstants);
+        deferredTech->SetResource("Material", m_MaterialConstants);
+        deferredTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
 
     if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
         fpTech->init(testScene, m_Lights);
+
+		fpTech->SetResource("PerObject", m_PerObjectConstants);
+        fpTech->SetResource("Material", m_MaterialConstants);
+        fpTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
 }
 

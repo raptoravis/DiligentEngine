@@ -10,7 +10,7 @@
 #include "engine/pass/passclearrt.h"
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
-
+#include "engine/pass.h"
 
 TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
                              std::shared_ptr<pgTexture> backBuffer)
@@ -47,9 +47,8 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
         m_pSceneCubeTex->setRootNode(root2);
 
         //
-        pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = "Constants";
         m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT] = m_VSConstants;
+        this->SetResource("Constants", m_VSConstants);
 
         std::shared_ptr<PipelineColorVertex> pipelineColorVertex =
             std::make_shared<PipelineColorVertex>(m_pRT);

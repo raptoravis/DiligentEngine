@@ -819,10 +819,6 @@ class pgMaterial : public pgObject
 
     void UpdateConstantBuffer();
 
-    static uint32_t getConstantBufferSize() { return sizeof(MaterialProperties); }
-
-    void* getConstantBuffer() const { return m_pProperties; }
-
     // This material defines a transparent material
     // if the opacity value is < 1, or there is an opacity map, or the diffuse texture has an alpha
     // channel.
@@ -878,8 +874,9 @@ class pgMaterial : public pgObject
                                        //-------------------------- ( 16 bytes )
     };                                 //--------------------------- ( 16 * 10 = 160 bytes )
 
-  protected:
-    void pgMaterial::SetMaterialConstantBufferData();
+    static uint32_t getConstantBufferSize() { return sizeof(MaterialProperties); }
+
+    pgMaterial::MaterialProperties* GetMaterialProperties() const { return m_pProperties; }
 
   private:
     // Material properties have to be 16 byte aligned.
@@ -1157,6 +1154,9 @@ class pgTechnique : public pgObject
     unsigned int addPass(std::shared_ptr<RenderPass> pass);
     virtual void Render();
 
+    void SetResource(const std::string& name, std::shared_ptr<pgObject> res);
+    std::shared_ptr<pgObject> GetResource(const std::string& name);
+
   protected:
     void render(pgRenderEventArgs& e);
 
@@ -1166,20 +1166,14 @@ class pgTechnique : public pgObject
   private:
     typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
     RenderPassList m_Passes;
+
+    using ResourceMap = std::map<std::string, std::shared_ptr<pgObject>>;
+    ResourceMap m_resourceMap;
 };
 
 class pgApp : public Diligent::SampleBase
 {
   public:
-    enum RESOURCE_SLOT {
-        RESOURCE_SLOT_CB_PEROBJECT = 0,
-        RESOURCE_SLOT_CB_MATERIAL = 1,
-        RESOURCE_SLOT_SB_LIGHTS = 2,
-
-        //
-        RESOURCE_SLOT_COUNT = 1000
-    };
-
     static Diligent::RefCntAutoPtr<Diligent::IRenderDevice> s_device;
     static Diligent::RefCntAutoPtr<Diligent::IDeviceContext> s_ctx;
     static Diligent::RefCntAutoPtr<Diligent::ISwapChain> s_swapChain;
@@ -1189,9 +1183,6 @@ class pgApp : public Diligent::SampleBase
 
     static Diligent::SwapChainDesc s_desc;
     static pgRenderEventArgs s_eventArgs;
-
-    static std::shared_ptr<pgObject> s_reources[RESOURCE_SLOT::RESOURCE_SLOT_COUNT];
-    static const char* s_reourceNames[RESOURCE_SLOT::RESOURCE_SLOT_COUNT];
 
   protected:
     std::shared_ptr<pgCamera> m_pCamera;
@@ -1211,101 +1202,4 @@ class pgApp : public Diligent::SampleBase
 
     virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
     virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
-};
-
-
-// Base pass provides implementations for functions used by most passes.
-class BasePass : public pgPass
-{
-    typedef pgPass base;
-
-  protected:
-    std::shared_ptr<pgScene> m_pScene;
-    std::shared_ptr<pgPipeline> m_pPipeline;
-
-  public:
-    BasePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-             std::shared_ptr<pgPipeline> pipeline);
-    virtual ~BasePass();
-
-    // Render the pass. This should only be called by the RenderTechnique.
-    virtual void PreRender();
-    virtual void Render();
-    virtual void PostRender();
-
-    // Inherited from Visitor
-    virtual void Visit(pgScene& scene);
-    virtual void Visit(pgSceneNode& node);
-    virtual void Visit(pgMesh& mesh);
-
-  protected:
-    // PerObject constant buffer data.
-    __declspec(align(16)) struct PerObject {
-        Diligent::float4x4 ModelViewProjection;
-        Diligent::float4x4 ModelView;
-    };
-
-    // Set and bind the constant buffer data.
-    void SetPerObjectConstantBufferData(PerObject& perObjectData);
-    // Bind the constant to the shader.
-    void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
-
-  private:
-    PerObject* m_PerObjectData;
-    std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
-};
-
-class TestPass : public pgPass
-{
-    typedef pgPass base;
-
-  protected:
-    std::shared_ptr<pgScene> m_pScene;
-    std::shared_ptr<pgPipeline> m_pPipeline;
-
-  public:
-    TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-             std::shared_ptr<pgPipeline> pipeline);
-    virtual ~TestPass();
-
-    // Render the pass. This should only be called by the RenderTechnique.
-    virtual void PreRender();
-    virtual void Render();
-    virtual void PostRender();
-
-    // Inherited from Visitor
-    virtual void Visit(pgScene& scene);
-    virtual void Visit(pgSceneNode& node);
-    virtual void Visit(pgMesh& mesh);
-
-  protected:
-    // PerObject constant buffer data.
-    __declspec(align(16)) struct PerObject {
-        Diligent::float4x4 ModelViewProjection;
-    };
-
-    // Set and bind the constant buffer data.
-    void SetPerObjectConstantBufferData(PerObject& perObjectData);
-    // Bind the constant to the shader.
-    void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
-
-  private:
-    std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
-};
-
-
-// A pass that renders the opaque geometry in the scene.
-class OpaquePass : public BasePass
-{
-  public:
-    typedef BasePass base;
-
-    OpaquePass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-               std::shared_ptr<pgPipeline> pipeline);
-    virtual ~OpaquePass();
-
-    virtual void Visit(pgMesh& mesh);
-
-  protected:
-  private:
 };

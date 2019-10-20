@@ -41,6 +41,8 @@ void PassTransparent::Visit(pgMesh& mesh)
 {
     std::shared_ptr<pgMaterial> pMaterial = mesh.getMaterial();
     if (pMaterial && pMaterial->IsTransparent()) {
+        SetMaterialData(pMaterial.get());
+
         mesh.Render();
     }
 }
