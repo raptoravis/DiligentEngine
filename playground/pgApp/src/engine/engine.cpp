@@ -99,7 +99,9 @@ bool pgBuffer::Bind(unsigned int slot, Shader::ShaderType shaderType, ShaderPara
 	Diligent::IBuffer *pBuffs[] = { buffer };
 	const uint32_t buffs = 1;
 
-	pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
+	pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset, 
+		Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, 
+		Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
 
 	return true;
 }
@@ -112,73 +114,6 @@ void pgBuffer::UnBind(unsigned int id, Shader::ShaderType shaderType, ShaderPara
 void pgBuffer::Copy(std::shared_ptr<pgBuffer> other) {
 	//
 }
-
-pgPass::pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
-	: m_bEnabled(true)
-	, m_pScene(scene)
-	, m_pPipeline(pipeline)
-{
-}
-
-pgPass::~pgPass() {
-	//
-}
-
-void pgPass::_render(pgRenderEventArgs& e) {
-	// keep to restore it
-	auto oldPass = e.pPass;
-
-	auto currentPass = this;
-	e.pPass = currentPass;
-	currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
-
-	currentPass->render(e);
-
-	currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
-	e.pPass = oldPass;
-}
-
-void pgPass::update(pgRenderEventArgs& e) {
-	//
-}
-
-void pgPass::render(pgRenderEventArgs& e) {
-	//
-}
-
-
-void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag) {
-	//
-}
-
-void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
-	//
-}
-
-void pgPass::PreRender() {
-	//
-}
-
-void pgPass::Render() {
-	//
-}
-
-void pgPass::PostRender() {
-	//
-}
-
-void pgPass::Visit(pgScene& scene) {
-	//
-}
-
-void pgPass::Visit(pgSceneNode& node) {
-	//
-}
-
-void pgPass::Visit(pgMesh& mesh) {
-	//
-}
-
 
 pgPassPilpeline::pgPassPilpeline(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
 	: base(scene)

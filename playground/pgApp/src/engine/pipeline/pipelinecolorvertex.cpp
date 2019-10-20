@@ -7,10 +7,10 @@ PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt)
 {
 	//CreatePipelineState();
 	m_pVS = std::make_shared<Shader>();
-	m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cube.vsh", "main");
+	m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cube.vsh", "main", "", true);
 
 	m_pPS = std::make_shared<Shader>();
-	m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cube.psh", "main");
+    m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cube.psh", "main", "", true);
 
 	SetShader(Shader::Shader::VertexShader, m_pVS);
 	SetShader(Shader::Shader::PixelShader, m_pPS);

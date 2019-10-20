@@ -42,22 +42,22 @@ private:
 	void initBuffers();
 	void createRT();
 private:
-	std::vector<pgLight>								m_Lights;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer>			m_PerObjectConstants;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_MaterialConstants;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer>          m_LightsStructuredBuffer;
-	Diligent::RefCntAutoPtr<Diligent::IBufferView>		m_LightsBufferSRV;
+	std::vector<pgLight>						m_Lights;
 
-	std::shared_ptr<pgRenderTarget>						m_pRT;
-	std::shared_ptr<pgTexture>							m_pBackBuffer;
-	std::shared_ptr<pgTexture>							m_pDepthStencilBuffer;
+	std::shared_ptr<ConstantBuffer>				m_PerObjectConstants;
+    std::shared_ptr<ConstantBuffer>				m_MaterialConstants;
+    std::shared_ptr<StructuredBuffer>			m_LightsStructuredBuffer;
+
+	std::shared_ptr<pgRenderTarget>				m_pRT;
+	std::shared_ptr<pgTexture>					m_pBackBuffer;
+	std::shared_ptr<pgTexture>					m_pDepthStencilBuffer;
 
 	// 
-	std::shared_ptr<pgTechnique>	m_pTechnique;
+	std::shared_ptr<pgTechnique>				m_pTechnique;
 
-	std::shared_ptr<pgTechnique>	m_pForwardTechnique;
-	std::shared_ptr<pgTechnique>	m_pDeferredTechnique;
-	std::shared_ptr<pgTechnique>	m_pForwardPlusTechnique;
+	std::shared_ptr<pgTechnique>				m_pForwardTechnique;
+	std::shared_ptr<pgTechnique>				m_pDeferredTechnique;
+	std::shared_ptr<pgTechnique>				m_pForwardPlusTechnique;
 
-	RenderingTechnique				m_renderingTechnique = RenderingTechnique::Test;
+	RenderingTechnique							m_renderingTechnique = RenderingTechnique::Test;
 };

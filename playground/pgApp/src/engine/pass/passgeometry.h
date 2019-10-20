@@ -13,7 +13,7 @@ class PassGeometry : public pgPassRender {
 	typedef pgPassRender base;
 
 protected:
-	void CreatePipelineState(PipelineStateDesc& PSODesc);
+	//void CreatePipelineState(PipelineStateDesc& PSODesc);
 
 	std::shared_ptr<pgRenderTarget> m_pGBufferRT;
 

@@ -136,7 +136,9 @@ void pgMesh::Render() {
 				//	// Bind the vertex buffer to a particular slot ID.
 				//	buffer.second->Bind(slotID, Shader::VertexShader, ShaderParameter::Type::Buffer);
 				//}
-				buffer.second->Bind(binding.Index, Shader::VertexShader, ShaderParameter::Type::Buffer);
+                uint32_t slot = getSlot(binding);
+
+				buffer.second->Bind(slot, Shader::VertexShader, ShaderParameter::Type::Buffer);
 			}
 
 			pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->GetBuffer(), 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);

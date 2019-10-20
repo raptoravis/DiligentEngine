@@ -149,16 +149,12 @@ void TechniqueDeferred::init(const pgPassRenderCreateInfo& prci, const std::vect
 	m_pDepthOnlyRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, 
 		m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
 
-	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(m_pDepthOnlyRT, prci.PerObjectConstants);
+	std::shared_ptr<pgPipeline>			pFront = std::make_shared<PipelineLightFront>(m_pDepthOnlyRT);
 
-	std::shared_ptr<pgPipeline>			pBack = std::make_shared<PipelineLightBack>(m_pRT, m_pGBufferRT, prci.PerObjectConstants, 
-		prci.LightsBufferSRV, m_LightParamsCB.RawPtr(), m_ScreenToViewParamsCB.RawPtr());
-	std::shared_ptr<pgPipeline>			pDir = std::make_shared<PipelineLightDir>(m_pRT, m_pGBufferRT, prci.PerObjectConstants,
-		prci.LightsBufferSRV, m_LightParamsCB.RawPtr(), m_ScreenToViewParamsCB.RawPtr());
+	std::shared_ptr<pgPipeline> pBack = std::make_shared<PipelineLightBack>(m_pRT, m_pGBufferRT);
+    std::shared_ptr<pgPipeline> pDir = std::make_shared<PipelineLightDir>(m_pRT, m_pGBufferRT);
 
-	std::shared_ptr<PassLight> pLightPass = std::make_shared<PassLight>(prci.PerObjectConstants, 
-		m_LightParamsCB.RawPtr(), m_ScreenToViewParamsCB.RawPtr(), 
-		pFront, pBack, pDir, &lights);
+	std::shared_ptr<PassLight> pLightPass = std::make_shared<PassLight>(pFront, pBack, pDir, &lights);
 	addPass(pLightPass);
 
 	std::shared_ptr<PassTransparent> pTransparentPass = std::make_shared<PassTransparent>(prci);

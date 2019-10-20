@@ -1,5 +1,81 @@
 #include "engine.h"
 
+pgPass::pgPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
+    : m_bEnabled(true), m_pScene(scene), m_pPipeline(pipeline)
+{
+}
+
+pgPass::~pgPass()
+{
+    //
+}
+
+void pgPass::_render(pgRenderEventArgs& e)
+{
+    // keep to restore it
+    auto oldPass = e.pPass;
+
+    auto currentPass = this;
+    e.pPass = currentPass;
+    currentPass->bind(e, pgBindFlag::pgBindFlag_Pass);
+
+    currentPass->render(e);
+
+    currentPass->unbind(e, pgBindFlag::pgBindFlag_Pass);
+    e.pPass = oldPass;
+}
+
+void pgPass::update(pgRenderEventArgs& e)
+{
+    //
+}
+
+void pgPass::render(pgRenderEventArgs& e)
+{
+    //
+}
+
+
+void pgPass::bind(pgRenderEventArgs& e, pgBindFlag flag)
+{
+    //
+}
+
+void pgPass::unbind(pgRenderEventArgs& e, pgBindFlag flag)
+{
+    //
+}
+
+void pgPass::PreRender()
+{
+    //
+}
+
+void pgPass::Render()
+{
+    //
+}
+
+void pgPass::PostRender()
+{
+    //
+}
+
+void pgPass::Visit(pgScene& scene)
+{
+    //
+}
+
+void pgPass::Visit(pgSceneNode& node)
+{
+    //
+}
+
+void pgPass::Visit(pgMesh& mesh)
+{
+    //
+}
+
 
 BasePass::BasePass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
     : base(scene, pipeline)
@@ -15,7 +91,7 @@ BasePass::~BasePass()
 void BasePass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
+        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
 
     perObjectCB->Set(perObjectData);
 }
@@ -23,10 +99,10 @@ void BasePass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void BasePass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
-        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_PEROBJECT];
+        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT];
 
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
+            pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
         shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
     }
 }
@@ -86,18 +162,16 @@ void BasePass::Visit(pgMesh& mesh)
 TestPass::TestPass(std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline)
     : base(scene, pipeline)
 {
-    m_PerObjectData = (PerObject*)_aligned_malloc(sizeof(PerObject), 16);
 }
 
 TestPass::~TestPass()
 {
-    _aligned_free(m_PerObjectData);
 }
 
 void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
+        pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
 
     perObjectCB->Set(perObjectData);
 }
@@ -105,10 +179,10 @@ void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
-        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_PEROBJECT];
+        const char* perObjectCBName = pgApp::s_reourceNames[pgApp::RESOURCE_SLOT_CB_PEROBJECT];
 
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            pgApp::s_reources[pgApp::RESOURCE_SLOT_PEROBJECT]);
+            pgApp::s_reources[pgApp::RESOURCE_SLOT_CB_PEROBJECT]);
         shader->GetShaderParameterByName(perObjectCBName).SetResource(perObjectCB);
     }
 }

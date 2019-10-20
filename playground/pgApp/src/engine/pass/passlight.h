@@ -57,10 +57,7 @@ protected:
 	void updateLightParams(pgRenderEventArgs& e, const LightParams& lightParam, const pgLight& light);
 	void updateScreenToViewParams(pgRenderEventArgs& e, pgBindFlag flag);
 public:
-	PassLight(IBuffer* PerObjectConstants, 
-		IBuffer* LightParamsCB,
-		IBuffer* ScreenToViewParamsCB,
-		std::shared_ptr<pgPipeline> front, 
+	PassLight(std::shared_ptr<pgPipeline> front, 
 		std::shared_ptr<pgPipeline> back, 
 		std::shared_ptr<pgPipeline> dir, 
 		const std::vector<pgLight>*	Lights);

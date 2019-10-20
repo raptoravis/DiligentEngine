@@ -3,15 +3,6 @@
 PassTransparent::PassTransparent(const pgPassRenderCreateInfo& ci)
 	: base(ci)
 {
-	PipelineStateDesc PSODesc;
-
-	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
-	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
-	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
-	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
-	PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
-
-	CreatePipelineState(PSODesc);
 }
 
 PassTransparent::~PassTransparent()
@@ -39,4 +30,12 @@ void PassTransparent::bind(pgRenderEventArgs& e, pgBindFlag flag) {
 
 void PassTransparent::unbind(pgRenderEventArgs& e, pgBindFlag flag) {
 	base::unbind(e, flag);
+}
+
+void PassTransparent::Visit(pgMesh& mesh)
+{
+    std::shared_ptr<pgMaterial> pMaterial = mesh.getMaterial();
+    if (pMaterial && pMaterial->IsTransparent()) {
+        mesh.Render();
+    }
 }

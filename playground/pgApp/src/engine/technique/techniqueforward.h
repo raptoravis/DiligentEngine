@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include "SampleBase.h"
 
@@ -8,18 +8,24 @@
 
 using namespace Diligent;
 
-class TechniqueForward : public pgTechnique {
-	typedef pgTechnique base;
+class TechniqueForward : public pgTechnique
+{
+    typedef pgTechnique base;
 
-public:
-	TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
-	virtual ~TechniqueForward();
+    std::shared_ptr<Shader> g_pVertexShader;
+    std::shared_ptr<Shader> g_pPixelShader;
 
-	void init(const pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);
+	std::shared_ptr<pgPipeline> g_pOpaquePipeline;
+    std::shared_ptr<pgPipeline> g_pTransparentPipeline;
 
-	virtual void update(pgRenderEventArgs& e);
+  public:
+    TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    virtual ~TechniqueForward();
 
-	// Render the scene using the passes that have been configured.
-	virtual void render(pgRenderEventArgs& e);
+    void init(pgPassRenderCreateInfo& ci, const std::vector<pgLight>& lights);
 
+    virtual void update(pgRenderEventArgs& e);
+
+    // Render the scene using the passes that have been configured.
+    virtual void render(pgRenderEventArgs& e);
 };

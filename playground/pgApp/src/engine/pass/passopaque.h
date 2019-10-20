@@ -34,5 +34,7 @@ public:
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
 	virtual bool meshFilter(pgMesh* mesh);
+
+	virtual void Visit(pgMesh& mesh);
 };
 

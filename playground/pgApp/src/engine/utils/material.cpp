@@ -230,7 +230,7 @@ void pgMaterial::Bind(std::weak_ptr<Shader> wpShader) {
 	}
 
 	// If the shader has a parameter called "pgMaterial".
-	ShaderParameter& materialParameter = pShader->GetShaderParameterByName("pgMaterial");
+	ShaderParameter& materialParameter = pShader->GetShaderParameterByName("Material");
 	if (materialParameter.IsValid())
 	{
 		// Assign this material's constant buffer to it.

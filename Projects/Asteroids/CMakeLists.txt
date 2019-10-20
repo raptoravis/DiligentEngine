@@ -37,6 +37,7 @@ set(INCLUDE
 set(PIXEL_SHADERS
     src/asteroid_ps.hlsl
     src/asteroid_ps_d3d11.hlsl
+    src/asteroid_ps_diligent.hlsl
     src/font_ps.hlsl
     src/skybox_ps.hlsl
     src/sprite_ps.hlsl
@@ -86,6 +87,7 @@ if(WIN32)
         ${MEDIA}
         SDK/Include/d3dx12.h
         src/common_defines.h
+        src/shader_common.h
         readme.md
     )
     set_target_properties(Asteroids PROPERTIES 

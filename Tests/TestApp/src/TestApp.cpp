@@ -173,19 +173,24 @@ void TestApp::InitializeDiligentEngine(
             // Load the dll and import GetEngineFactoryD3D11() function
             LoadGraphicsEngineD3D11(GetEngineFactoryD3D11);
 #endif
+#ifdef _DEBUG
+            DeviceAttribs.DebugFlags = D3D11_DEBUG_FLAG_CREATE_DEBUG_DEVICE |
+                                       D3D11_DEBUG_FLAG_VERIFY_COMMITTED_RESOURCE_RELEVANCE |
+                                       D3D11_DEBUG_FLAG_VERIFY_COMMITTED_SHADER_RESOURCES;
+#endif
             auto *pFactoryD3D11 = GetEngineFactoryD3D11();
             Uint32 NumAdapters = 0;
-            pFactoryD3D11->EnumerateHardwareAdapters(NumAdapters, 0);
+            pFactoryD3D11->EnumerateHardwareAdapters(DIRECT3D_FEATURE_LEVEL_11_0, NumAdapters, 0);
             Adapters.resize(NumAdapters);
-            pFactoryD3D11->EnumerateHardwareAdapters(NumAdapters, Adapters.data());
+            pFactoryD3D11->EnumerateHardwareAdapters(DIRECT3D_FEATURE_LEVEL_11_0, NumAdapters, Adapters.data());
 
             for(Uint32 i=0; i < Adapters.size(); ++i)
             {
                 Uint32 NumDisplayModes = 0;
                 std::vector<DisplayModeAttribs> DisplayModes;
-                pFactoryD3D11->EnumerateDisplayModes(i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, nullptr);
+                pFactoryD3D11->EnumerateDisplayModes(DIRECT3D_FEATURE_LEVEL_11_0, i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, nullptr);
                 DisplayModes.resize(NumDisplayModes);
-                pFactoryD3D11->EnumerateDisplayModes(i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, DisplayModes.data());
+                pFactoryD3D11->EnumerateDisplayModes(DIRECT3D_FEATURE_LEVEL_11_0, i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, DisplayModes.data());
                 AdapterDisplayModes.emplace_back(std::move(DisplayModes));
             }
 
@@ -209,17 +214,17 @@ void TestApp::InitializeDiligentEngine(
 #endif
             auto *pFactoryD3D12 = GetEngineFactoryD3D12();
             Uint32 NumAdapters = 0;
-            pFactoryD3D12->EnumerateHardwareAdapters(NumAdapters, 0);
+            pFactoryD3D12->EnumerateHardwareAdapters(DIRECT3D_FEATURE_LEVEL_11_0, NumAdapters, 0);
             Adapters.resize(NumAdapters);
-            pFactoryD3D12->EnumerateHardwareAdapters(NumAdapters, Adapters.data());
+            pFactoryD3D12->EnumerateHardwareAdapters(DIRECT3D_FEATURE_LEVEL_11_0, NumAdapters, Adapters.data());
 
             for (Uint32 i = 0; i < Adapters.size(); ++i)
             {
                 Uint32 NumDisplayModes = 0;
                 std::vector<DisplayModeAttribs> DisplayModes;
-                pFactoryD3D12->EnumerateDisplayModes(i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, nullptr);
+                pFactoryD3D12->EnumerateDisplayModes(DIRECT3D_FEATURE_LEVEL_11_0, i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, nullptr);
                 DisplayModes.resize(NumDisplayModes);
-                pFactoryD3D12->EnumerateDisplayModes(i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, DisplayModes.data());
+                pFactoryD3D12->EnumerateDisplayModes(DIRECT3D_FEATURE_LEVEL_11_0, i, 0, TEX_FORMAT_RGBA8_UNORM, NumDisplayModes, DisplayModes.data());
                 AdapterDisplayModes.emplace_back(std::move(DisplayModes));
             }
 
@@ -691,17 +696,19 @@ void TestApp::Render()
         UniformData[3] = 0;
     }
 
-    DrawAttribs DrawAttrs;
-    DrawAttrs.NumVertices = 3;
-    DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
-    m_pRenderScript->Run(m_pImmediateContext, "DrawTris", DrawAttrs);
+    {
+        DrawAttribs DrawAttrs{3, DRAW_FLAG_VERIFY_ALL};
+        m_pRenderScript->Run(m_pImmediateContext, "DrawTris", DrawAttrs);
+    }
 
-    DrawAttrs.IsIndexed = true;
-    DrawAttrs.NumIndices = 3;
-    DrawAttrs.IndexType = VT_UINT32;
-    DrawAttrs.NumInstances = 3;
-    DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
-    m_pRenderScript->Run(m_pImmediateContext, "DrawTris", DrawAttrs);
+    {
+        DrawIndexedAttribs DrawAttrs{};
+        DrawAttrs.NumIndices = 3;
+        DrawAttrs.IndexType = VT_UINT32;
+        DrawAttrs.NumInstances = 3;
+        DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
+        m_pRenderScript->Run(m_pImmediateContext, "DrawTris", DrawAttrs);
+    }
     m_pTestDrawCommands->Draw();
     m_pTestBufferAccess->Draw((float)dCurrTime);
 

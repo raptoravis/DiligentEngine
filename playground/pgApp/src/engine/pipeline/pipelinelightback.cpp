@@ -2,18 +2,10 @@
 
 using namespace Diligent;
 
-PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt, 
-	std::shared_ptr<pgRenderTarget> GBufferRT,
-	IBuffer* PerObjectConstants, 
-	IBufferView* LightsBufferSRV,
-	Diligent::IBuffer* LightParamsCB,
-	Diligent::IBuffer* ScreenToViewParamsCB)
+    PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt,
+                                   std::shared_ptr<pgRenderTarget> GBufferRT)
 	: base(rt)
 	, m_pGBufferRT(GBufferRT)
-	, m_PerObjectConstants(PerObjectConstants)
-	, m_LightParamsCB(LightParamsCB)
-	, m_ScreenToViewParamsCB(ScreenToViewParamsCB)
-	, m_LightsBufferSRV(LightsBufferSRV)
 {
 	CreatePipelineState();
 }
@@ -145,14 +137,14 @@ void PipelineLightBack::CreatePipelineState()
 
 	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
 
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
-	m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")->Set(m_ScreenToViewParamsCB);
+	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "PerObject")->Set(m_PerObjectConstants);
+	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "LightIndexBuffer")->Set(m_LightParamsCB);
+	//m_pPSO->GetStaticVariableByName(SHADER_TYPE_PIXEL, "ScreenToViewParams")->Set(m_ScreenToViewParamsCB);
 
 	// Create a shader resource binding object and bind all static resources in it
 	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
+	//m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "Lights")->Set(m_LightsBufferSRV);
 	auto GbufferRT = m_pGBufferRT;
 	auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
 	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "DiffuseTextureVS")->Set(diffuseTex->getShaderResourceView());

@@ -6,41 +6,41 @@
 
 using namespace Diligent;
 
-// PerObject constant buffer data.
-__declspec(align(16)) struct PerObject
-{
-	float4x4 ModelViewProjection;
-	float4x4 ModelView;
-};
-
 struct pgPassRenderCreateInfo {
-	std::shared_ptr<pgScene>  scene;
-	IBuffer*	              PerObjectConstants;
-	IBuffer*		          MaterialConstants;
-	IBuffer*			      LightsStructuredBuffer;
-	IBufferView*			  LightsBufferSRV;
+    std::shared_ptr<pgScene>	scene;
+    std::shared_ptr<pgPipeline>	pipeline;
+
+	std::shared_ptr<ConstantBuffer>		PerObjectConstants;
+    std::shared_ptr<ConstantBuffer>		MaterialConstants;
+    std::shared_ptr<StructuredBuffer>	LightsStructuredBuffer;
 };
 
 class pgPassRender : public pgPass {
 	typedef pgPass base;
 
-protected:
-	void CreatePipelineState(PipelineStateDesc& PSODesc);
-	void LoadTexture();
+  public:
+    // PerObject constant buffer data.
+    __declspec(align(16)) struct PerObject {
+        float4x4 ModelViewProjection;
+        float4x4 ModelView;
+    };
 
-	RefCntAutoPtr<IPipelineState>         m_pPSO;
-	RefCntAutoPtr<IShaderResourceBinding> m_pSRB;
+  protected:
+    std::shared_ptr<ConstantBuffer>		m_PerObjectConstants;
+    std::shared_ptr<ConstantBuffer>		m_MaterialConstants;
+    std::shared_ptr<StructuredBuffer>	m_LightsStructuredBuffer;
 
-	RefCntAutoPtr<IBuffer>                m_PerObjectConstants;
-	RefCntAutoPtr<IBuffer>                m_MaterialConstants;
+	// Set and bind the constant buffer data.
+    void SetPerObjectConstantBufferData(PerObject& perObjectData);
+    // Bind the constant to the shader.
+    void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
 
-	RefCntAutoPtr<IBuffer>                m_LightsStructuredBuffer;
-	RefCntAutoPtr<IBufferView>			  m_LightsBufferSRV;
+	void SetMaterialConstantBufferData(pgMaterial::MaterialProperties& materialData);
 
-	Diligent::RefCntAutoPtr<Diligent::ITextureView>		m_TextureSRV;
-public:
-	pgPassRender(const pgPassRenderCreateInfo& ci);
+    void BindMaterialConstantBuffer(std::shared_ptr<Shader> shader);
 
+  public:
+    pgPassRender(const pgPassRenderCreateInfo& ci);
 	virtual ~pgPassRender();
 
 	// Render the pass. This should only be called by the pgTechnique.
@@ -49,6 +49,14 @@ public:
 	virtual void bind(pgRenderEventArgs& e, pgBindFlag flag);
 	virtual void unbind(pgRenderEventArgs& e, pgBindFlag flag);
 
-	virtual void Render();
+	// Render the pass. This should only be called by the RenderTechnique.
+    virtual void PreRender();
+    virtual void Render();
+    virtual void PostRender();
+
+    // Inherited from Visitor
+    virtual void Visit(pgScene& scene);
+    virtual void Visit(pgSceneNode& node);
+    virtual void Visit(pgMesh& mesh);
 };
 
