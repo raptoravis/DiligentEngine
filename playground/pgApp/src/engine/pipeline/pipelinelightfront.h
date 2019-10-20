@@ -1,13 +1,13 @@
 #pragma once
 
-#include "engine/engine.h"
+#include "engine/pipeline/pipelinebase.h"
 
-class PipelineLightFront : public pgPipeline
+class PipelineLightFront : public PipelineBase
 {
-    typedef pgPipeline base;
+    typedef PipelineBase base;
 
   private:
-    void CreatePipelineState();
+    virtual void InitPSODesc();
 
   public:
     PipelineLightFront(std::shared_ptr<pgRenderTarget> rt);

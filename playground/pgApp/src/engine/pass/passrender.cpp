@@ -1,5 +1,10 @@
 #include "passrender.h"
 
+const char* pgPassRender::kPerObjectName = "PerObject";
+const char* pgPassRender::kMaterialName = "Material";
+const char* pgPassRender::kLightsName = "Lights";
+
+
 pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                            std::shared_ptr<pgPipeline> pipeline, const std::vector<pgLight>& lights)
     : base(parentTechnique, scene, pipeline), m_Lights(lights)

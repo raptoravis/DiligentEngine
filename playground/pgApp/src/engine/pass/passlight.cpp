@@ -3,11 +3,48 @@
 
 #include "../utils/mathutils.h"
 
-PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgPipeline> front,
-                     std::shared_ptr<pgPipeline> back, std::shared_ptr<pgPipeline> dir,
+
+const char* PassLight::kScreenToViewParams = "ScreenToViewParams";
+const char* PassLight::kLightIndexBuffer = "LightIndexBuffer";
+
+static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
+                             std::shared_ptr<pgRenderTarget> GbufferRT)
+{
+    std::shared_ptr<Shader> pixelShader = pipeline->GetShader(Shader::PixelShader);
+    bool bInitGBuffer = !!GbufferRT; 
+    if (pixelShader) {
+        auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            parentTechnique->GetResource(PassLight::kLightIndexBuffer));
+        auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            parentTechnique->GetResource(PassLight::kScreenToViewParams));
+
+        pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer)
+            .SetResource(lightIndexCB);
+        pixelShader->GetShaderParameterByName(PassLight::kScreenToViewParams)
+            .SetResource(screenToViewParamsCB);
+
+        if (bInitGBuffer) {
+            auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
+            auto specularTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
+            auto normalTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
+            auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+
+            pixelShader->GetShaderParameterByName("DiffuseTextureVS").SetResource(diffuseTex);
+            pixelShader->GetShaderParameterByName("SpecularTextureVS").SetResource(specularTex);
+
+            pixelShader->GetShaderParameterByName("NormalTextureVS").SetResource(normalTex);
+            pixelShader->GetShaderParameterByName("DepthTextureVS").SetResource(depthTex);
+        }
+    }
+}
+
+
+PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> pGBufferRT,
+                     std::shared_ptr<PipelineLightFront> front,
+                     std::shared_ptr<PipelineLightBack> back, std::shared_ptr<PipelineLightDir> dir,
                      const std::vector<pgLight>* Lights)
-    : base(parentTechnique), m_pLights(Lights), m_LightPipeline0(front), m_LightPipeline1(back),
-      m_DirectionalLightPipeline(dir)
+    : base(parentTechnique), m_pGBufferRT(pGBufferRT), m_pLights(Lights), m_LightPipeline0(front),
+      m_LightPipeline1(back), m_DirectionalLightPipeline(dir)
 {
     m_pPointLightScene = pgSceneAss::CreateSphere(1.0f);
     m_pSpotLightScene = pgSceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
@@ -37,28 +74,33 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgPipeline> f
     m_pTechniqueSpot->addPass(m_pSubPassSpot1);
 
     m_pTechniqueDir->addPass(m_pSubPassDir);
+
+    InitShaderParams(m_parentTechnique, m_LightPipeline0.get(), nullptr);
+    InitShaderParams(m_parentTechnique, m_LightPipeline1.get(), m_pGBufferRT);
+    InitShaderParams(m_parentTechnique, m_DirectionalLightPipeline.get(), m_pGBufferRT);
 }
 
 PassLight::~PassLight() {}
 
-
-void PassLight::updateLightParams(const LightParams& lightParam,
-                                  const pgLight& light)
+void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& light)
 {
     pgRenderEventArgs& e = pgApp::s_eventArgs;
 
     {
-        // Map the buffer and write current world-view-projection matrix
-        MapHelper<LightParams> CBConstants(e.pDeviceContext, m_LightParamsCB, MAP_WRITE,
-                                           MAP_FLAG_DISCARD);
+        auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            m_parentTechnique->GetResource(kLightIndexBuffer));
 
-        CBConstants->m_LightIndex = lightParam.m_LightIndex;
+        LightParams lightParamData;
+
+        lightParamData.m_LightIndex = lightParam.m_LightIndex;
+        lightIndexCB->Set(lightParamData);
     }
 
     {
-        // Map the buffer and write current world-view-projection matrix
-        MapHelper<pgPassRender::PerObject> CBConstants(e.pDeviceContext, m_PerObjectConstants,
-                                                       MAP_WRITE, MAP_FLAG_DISCARD);
+        auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            m_parentTechnique->GetResource(pgPassRender::kPerObjectName));
+
+        pgPassRender::PerObject perObjectData;
 
         if (light.m_Type == pgLight::LightType::Directional) {
             // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
@@ -66,8 +108,9 @@ void PassLight::updateLightParams(const LightParams& lightParam,
             bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
             Diligent::float4x4 othoMat = Diligent::float4x4::Ortho(
                 (float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height, 0.f, 1.f, IsGL);
-            CBConstants->ModelViewProjection = othoMat;
-            CBConstants->ModelView = float4x4::Identity();
+
+            perObjectData.ModelViewProjection = othoMat;
+            perObjectData.ModelView = float4x4::Identity();
         } else {
             auto& Proj = e.pCamera->getProjectionMatrix();
             // const float4x4 nodeTransform = e.pSceneNode->getLocalTransform();
@@ -96,26 +139,32 @@ void PassLight::updateLightParams(const LightParams& lightParam,
 
             Diligent::float4x4 modelViewMat =
                 nodeTransform * scale * rotation * translation * e.pCamera->getViewMatrix();
-            CBConstants->ModelView = modelViewMat;
-            CBConstants->ModelViewProjection = modelViewMat * Proj;
+            perObjectData.ModelView = modelViewMat;
+            perObjectData.ModelViewProjection = modelViewMat * Proj;
         }
+
+        perObjectCB->Set(perObjectData);
     }
 }
 
 void PassLight::updateScreenToViewParams()
 {
     pgRenderEventArgs& e = pgApp::s_eventArgs;
+
     {
-        // Map the buffer and write current world-view-projection matrix
-        MapHelper<ScreenToViewParams> CBConstants(e.pDeviceContext, m_ScreenToViewParamsCB,
-                                                  MAP_WRITE, MAP_FLAG_DISCARD);
+        auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            m_parentTechnique->GetResource(kScreenToViewParams));
+
+        ScreenToViewParams screenToViewParamsData;
 
         auto& Proj = e.pCamera->getProjectionMatrix();
         // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
         // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
-        CBConstants->m_InverseProjectionMatrix = Proj.Inverse();
-        CBConstants->m_ScreenDimensions =
+        screenToViewParamsData.m_InverseProjectionMatrix = Proj.Inverse();
+        screenToViewParamsData.m_ScreenDimensions =
             float2((float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height);
+
+        screenToViewParamsCB->Set(screenToViewParamsData);
     }
 }
 
@@ -158,3 +207,27 @@ void PassLight::Render()
     }
 }
 
+void PassLight::PreRender()
+{
+    // Bind the G-buffer textures to the pixel shader pipeline stage.
+    // m_DiffuseTexture->Bind(0, Shader::PixelShader, ShaderParameter::Type::Texture);
+    // m_SpecularTexture->Bind(1, Shader::PixelShader, ShaderParameter::Type::Texture);
+    // m_NormalTexture->Bind(2, Shader::PixelShader, ShaderParameter::Type::Texture);
+    // m_DepthTexture->Bind(3, Shader::PixelShader, ShaderParameter::Type::Texture);
+}
+
+
+void PassLight::PostRender()
+{
+    base::PostRender();
+}
+
+void PassLight::Visit(pgScene& scene)
+{
+    //
+}
+
+void PassLight::Visit(pgSceneNode& node)
+{
+    base::Visit(node);
+}

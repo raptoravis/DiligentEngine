@@ -157,8 +157,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     createRT();
 
     // m_renderingTechnique = RenderingTechnique::ForwardPlus;
-    //m_renderingTechnique = RenderingTechnique::Deferred;
-     m_renderingTechnique = RenderingTechnique::Forward;
+    m_renderingTechnique = RenderingTechnique::Deferred;
+    // m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
@@ -194,7 +194,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         forwardTech->SetResource("Lights", m_LightsStructuredBuffer);
     }
 
-    if (m_renderingTechnique == RenderingTechnique::Deferred) {
+    // if (m_renderingTechnique == RenderingTechnique::Deferred)
+    {
         auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
         deferredTech->init(testScene, m_Lights);
 

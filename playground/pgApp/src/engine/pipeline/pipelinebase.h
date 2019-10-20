@@ -2,14 +2,14 @@
 
 #include "engine/engine.h"
 
-class PipelineBase : public pgPipeline {
-	typedef pgPipeline base;
+class PipelineBase : public pgPipeline
+{
+    typedef pgPipeline base;
 
-protected:
-	virtual void InitPSODesc();
+  protected:
+    virtual void InitPSODesc();
 
   public:
-	PipelineBase(std::shared_ptr<pgRenderTarget> rt);
-	virtual ~PipelineBase();
-
+    PipelineBase(std::shared_ptr<pgRenderTarget> rt);
+    virtual ~PipelineBase();
 };

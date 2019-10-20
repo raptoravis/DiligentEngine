@@ -1,5 +1,6 @@
 #include "techniqueforward.h"
 
+#include "../pipeline/pipelinetransparent.h"
 #include "../pipeline/pipelinebase.h"
 
 #include "../pass/passclearrt.h"
@@ -41,36 +42,13 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pg
         std::make_shared<PassOpaque>(this, scene, g_pOpaquePipeline, lights);
     addPass(pOpaquePass);
 
-    g_pTransparentPipeline = std::make_shared<PipelineBase>(m_pRT);
+    g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRT);
     g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-
-    Diligent::BlendStateDesc alphaBlending;
-
-    alphaBlending.RenderTargets[0].BlendEnable = True;
-    alphaBlending.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
-    alphaBlending.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
-    alphaBlending.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
-    alphaBlending.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
-
-    g_pTransparentPipeline->SetBlendState(alphaBlending);
-
-    Diligent::DepthStencilStateDesc DepthStencilDesc;
-    DepthStencilDesc.DepthEnable = True;
-    DepthStencilDesc.DepthWriteEnable = False;
-    DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
-
-    g_pTransparentPipeline->SetDepthStencilState(DepthStencilDesc);
-
-    Diligent::RasterizerStateDesc RasterizerDesc;
-
-    RasterizerDesc.CullMode = CULL_MODE_NONE;
-    g_pTransparentPipeline->SetRasterizerState(RasterizerDesc);
     g_pTransparentPipeline->SetRenderTarget(m_pRT);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
         std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);
-
     addPass(pTransparentPass);
 
     {

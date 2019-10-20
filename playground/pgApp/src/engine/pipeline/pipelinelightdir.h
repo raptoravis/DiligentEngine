@@ -1,17 +1,16 @@
 #pragma once
 
-#include "engine/engine.h"
+#include "engine/pipeline/pipelinebase.h"
 
-class PipelineLightDir : public pgPipeline
+class PipelineLightDir : public PipelineBase
 {
-    typedef pgPipeline base;
+    typedef PipelineBase base;
 
   private:
-    void CreatePipelineState();
-    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
+    virtual void InitPSODesc();
 
   public:
-    PipelineLightDir(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgRenderTarget> GBufferRT);
+    PipelineLightDir(std::shared_ptr<pgRenderTarget> rt);
 
     virtual ~PipelineLightDir();
 };

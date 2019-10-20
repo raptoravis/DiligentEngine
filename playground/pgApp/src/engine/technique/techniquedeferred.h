@@ -19,8 +19,17 @@ class TechniqueDeferred : public pgTechnique
     std::shared_ptr<pgRenderTarget> m_pDepthOnlyRT;
     std::shared_ptr<pgTexture> m_depthStencilTexture;
 
-    RefCntAutoPtr<IBuffer> m_LightParamsCB;
-    RefCntAutoPtr<IBuffer> m_ScreenToViewParamsCB;
+    std::shared_ptr<ConstantBuffer> m_LightParamsCB;
+    std::shared_ptr<ConstantBuffer> m_ScreenToViewParamsCB;
+
+    std::shared_ptr<Shader> g_pVertexShader;
+    std::shared_ptr<Shader> g_pPixelShader;
+    std::shared_ptr<Shader> g_pGeometryPixelShader;
+    std::shared_ptr<Shader> g_pDeferredLightingPixelShader;
+
+    std::shared_ptr<pgPipeline> g_pGeometryPipeline;
+    std::shared_ptr<pgPipeline> g_pOpaquePipeline;
+    std::shared_ptr<pgPipeline> g_pTransparentPipeline;
 
   public:
     TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);

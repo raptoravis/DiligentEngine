@@ -13,15 +13,15 @@ class pgPassRender : public pgPassPilpeline
     typedef pgPassPilpeline base;
 
   public:
-    const char* kPerObjectName = "PerObject";
-    const char* kMaterialName = "Material";
-    const char* kLightsName = "Lights";
-
     // PerObject constant buffer data.
     __declspec(align(16)) struct PerObject {
         float4x4 ModelViewProjection;
         float4x4 ModelView;
     };
+
+	static const char* kPerObjectName;
+    static const char* kMaterialName;
+    static const char* kLightsName;
 
   protected:
     std::vector<pgLight> m_Lights;

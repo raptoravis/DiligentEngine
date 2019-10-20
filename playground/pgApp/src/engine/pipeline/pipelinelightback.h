@@ -1,18 +1,16 @@
 #pragma once
 
-#include "engine/engine.h"
+#include "engine/pipeline//pipelinebase.h"
 
-class PipelineLightBack : public pgPipeline
+class PipelineLightBack : public PipelineBase
 {
-    typedef pgPipeline base;
+    typedef PipelineBase base;
 
-  private:
-    void CreatePipelineState();
-    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
+  protected:
+    virtual void InitPSODesc();
 
   public:
-    PipelineLightBack(std::shared_ptr<pgRenderTarget> rt,
-                      std::shared_ptr<pgRenderTarget> GBufferRT);
+    PipelineLightBack(std::shared_ptr<pgRenderTarget> rt);
 
     virtual ~PipelineLightBack();
 };
