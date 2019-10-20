@@ -682,9 +682,9 @@ class pgRenderTarget : public pgObject
      * @param depth The depth value to use for depth attachment points.
      * @param stencil The stencil value to use for stencil attachment points.
      */
-    virtual void Clear(AttachmentPoint attachemnt, pgClearFlags clearFlags = pgClearFlags::All,
-                       const Diligent::float4& color = Diligent::float4(0, 0, 0, 0),
-                       float depth = 1.0f, uint8_t stencil = 0);
+    void Clear(AttachmentPoint attachemnt, pgClearFlags clearFlags = pgClearFlags::All,
+               const Diligent::float4& color = Diligent::float4(0, 0, 0, 0), float depth = 1.0f,
+               uint8_t stencil = 0);
 
     /**
      * Clear the contents of all of the textures attached to the render target.
@@ -693,14 +693,14 @@ class pgRenderTarget : public pgObject
      * @param depth The depth value to use for depth attachment points.
      * @param stencil The stencil value to use for stencil attachment points.
      */
-    virtual void Clear(pgClearFlags clearFlags = pgClearFlags::All,
-                       const Diligent::float4& color = Diligent::float4(0, 0, 0, 0),
-                       float depth = 1.0f, uint8_t stencil = 0);
+    void Clear(pgClearFlags clearFlags = pgClearFlags::All,
+               const Diligent::float4& color = Diligent::float4(0, 0, 0, 0), float depth = 1.0f,
+               uint8_t stencil = 0);
 
     /**
      * Generate mipmaps for all of the textures that are attached to the render target.
      */
-    virtual void GenerateMipMaps();
+    void GenerateMipMaps();
 
     /**
      * StructuredBuffers can be written to in a shader. StructuredBuffers must be bound to the
@@ -716,21 +716,19 @@ class pgRenderTarget : public pgObject
      * Resize the color and depth/stencil textures that are associated to this render target view.
      * Resizing a texture will clear it's contents.
      */
-    virtual void Resize(uint16_t width, uint16_t height);
-
-    virtual void Bind();
-    virtual void UnBind();
+    void Resize(uint16_t width, uint16_t height);
 
     /**
      * Bind this render target to the rendering pipeline.
      * It will remain the active render target until another RenderTarget is bound
      * using this same method.
      */
-    virtual void bind();
+    void Bind();
+
     /**
      * Unbind this render target from the rendering pipeline.
      */
-    virtual void unbind();
+    void UnBind();
 
     /**
      * After attaching color, depth, stencil, and StructuredBuffers to the render target,
@@ -738,7 +736,7 @@ class pgRenderTarget : public pgObject
      * The render target will also be checked for validity before it is bound
      * to rendering pipeline (using the RenderTarget::Bind method).
      */
-    virtual bool IsValid() const;
+    bool IsValid() const;
 };
 
 // A material class is used to wrap the shaders and to
@@ -1065,6 +1063,7 @@ class pgPassPilpeline : public pgPass
                     std::shared_ptr<pgPipeline> pipeline);
     virtual ~pgPassPilpeline();
 
+    virtual void PreRender();
     virtual void Render();
 };
 

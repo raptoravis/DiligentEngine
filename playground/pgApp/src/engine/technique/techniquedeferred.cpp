@@ -113,16 +113,13 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
     this->SetResource(PassLight::kScreenToViewParams, m_ScreenToViewParamsCB);
     this->SetResource(PassLight::kLightIndexBuffer, m_LightParamsCB);
 
-    // PassSetRTCreateInfo psrtci{ *(pgCreateInfo*)&rpci };
-    // psrtci.rt = m_pGBufferRT;
-    // std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(psrtci);
-    // addPass(pSetRTPass);
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pGBufferRT);
+    addPass(pSetRTPass);
 
-    // PassClearRTCreateInfo pcrtci{ *(pgCreateInfo*)&rpci };
-    // pcrtci.rt = m_pGBufferRT;
-    // std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(pcrtci);
-    // addPass(pClearRTPass);
-    g_pVertexShader = std::make_shared<Shader>();
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pGBufferRT);
+    addPass(pClearRTPass);
+
+	g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
                                         "./resources/shaders");
 

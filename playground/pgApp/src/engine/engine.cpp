@@ -149,7 +149,7 @@ void pgPass::Visit(pgSceneNode& node)
 
 void pgPass::Visit(pgMesh& mesh)
 {
-    //
+    mesh.Render();
 }
 
 
@@ -161,6 +161,16 @@ pgPassPilpeline::pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<p
 }
 
 pgPassPilpeline::~pgPassPilpeline() {}
+
+void pgPassPilpeline::PreRender()
+{
+    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
+
+    if (m_pPipeline) {
+        m_pPipeline->Bind();
+    }
+}
+
 
 void pgPassPilpeline::Render()
 {
@@ -196,4 +206,3 @@ void pgApp::Update(double CurrTime, double ElapsedTime)
 {
     //
 }
-

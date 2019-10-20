@@ -21,11 +21,12 @@ void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
     perObjectCB->Set(perObjectData);
 }
 
-void pgPassRender::SetMaterialData(pgMaterial* mat) {
+void pgPassRender::SetMaterialData(pgMaterial* mat)
+{
     auto materialCB =
         std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kMaterialName));
-    
-	auto matProperites = mat->GetMaterialProperties();
+
+    auto matProperites = mat->GetMaterialProperties();
     materialCB->Set(*matProperites);
 }
 
@@ -80,8 +81,7 @@ void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
 
 void pgPassRender::PreRender()
 {
-    // pgApp::s_eventArgs.pPass = this;
-    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
+    //base::PreRender();
 
     if (m_pPipeline) {
         // Make sure the per object constant buffer is bound to the vertex shader.

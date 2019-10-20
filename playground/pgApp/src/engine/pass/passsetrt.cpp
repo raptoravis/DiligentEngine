@@ -10,6 +10,6 @@ PassSetRT::~PassSetRT() {}
 void PassSetRT::Render()
 {
     if (m_pRT) {
-        m_pRT->bind();
+        m_pRT->Bind();
     }
 }

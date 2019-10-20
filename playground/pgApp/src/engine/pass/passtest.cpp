@@ -28,7 +28,6 @@ void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 
 void TestPass::PreRender()
 {
-    // pgApp::s_eventArgs.pPass = this;
     pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
 
     if (m_pPipeline) {
