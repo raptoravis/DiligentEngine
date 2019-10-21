@@ -12,7 +12,7 @@ TestPass::~TestPass() {}
 void TestPass::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB =
-        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kPerObjectName));
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
@@ -21,7 +21,7 @@ void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(kPerObjectName));
+            m_parentTechnique->Get(kPerObjectName));
         shader->GetShaderParameterByName(kPerObjectName).Set(perObjectCB);
     }
 }

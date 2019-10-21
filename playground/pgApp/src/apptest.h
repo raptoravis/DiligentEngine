@@ -46,7 +46,7 @@ private:
     std::shared_ptr<ConstantBuffer>				m_MaterialConstants;
     std::shared_ptr<StructuredBuffer>			m_LightsStructuredBuffer;
 
-	std::shared_ptr<pgRenderTarget>				m_pRT;
+	std::shared_ptr<pgRenderTarget>				m_pRenderTarget;
 	std::shared_ptr<pgTexture>					m_pBackBuffer;
 	std::shared_ptr<pgTexture>					m_pDepthStencilBuffer;
 

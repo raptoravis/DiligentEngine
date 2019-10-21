@@ -16,7 +16,7 @@ class TechniqueDeferred : public pgTechnique
     void createBuffers();
 
     std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRT;
+    std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
     std::shared_ptr<pgTexture> m_depthStencilTexture;
 
     std::shared_ptr<ConstantBuffer> m_LightParamsCB;

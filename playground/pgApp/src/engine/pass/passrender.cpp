@@ -3,6 +3,7 @@
 const char* pgPassRender::kPerObjectName = "PerObject";
 const char* pgPassRender::kMaterialName = "Material";
 const char* pgPassRender::kLightsName = "Lights";
+const char* pgPassRender::kScreenToViewParams = "ScreenToViewParams";
 
 
 pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
@@ -16,7 +17,7 @@ pgPassRender::~pgPassRender() {}
 void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB =
-        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kPerObjectName));
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
@@ -24,7 +25,7 @@ void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void pgPassRender::SetMaterialData(pgMaterial* mat)
 {
     auto materialCB =
-        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->GetResource(kMaterialName));
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kMaterialName));
 
     auto matProperites = mat->GetMaterialProperties();
     materialCB->Set(*matProperites);
@@ -34,7 +35,7 @@ void pgPassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(kPerObjectName));
+            m_parentTechnique->Get(kPerObjectName));
 
         shader->GetShaderParameterByName(kPerObjectName).Set(perObjectCB);
     }
@@ -44,7 +45,7 @@ void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto materialCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(kMaterialName));
+            m_parentTechnique->Get(kMaterialName));
 
         shader->GetShaderParameterByName(kMaterialName).Set(materialCB);
     }
@@ -63,7 +64,7 @@ void pgPassRender::SetLightsBufferData(std::vector<pgLight>& lights)
     }
 
     auto lightsBuffer =
-        std::dynamic_pointer_cast<StructuredBuffer>(m_parentTechnique->GetResource(kLightsName));
+        std::dynamic_pointer_cast<StructuredBuffer>(m_parentTechnique->Get(kLightsName));
 
     lightsBuffer->Set((const std::vector<pgLight>&)lights);
 }
@@ -72,7 +73,7 @@ void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto lightsBuffer = std::dynamic_pointer_cast<StructuredBuffer>(
-            m_parentTechnique->GetResource(kLightsName));
+            m_parentTechnique->Get(kLightsName));
 
         shader->GetShaderParameterByName(kLightsName).Set(lightsBuffer);
     }

@@ -74,7 +74,7 @@ void AppTest::initBuffers()
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(pgMaterial::MaterialProperties));
     m_LightsStructuredBuffer =
         std::make_shared<StructuredBuffer>(m_Lights.data(), (uint32_t)m_Lights.size(),
-                                           (uint32_t)sizeof(pgLight), CPUAccess::None, true);
+                                           (uint32_t)sizeof(pgLight), CPUAccess::Write);
 }
 
 
@@ -126,10 +126,10 @@ void AppTest::createRT()
             std::make_shared<pgTexture>(depthStencilTextureI);
 
         //
-        m_pRT = std::make_shared<pgRenderTarget>();
+        m_pRenderTarget = std::make_shared<pgRenderTarget>();
 
-        m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
-        m_pRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, depthStencilTexture);
+        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
+        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, depthStencilTexture);
     }
 
     //
@@ -169,11 +169,11 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     m_pCamera = std::make_shared<pgCamera>(pos, Diligent::float3(0, 0, -1));
 
     // technique will clean up passed added in it
-    m_pTechnique = std::make_shared<TechniqueTest>(m_pRT, m_pBackBuffer);
+    m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
 
-    m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRT, m_pBackBuffer);
-    m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRT, m_pBackBuffer);
-    m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(m_pRT, m_pBackBuffer);
+    m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
+    m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
+    m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
 
     //
     std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
@@ -252,7 +252,7 @@ void AppTest::Render()
         m_pForwardPlusTechnique->Render();
     }
 
-    // auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    // auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
     // srcTexture->Copy(m_pBackBuffer.get());
 }
 

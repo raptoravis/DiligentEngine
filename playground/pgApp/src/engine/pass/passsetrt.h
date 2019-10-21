@@ -8,7 +8,7 @@ class PassSetRT : public pgPass
 {
     typedef pgPass base;
 
-    std::shared_ptr<pgRenderTarget> m_pRT;
+    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
 
   public:
     PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt);

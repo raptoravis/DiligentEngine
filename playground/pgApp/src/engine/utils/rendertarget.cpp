@@ -26,6 +26,18 @@ std::shared_ptr<pgTexture> pgRenderTarget::GetTexture( AttachmentPoint attachmen
     return m_Textures[(uint32_t)attachment];
 }
 
+uint32_t pgRenderTarget::GetNumRTVs() const {
+    uint32_t numRTVs = 0;
+
+    for (uint32_t i = 0; i < 8; i++) {
+        std::shared_ptr<pgTexture> texture = m_Textures[i];
+        if (texture) {
+            numRTVs++;
+        }
+    }
+
+	return numRTVs;
+}
 
 void pgRenderTarget::Clear( AttachmentPoint attachment, pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil )
 {
@@ -111,7 +123,7 @@ void pgRenderTarget::Bind()
         std::shared_ptr<pgTexture> texture = m_Textures[i];
         if ( texture )
         {
-            renderTargetViews[numRTVs++] = texture->getRenderTargetView();
+            renderTargetViews[numRTVs++] = texture->GetRenderTargetView();
         }
     }
 
@@ -124,7 +136,7 @@ void pgRenderTarget::Bind()
         std::shared_ptr<pgBuffer> rwbuffer = m_StructuredBuffers[i];
         if ( rwbuffer )
         {
-            uavViews[numUAVs++] = rwbuffer->getUnorderedAccessView();
+            uavViews[numUAVs++] = rwbuffer->GetUnorderedAccessView();
         }
     }
     
@@ -134,11 +146,11 @@ void pgRenderTarget::Bind()
 
     if ( depthTexture )
     {
-        depthStencilView = depthTexture->getDepthStencilView();
+        depthStencilView = depthTexture->GetDepthStencilView();
     }
     else if ( depthStencilTexture )
     {
-        depthStencilView = depthStencilTexture->getDepthStencilView();
+        depthStencilView = depthStencilTexture->GetDepthStencilView();
     }
 
 	pgApp::s_ctx->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView, 
@@ -160,7 +172,7 @@ bool pgRenderTarget::IsValid() const
     {
         if ( texture )
         {
-			if (texture->getRenderTargetView()) {
+			if (texture->GetRenderTargetView()) {
 				++numRTV;
 			}
 

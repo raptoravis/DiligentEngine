@@ -30,7 +30,6 @@ class PassLight : public pgPass
     typedef pgPass base;
 
   public:
-    static const char* kScreenToViewParams;
     static const char* kLightIndexBuffer;
 
   protected:

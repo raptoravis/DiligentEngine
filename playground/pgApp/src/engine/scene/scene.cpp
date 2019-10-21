@@ -174,25 +174,56 @@ void pgScene::Accept(Visitor& visitor)
 std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t height,
                                                     uint16_t slices,
                                                     Diligent::TEXTURE_FORMAT format,
-                                                    CPUAccess cpuAccess, bool gpuWrite)
+                                                    CPUAccess cpuAccess, bool gpuWrite,
+                                                    bool bGenerateMipmaps)
 {
     Diligent::ITexture* texture = 0;
+
     Diligent::TextureDesc TexDesc;
     TexDesc.Name = "pgScene Texture";
     TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-    TexDesc.Usage = Diligent::USAGE_DEFAULT;
+    //TexDesc.Usage = Diligent::USAGE_DEFAULT;
     TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
     TexDesc.Width = width;
     TexDesc.Height = height;
     TexDesc.ArraySize = slices;
-    TexDesc.Format = format;    //Diligent::TEX_FORMAT_RGBA8_UNORM;
+    TexDesc.Format = format;
     TexDesc.MipLevels = 0;
-    //TexDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_GENERATE_MIPS;
-    //Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
+    TexDesc.MiscFlags = bGenerateMipmaps ? Diligent::MISC_TEXTURE_FLAG_GENERATE_MIPS
+                                         : Diligent::MISC_TEXTURE_FLAG_NONE;
+
+    // Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
+
+    if ((cpuAccess & CPUAccess::Read) != 0) {
+        TexDesc.Usage = Diligent::USAGE_STAGING;
+        TexDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE | Diligent::CPU_ACCESS_READ;
+    } else if ((cpuAccess & (int)CPUAccess::Write) != 0) {
+        TexDesc.Usage = Diligent::USAGE_DYNAMIC;
+        TexDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+    } else {
+        TexDesc.Usage = Diligent::USAGE_DEFAULT;
+        TexDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+    }
+
+    //	bool bDynamic = cpuAccess != CPUAccess::None;
+
+    //   if (!gpuWrite && !bDynamic) {
+    //       TexDesc.BindFlags |= Diligent::BIND_DEPTH_STENCIL;
+    //   }
+    //   if (!bDynamic) {
+    //       TexDesc.BindFlags |= Diligent::BIND_RENDER_TARGET;
+    //   }
+    //   if ((cpuAccess & CPUAccess::Read) == 0) {
+    //       TexDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    //   }
+
+    if (gpuWrite) {
+        TexDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
+    }
 
     pgApp::s_device->CreateTexture(TexDesc, nullptr, &texture);
 
     std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
 
-	return tex;
+    return tex;
 }

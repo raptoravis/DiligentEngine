@@ -10,7 +10,7 @@ ShaderParameter::ShaderParameter(const std::string& name, const std::string& sha
 	, m_ParameterType(parameterType)
 {}
 
-std::weak_ptr<pgObject> ShaderParameter::GetResource() {
+std::weak_ptr<pgObject> ShaderParameter::Get() {
 	return m_pResource;
 }
 

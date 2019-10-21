@@ -16,16 +16,16 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
                              std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer)
 {
-    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
-    addPass(pSetRTPass);
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
+    AddPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRT);
-    addPass(pClearRTPass);
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRenderTarget);
+    AddPass(pClearRTPass);
 
     bool bTestGltf = false;
     if (bTestGltf) {
         std::shared_ptr<PassGltf> pGLTFPass = std::make_shared<PassGltf>();
-        addPass(pGLTFPass);
+        AddPass(pGLTFPass);
     }
 
     {
@@ -51,26 +51,26 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
         this->Set("Constants", m_VSConstants);
 
         std::shared_ptr<PipelineColorVertex> pipelineColorVertex =
-            std::make_shared<PipelineColorVertex>(m_pRT);
+            std::make_shared<PipelineColorVertex>(m_pRenderTarget);
         std::shared_ptr<PipelineTexVertex> pipelineTexVertex =
-            std::make_shared<PipelineTexVertex>(m_pRT);
+            std::make_shared<PipelineTexVertex>(m_pRenderTarget);
 
         std::shared_ptr<TestPass> pCubePass =
             std::make_shared<TestPass>(this, m_pSceneCube, pipelineColorVertex);
-        addPass(pCubePass);
+        AddPass(pCubePass);
 
         std::shared_ptr<TestPass> pCubeTexPass =
             std::make_shared<TestPass>(this, m_pSceneCubeTex, pipelineTexVertex);
-        addPass(pCubeTexPass);
+        AddPass(pCubeTexPass);
 
         //
         {
-            auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+            auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
             auto dstTexture = m_pBackBuffer;
 
             std::shared_ptr<PassCopyTexture> pCopyTexPass =
                 std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
-            addPass(pCopyTexPass);
+            AddPass(pCopyTexPass);
         }
     }
 }

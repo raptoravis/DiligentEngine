@@ -22,6 +22,7 @@ class pgPassRender : public pgPassPilpeline
     static const char* kPerObjectName;
     static const char* kMaterialName;
     static const char* kLightsName;
+    static const char* kScreenToViewParams;
 
   protected:
     std::vector<pgLight>* m_pLights;

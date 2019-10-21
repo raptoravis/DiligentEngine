@@ -159,7 +159,7 @@ class pgSceneNode;
 class pgMesh;
 
 // CPU Access. Used for textures and Buffers
-enum class CPUAccess {
+enum CPUAccess {
     None = 0,            // No CPU access to this texture is necessary.
     Read = (1 << 0),     // CPU reads permitted.
     Write = (1 << 1),    // CPU writes permitted.
@@ -235,13 +235,13 @@ class ShaderParameter : public pgObject
     typedef pgObject base;
 
     enum class Type {
-        Invalid,      // Invalid parameter. Doesn't store a type.
-        Texture,      // Texture.
-        Sampler,      // Texture sampler.
-        CBuffer,      // ConstantBuffers
-        Buffer,       // Buffers, StructuredBuffers.
-        RWTexture,    // Texture that can be written to in a shader (using Store operations).
-        RWBuffer,     // Read/write structured buffers.
+        Invalid,     // Invalid parameter. Doesn't store a type.
+        Sampler,     // Texture sampler.
+        CBuffer,     // ConstantBuffers
+        Buffer,      // Buffers, StructuredBuffers.
+        RWBuffer,    // Read/write structured buffers.
+        Texture,     // Texture.
+        RWTexture    // Texture that can be written to in a shader (using Store operations).
     };
 
     // Shader resource parameter.
@@ -257,7 +257,7 @@ class ShaderParameter : public pgObject
     virtual void Bind();
     virtual void UnBind();
 
-    std::weak_ptr<pgObject> GetResource();
+    std::weak_ptr<pgObject> Get();
     void Set(std::shared_ptr<pgObject> resource);
 
   private:
@@ -319,8 +319,6 @@ class Shader : public pgObject
     void Bind();
     void UnBind();
 
-    virtual void Dispatch(const Diligent::uint3& numGroups);
-
   protected:
     // Destroy the contents of this shader (in case we are loading a new shader).
     virtual void Destroy();
@@ -368,9 +366,11 @@ class pgBuffer : public pgResource
 
     Diligent::IBuffer* GetBuffer();
 
-    uint32_t getCount() const;
-    Diligent::IBufferView* getUnorderedAccessView();
-    Diligent::IBufferView* getShaderResourceView();
+    uint32_t GetCount() const;
+    uint32_t GetSize() const;
+
+    Diligent::IBufferView* GetUnorderedAccessView();
+    Diligent::IBufferView* GetShaderResourceView();
 
     // Bind the buffer for rendering.
     virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
@@ -607,10 +607,10 @@ class pgTexture : public pgResource
     // Check to see if this texture has an alpha channel.
     bool IsTransparent() const;
 
-    Diligent::ITextureView* getShaderResourceView();
-    Diligent::ITextureView* getDepthStencilView();
-    Diligent::ITextureView* getRenderTargetView();
-    Diligent::ITextureView* getUnorderedAccessView();
+    Diligent::ITextureView* GetShaderResourceView();
+    Diligent::ITextureView* GetDepthStencilView();
+    Diligent::ITextureView* GetRenderTargetView();
+    Diligent::ITextureView* GetUnorderedAccessView();
 
     void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth,
                uint8_t stencil);
@@ -663,6 +663,8 @@ class pgRenderTarget : public pgObject
      */
     void AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture);
     std::shared_ptr<pgTexture> GetTexture(AttachmentPoint attachment);
+
+	uint32_t GetNumRTVs() const;
 
     /**
      * Clear the contents of a texture attached to a specific attachment point.
@@ -963,7 +965,8 @@ class pgScene : public pgObject
     static std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height,
                                                       uint16_t slices,
                                                       Diligent::TEXTURE_FORMAT format,
-                                                      CPUAccess cpuAccess, bool gpuWrite);
+                                                      CPUAccess cpuAccess, bool gpuWrite,
+                                                      bool bGenerateMipmaps = false);
 };
 
 class pgPipeline : public pgObject
@@ -980,7 +983,7 @@ class pgPipeline : public pgObject
     Diligent::PipelineStateDesc m_PSODesc;
     ShaderMap m_Shaders;
 
-    std::shared_ptr<pgRenderTarget> m_pRT;
+    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
     bool m_bDirty;
 
     virtual void InitPSODesc();
@@ -994,7 +997,7 @@ class pgPipeline : public pgObject
     pgPipeline(std::shared_ptr<pgRenderTarget> rt);
     virtual ~pgPipeline();
 
-    std::shared_ptr<pgRenderTarget> getRenderTarget() { return m_pRT; }
+    std::shared_ptr<pgRenderTarget> getRenderTarget() { return m_pRenderTarget; }
 
     //
     void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
@@ -1069,8 +1072,15 @@ class RenderPass;
 
 class pgTechnique : public pgObject
 {
+  private:
+    typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
+    RenderPassList m_Passes;
+
+    using ResourceMap = std::map<std::string, std::shared_ptr<pgObject>>;
+    ResourceMap m_resourceMap;
+
   protected:
-    std::shared_ptr<pgRenderTarget> m_pRT;
+    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
     std::shared_ptr<pgTexture> m_pBackBuffer;
 
   public:
@@ -1079,20 +1089,13 @@ class pgTechnique : public pgObject
 
     // Add a pass to the technique. The ID of the added pass is returned
     // and can be used to retrieve the pass later.
-    unsigned int addPass(std::shared_ptr<pgPass> pass);
-    std::shared_ptr<pgPass> getPass(unsigned int ID) const;
-
-    virtual void Render();
+    unsigned int AddPass(std::shared_ptr<pgPass> pass);
+    std::shared_ptr<pgPass> GetPass(unsigned int ID) const;
 
     void Set(const std::string& name, std::shared_ptr<pgObject> res);
-    std::shared_ptr<pgObject> GetResource(const std::string& name);
+    std::shared_ptr<pgObject> Get(const std::string& name);
 
-  private:
-    typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
-    RenderPassList m_Passes;
-
-    using ResourceMap = std::map<std::string, std::shared_ptr<pgObject>>;
-    ResourceMap m_resourceMap;
+    virtual void Render();
 };
 
 class pgApp : public Diligent::SampleBase

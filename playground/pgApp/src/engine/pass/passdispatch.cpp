@@ -1,16 +1,32 @@
 #include "passdispatch.h"
+#include "../pipeline/pipelinedispatch.h"
 
-
-PassDispatch::PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<Shader> computeShader,
-                           const Diligent::uint3& numGroups)
-    : base(parentTechnique), m_pComputeShader(computeShader), m_NumGroups(numGroups)
+PassDispatch::PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline)
+    : base(parentTechnique, nullptr, pipeline)
 {
 }
 
 PassDispatch::~PassDispatch() {}
 
-// Render a frame
+void PassDispatch::PreRender()
+{
+    base::PreRender();
+}
+
+
 void PassDispatch::Render()
 {
-    m_pComputeShader->Dispatch(m_NumGroups);
+    base::Render();
+
+	std::shared_ptr<PipelineDispatch> dispatchPipeline =
+        std::dynamic_pointer_cast<PipelineDispatch>(m_pPipeline);
+
+	const auto& numGroups = dispatchPipeline->GetNumGroups();
+
+    Diligent::DispatchComputeAttribs DispatAttribs;
+    DispatAttribs.ThreadGroupCountX = numGroups.x;
+    DispatAttribs.ThreadGroupCountY = numGroups.y;
+    DispatAttribs.ThreadGroupCountZ = numGroups.z;
+
+    pgApp::s_ctx->DispatchCompute(DispatAttribs);
 }

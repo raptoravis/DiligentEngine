@@ -22,8 +22,7 @@ Shader::ShaderType Shader::GetType() const
 
 bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileName,
                                 const std::string& entryPoint, const std::string& searchPaths,
-                                bool UseCombinedTextureSamplers, 
-                                const ShaderMacros& shaderMacros)
+                                bool UseCombinedTextureSamplers, const ShaderMacros& shaderMacros)
 {
     Diligent::ShaderCreateInfo ShaderCI;
     // Tell the system that the shader source code is in HLSL.
@@ -69,16 +68,16 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
         assert(0);
     }
 
-	m_InputSemantics.clear();
+    m_InputSemantics.clear();
 
-    //Microsoft::WRL::ComPtr<ID3D11ShaderReflection> pReflector;
-    //hr = D3DReflect(m_pShaderBlob->GetBufferPointer(), m_pShaderBlob->GetBufferSize(),
+    // Microsoft::WRL::ComPtr<ID3D11ShaderReflection> pReflector;
+    // hr = D3DReflect(m_pShaderBlob->GetBufferPointer(), m_pShaderBlob->GetBufferSize(),
     //                IID_ID3D11ShaderReflection, &pReflector);
-    //D3D11_SHADER_DESC shaderDescription;
-    //hr = pReflector->GetDesc(&shaderDescription);
-    //UINT numInputParameters = shaderDescription.InputParameters;
-    //std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements;
-    //for (UINT i = 0; i < numInputParameters; ++i) {
+    // D3D11_SHADER_DESC shaderDescription;
+    // hr = pReflector->GetDesc(&shaderDescription);
+    // UINT numInputParameters = shaderDescription.InputParameters;
+    // std::vector<D3D11_INPUT_ELEMENT_DESC> inputElements;
+    // for (UINT i = 0; i < numInputParameters; ++i) {
     //    D3D11_INPUT_ELEMENT_DESC inputElement;
     //    D3D11_SIGNATURE_PARAMETER_DESC parameterSignature;
 
@@ -91,7 +90,8 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
     //              // packed arrays, the input slot will vary.
     //    inputElement.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     //    inputElement.InputSlotClass =
-    //        D3D11_INPUT_PER_VERTEX_DATA;    // TODO: Figure out how to deal with per-instance data?
+    //        D3D11_INPUT_PER_VERTEX_DATA;    // TODO: Figure out how to deal with per-instance
+    //        data?
     //                                        // .. Don't. Just use structured buffers to store
     //                                        // per-instance data and use the SV_InstanceID as an
     //                                        // index in the structured buffer.
@@ -182,13 +182,20 @@ uint32_t Shader::GetSlotIDBySemantic(const pgBufferBinding& binding) const
     return (uint32_t)-1;
 }
 
+static bool isStaticType(ShaderParameter::Type type)
+{
+    return (type == ShaderParameter::Type::CBuffer || type == ShaderParameter::Type::Buffer ||
+            type == ShaderParameter::Type::RWBuffer || type == ShaderParameter::Type::Texture ||
+            type == ShaderParameter::Type::RWTexture);
+}
+
 Shader::ParametersList Shader::GetConstantBuffers()
 {
     Shader::ParametersList ret;
 
     for (ParameterMap::value_type value : m_ShaderParameters) {
         auto p = value.second;
-        if (p->GetType() == ShaderParameter::Type::CBuffer) {
+        if (isStaticType(p->GetType())) {
             ret.push_back(p);
         }
     }
@@ -203,7 +210,7 @@ Shader::ParametersList Shader::GetNonConstantBuffers()
 
     for (ParameterMap::value_type value : m_ShaderParameters) {
         auto p = value.second;
-        if (p->GetType() != ShaderParameter::Type::CBuffer) {
+        if (!isStaticType(p->GetType())) {
             ret.push_back(p);
         }
     }
@@ -224,5 +231,3 @@ void Shader::UnBind()
         value.second->UnBind();
     }
 }
-
-void Shader::Dispatch(const Diligent::uint3& numGroups) {}

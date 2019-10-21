@@ -41,7 +41,7 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<Shader> g_pComputeFrustumsComputeShader;
     std::shared_ptr<Shader> g_pForwardPlusPixelShader;
 
-	std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
     std::shared_ptr<pgRenderTarget> g_pColorOnlyRenderTarget;
 
     std::shared_ptr<pgPipeline> g_pDepthPrepassPipeline;
@@ -63,10 +63,17 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterOpaque;
     std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterTransparent;
 
-	std::shared_ptr<pgTexture> g_pLightGridOpaque;
+    std::shared_ptr<pgTexture> g_pLightGridOpaque;
     std::shared_ptr<pgTexture> g_pLightGridTransparent;
 
-	void UpdateGridFrustums();
+    // For debugging of the light culling shader.
+    std::shared_ptr<pgTexture> g_pLightCullingDebugTexture;
+    // Heatmap texture for light culling debug.
+    std::shared_ptr<pgTexture> g_pLightCullingHeatMap;
+
+
+    void UpdateGridFrustums();
+    std::shared_ptr<pgTexture> LoadTexture(const std::wstring& path);
   public:
     TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueForwardPlus();

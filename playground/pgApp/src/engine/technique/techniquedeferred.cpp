@@ -82,7 +82,7 @@ void TechniqueDeferred::createGBuffers()
     //
     m_pGBufferRT = std::make_shared<pgRenderTarget>();
 
-    auto color0 = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
 
     m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, color0);
     m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color1, diffuseTexture);
@@ -109,14 +109,14 @@ void TechniqueDeferred::createBuffers()
 
 void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
 {
-    this->Set(PassLight::kScreenToViewParams, m_ScreenToViewParamsCB);
+    this->Set(pgPassRender::kScreenToViewParams, m_ScreenToViewParamsCB);
     this->Set(PassLight::kLightIndexBuffer, m_LightParamsCB);
 
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pGBufferRT);
-    addPass(pSetRTPass);
+    AddPass(pSetRTPass);
 
     std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pGBufferRT);
-    addPass(pClearRTPass);
+    AddPass(pClearRTPass);
 
     g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
@@ -143,52 +143,53 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
 	// not use lights
     std::shared_ptr<PassOpaque> pPassOpaque =
         std::make_shared<PassOpaque>(this, scene, g_pGeometryPipeline, nullptr);
-    addPass(pPassOpaque);
+    AddPass(pPassOpaque);
 
     {
         auto srcTexture = m_depthStencilTexture;
-        auto dstTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+        auto dstTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
             std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
-        addPass(pCopyTexPass);
+        AddPass(pCopyTexPass);
     }
 
-    m_pDepthOnlyRT = std::make_shared<pgRenderTarget>();
-    m_pDepthOnlyRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil,
-                                  m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+    g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    g_pDepthOnlyRenderTarget->AttachTexture(
+        pgRenderTarget::AttachmentPoint::DepthStencil,
+                                  m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
 
     std::shared_ptr<PipelineLightFront> pFront =
-        std::make_shared<PipelineLightFront>(m_pDepthOnlyRT);
+        std::make_shared<PipelineLightFront>(g_pDepthOnlyRenderTarget);
     pFront->SetShader(Shader::VertexShader, g_pVertexShader);
 
-    std::shared_ptr<PipelineLightBack> pBack = std::make_shared<PipelineLightBack>(m_pRT);
+    std::shared_ptr<PipelineLightBack> pBack = std::make_shared<PipelineLightBack>(m_pRenderTarget);
     pBack->SetShader(Shader::VertexShader, g_pVertexShader);
     pBack->SetShader(Shader::PixelShader, g_pDeferredLightingPixelShader);
 
-    std::shared_ptr<PipelineLightDir> pDir = std::make_shared<PipelineLightDir>(m_pRT);
+    std::shared_ptr<PipelineLightDir> pDir = std::make_shared<PipelineLightDir>(m_pRenderTarget);
     pDir->SetShader(Shader::VertexShader, g_pVertexShader);
     pDir->SetShader(Shader::PixelShader, g_pDeferredLightingPixelShader);
 
     std::shared_ptr<PassLight> pLightPass =
         std::make_shared<PassLight>(this, m_pGBufferRT, pFront, pBack, pDir, lights);
-    addPass(pLightPass);
+    AddPass(pLightPass);
 
-    g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRT);
+    g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    g_pTransparentPipeline->SetRenderTarget(m_pRT);
+    g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
         std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);
-    addPass(pTransparentPass);
+    AddPass(pTransparentPass);
 
     {
-        auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+        auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
             std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
-        addPass(pCopyTexPass);
+        AddPass(pCopyTexPass);
     }
 }

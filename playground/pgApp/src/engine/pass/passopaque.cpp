@@ -17,3 +17,13 @@ void PassOpaque::Visit(pgMesh& mesh)
         mesh.Render();
     }
 }
+
+void PassOpaque::PreRender()
+{
+    base::PreRender();
+}
+
+void PassOpaque::Render()
+{
+    base::Render();
+}

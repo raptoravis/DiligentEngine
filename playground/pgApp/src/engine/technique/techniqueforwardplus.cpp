@@ -10,6 +10,7 @@
 #include "../pass/passtransparent.h"
 
 #include "../pipeline/pipelinebase.h"
+#include "../pipeline/pipelinedispatch.h"
 #include "../pipeline/pipelinetransparent.h"
 
 TechniqueForwardPlus::TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt,
@@ -52,40 +53,58 @@ void TechniqueForwardPlus::UpdateGridFrustums()
     // Dispatch the compute shader to recompute the grid frustums.
     g_pComputeFrustumsComputeShader->GetShaderParameterByName("DispatchParams")
         .Set(g_pDispatchParamsConstantBuffer);
-    g_pComputeFrustumsComputeShader->GetShaderParameterByName("ScreenToViewParams")
+    g_pComputeFrustumsComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
         .Set(g_pScreenToViewParamsConstantBuffer);
     g_pComputeFrustumsComputeShader->GetShaderParameterByName("out_Frustums").Set(g_pGridFrustums);
 
-    g_pComputeFrustumsComputeShader->Bind();
-    g_pComputeFrustumsComputeShader->Dispatch(numThreadGroups);
-    g_pComputeFrustumsComputeShader->UnBind();
+    std::shared_ptr<PipelineDispatch> dispatchPipeline =
+        std::make_shared<PipelineDispatch>(numThreadGroups);
+    dispatchPipeline->SetShader(Shader::ComputeShader, g_pComputeFrustumsComputeShader);
+
+    std::shared_ptr<PassDispatch> frustumComputeDispatchPass =
+        std::make_shared<PassDispatch>(this, dispatchPipeline);
+
+	frustumComputeDispatchPass->PreRender();
+	frustumComputeDispatchPass->Render();
+    frustumComputeDispatchPass->PostRender();
 
     // Update the light culling compute shader with the computed grid frustums StructuredBuffer.
     g_pLightCullingComputeShader->GetShaderParameterByName("in_Frustums").Set(g_pGridFrustums);
 }
 
+std::shared_ptr<pgTexture> TechniqueForwardPlus::LoadTexture(const std::wstring& path)
+{
+    TextureLoadInfo loadInfo;
+    loadInfo.IsSRGB = false;
+    RefCntAutoPtr<ITexture> Tex;
+    // CreateTextureFromFile("DGLogo.png", loadInfo, pgApp::s_device, &Tex);
+    CreateTextureFromFile("apple-logo.png", loadInfo, pgApp::s_device, &Tex);
 
-void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
-                                std::vector<pgLight>* lights)
+    std::shared_ptr<pgTexture> ret = std::make_shared<pgTexture>(Tex);
+
+    return ret;
+}
+
+
+void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
 {
     //
-    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
-    addPass(pSetRTPass);
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
+    AddPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRT);
-    addPass(pClearRTPass);
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRenderTarget);
+    AddPass(pClearRTPass);
 
     g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
                                         "./resources/shaders");
 
     g_pForwardPlusPixelShader = std::make_shared<Shader>();
-    g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl",
-                                                  "PS_main", "./resources/shaders");
-    // g_pForwardPlusPixelShader->LoadShaderFromFile(
-    //    Shader::Shader::PixelShader, "ForwardPlusRendering.hlsl", "PS_main",
-    //    "./resources/shaders");
-#if 0
+    // g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl",
+    //                                              "PS_main", "./resources/shaders");
+    g_pForwardPlusPixelShader->LoadShaderFromFile(
+        Shader::Shader::PixelShader, "ForwardPlusRendering.hlsl", "PS_main", "./resources/shaders");
+#if 1
     // Will be mapped to the "DispatchParams" in the Forward+ compute shaders.
     g_pDispatchParamsConstantBuffer =
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(DispatchParams));
@@ -121,7 +140,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
         Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),
                         (uint32_t)ceil(pgApp::s_desc.Height / (float)g_LightCullingBlockSize), 1);
 
-	auto lightGridFormat = Diligent::TEX_FORMAT_RG32_UINT;
+    auto lightGridFormat = Diligent::TEX_FORMAT_RG32_UINT;
     g_pLightGridOpaque = pgScene::CreateTexture2D(
         (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
         lightGridFormat, CPUAccess::None, true);
@@ -129,12 +148,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
         (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
         lightGridFormat, CPUAccess::None, true);
 
-    g_pDispatchParamsConstantBuffer = std::make_shared<ConstantBuffer>((uint32_t)sizeof(DispatchParams));
-
-	// Will be mapped to the "ScreenToViewParams" in the CommonInclude.hlsl shader.
-    g_pScreenToViewParamsConstantBuffer = std::make_shared<ConstantBuffer>((uint32_t)sizeof(ScreenToViewParams));
-
-	UpdateGridFrustums();
+    UpdateGridFrustums();
 
     DispatchParams dispatchParams;
     dispatchParams.m_NumThreadGroups = numThreadGroups;
@@ -143,9 +157,10 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
     g_pDispatchParamsConstantBuffer->Set(dispatchParams);
     g_pLightCullingComputeShader->GetShaderParameterByName("DispatchParams")
         .Set(g_pDispatchParamsConstantBuffer);
+    g_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
+        .Set(g_pScreenToViewParamsConstantBuffer);
 
-    g_pLightCullingComputeShader->GetShaderParameterByName("o_LightGrid")
-        .Set(g_pLightGridOpaque);
+    g_pLightCullingComputeShader->GetShaderParameterByName("o_LightGrid").Set(g_pLightGridOpaque);
     g_pLightCullingComputeShader->GetShaderParameterByName("t_LightGrid")
         .Set(g_pLightGridTransparent);
 
@@ -155,7 +170,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
         .Set(g_pLightIndexListTransparent);
 
     std::shared_ptr<pgTexture> depthStencilBuffer =
-        m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+        m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
     g_pLightCullingComputeShader->GetShaderParameterByName("DepthTextureVS")
         .Set(depthStencilBuffer);
     g_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexCounter")
@@ -163,59 +178,80 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
     g_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexCounter")
         .Set(g_pLightListIndexCounterTransparent);
 
+    g_pLightCullingDebugTexture =
+        pgScene::CreateTexture2D((uint16_t)pgApp::s_desc.Width, (uint16_t)pgApp::s_desc.Height, 1,
+                                 Diligent::TEX_FORMAT_RGBA32_FLOAT, CPUAccess::None, true);
+    g_pLightCullingComputeShader->GetShaderParameterByName("DebugTexture")
+        .Set(g_pLightCullingDebugTexture);
+
+    g_pLightCullingHeatMap = LoadTexture(L"./resources/textures/LightCountHeatMap.psd");
+    g_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
+        .Set(g_pLightCullingHeatMap);
+
     //
-    g_pDepthPrepassPipeline = std::make_shared<pgPipeline>(g_pDepthOnlyRenderTarget);
+    g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    g_pDepthOnlyRenderTarget->AttachTexture(
+        pgRenderTarget::AttachmentPoint::DepthStencil,
+        m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+
+    g_pDepthPrepassPipeline = std::make_shared<PipelineBase>(g_pDepthOnlyRenderTarget);
 
     g_pDepthPrepassPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
 
-    g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
-    g_pDepthOnlyRenderTarget->AttachTexture(
-        pgRenderTarget::AttachmentPoint::DepthStencil,
-        m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+    AddPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
 
-    addPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
+    AddPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterOpaque,
+                                             lightListIndexCounterInitialBuffer));
+    AddPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterTransparent,
+                                             lightListIndexCounterInitialBuffer));
 
-    addPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterOpaque,
-                                             lightListIndexCounterInitialBuffer));
-    addPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterTransparent,
-                                             lightListIndexCounterInitialBuffer));
+    std::shared_ptr<PipelineDispatch> dispatchPipeline =
+        std::make_shared<PipelineDispatch>(numThreadGroups);
+    dispatchPipeline->SetShader(Shader::ComputeShader, g_pLightCullingComputeShader);
 
     std::shared_ptr<PassDispatch> g_LightCullingDispatchPass =
-        std::make_shared<PassDispatch>(this, g_pLightCullingComputeShader, numThreadGroups);
-    addPass(g_LightCullingDispatchPass);
+        std::make_shared<PassDispatch>(this, dispatchPipeline);
+    AddPass(g_LightCullingDispatchPass);
 
-    addPass(std::make_shared<PassInvokeFunction>(this, [=]() {
+    AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
         g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
             .Set(g_pLightIndexListOpaque);
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid")
-            .Set(g_pLightGridOpaque);
+        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid").Set(g_pLightGridOpaque);
     }));
 #endif
     //
-    g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRT);
+    g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRT);
+    g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
-    g_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRT);
+    g_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRT);
+    g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
-    addPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
+    AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
+        // Make sure the pixel shader has the right parameters set before executing the opaque pass.
+        g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
+            .Set(g_pLightIndexListTransparent);
+        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid")
+            .Set(g_pLightGridTransparent);
+    }));
 
-    addPass(
+    AddPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
+
+    AddPass(
         std::make_shared<PassTransparent>(this, scene, g_pForwardPlusTransparentPipeline, lights));
 
     {
-        auto srcTexture = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+        auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
             std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
-        addPass(pCopyTexPass);
+        AddPass(pCopyTexPass);
     }
 }

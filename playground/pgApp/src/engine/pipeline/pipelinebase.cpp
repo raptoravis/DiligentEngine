@@ -17,15 +17,15 @@ void PipelineBase::InitPSODesc()
     // This is a graphics pipeline
     m_PSODesc.IsComputePipeline = false;
 
-    // This tutorial will render to a single render target
-    m_PSODesc.GraphicsPipeline.NumRenderTargets = 1;
-
-    auto color0 = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
     auto color0Format =
         color0 ? color0->GetTexture()->GetDesc().Format : pgApp::s_desc.ColorBufferFormat;
 
-    auto ds = m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+    auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
     auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : pgApp::s_desc.DepthBufferFormat;
+
+    // This tutorial will render to a single render target
+    m_PSODesc.GraphicsPipeline.NumRenderTargets = (uint8_t)m_pRenderTarget->GetNumRTVs();
 
     // Set render target format which is the format of the swap chain's color buffer
     m_PSODesc.GraphicsPipeline.RTVFormats[0] = color0Format;

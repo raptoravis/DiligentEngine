@@ -22,5 +22,8 @@ class PassOpaque : public pgPassRender
 
     virtual ~PassOpaque();
 
+	virtual void PreRender();
+	virtual void Render();
+
     virtual void Visit(pgMesh& mesh);
 };

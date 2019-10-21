@@ -81,9 +81,14 @@ Diligent::IBuffer* pgBuffer::GetBuffer()
 }
 
 
-uint32_t pgBuffer::getCount() const
+uint32_t pgBuffer::GetCount() const
 {
     return m_uiCount;
+}
+
+uint32_t pgBuffer::GetSize() const
+{
+    return m_uiCount * m_uiStride;
 }
 
 
@@ -92,7 +97,7 @@ pgBuffer::BufferType pgBuffer::GetType() const
     return pgBuffer::Unknown;
 }
 
-Diligent::IBufferView* pgBuffer::getUnorderedAccessView()
+Diligent::IBufferView* pgBuffer::GetUnorderedAccessView()
 {
     auto buffer = m_pBuffer;
 
@@ -100,7 +105,7 @@ Diligent::IBufferView* pgBuffer::getUnorderedAccessView()
     return uav;
 }
 
-Diligent::IBufferView* pgBuffer::getShaderResourceView()
+Diligent::IBufferView* pgBuffer::GetShaderResourceView()
 {
     auto buffer = m_pBuffer;
 

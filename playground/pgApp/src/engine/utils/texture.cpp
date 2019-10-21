@@ -54,7 +54,7 @@ Diligent::ITexture* pgTexture::GetTexture() {
 }
 
 
-Diligent::ITextureView* pgTexture::getShaderResourceView()
+Diligent::ITextureView* pgTexture::GetShaderResourceView()
 {
 	auto tex = m_pTexture;
 
@@ -62,7 +62,7 @@ Diligent::ITextureView* pgTexture::getShaderResourceView()
 	return srv;
 }
 
-Diligent::ITextureView* pgTexture::getDepthStencilView() 
+Diligent::ITextureView* pgTexture::GetDepthStencilView() 
 {
 	auto tex = m_pTexture;
 
@@ -70,7 +70,7 @@ Diligent::ITextureView* pgTexture::getDepthStencilView()
 	return dsv;
 }
 
-Diligent::ITextureView* pgTexture::getRenderTargetView() 
+Diligent::ITextureView* pgTexture::GetRenderTargetView() 
 {
 	auto tex = m_pTexture;
 
@@ -79,7 +79,7 @@ Diligent::ITextureView* pgTexture::getRenderTargetView()
 	return rtv;
 }
 
-Diligent::ITextureView* pgTexture::getUnorderedAccessView() 
+Diligent::ITextureView* pgTexture::GetUnorderedAccessView() 
 {
 	auto tex = m_pTexture;
 
@@ -90,7 +90,7 @@ Diligent::ITextureView* pgTexture::getUnorderedAccessView()
 
 void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil) {
 	if (((int)clearFlags & (int)pgClearFlags::Color) != 0) {
-		auto rtv = getRenderTargetView();
+		auto rtv = GetRenderTargetView();
 		if (rtv) {
 			pgApp::s_ctx->ClearRenderTarget(rtv, &color.r,
 				Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -103,7 +103,7 @@ void pgTexture::Clear(pgClearFlags clearFlags, const Diligent::float4& color, fl
 		flags |= ((int)clearFlags & (int)pgClearFlags::Depth) != 0 ? Diligent::CLEAR_DEPTH_FLAG : 0;
 		flags |= ((int)clearFlags & (int)pgClearFlags::Stencil) != 0 ? Diligent::CLEAR_STENCIL_FLAG : 0;
 
-		auto dsv = getDepthStencilView();
+		auto dsv = GetDepthStencilView();
 
 		if (dsv) {
 			pgApp::s_ctx->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags,

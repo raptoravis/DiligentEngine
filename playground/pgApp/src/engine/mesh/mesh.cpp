@@ -91,7 +91,7 @@ void pgMesh::Render()
             }
         }
 
-        auto count = m_pIndexBuffer->getCount();
+        auto count = m_pIndexBuffer->GetCount();
 
         DrawIndexedAttribs DrawAttrs;
         DrawAttrs.IndexType = VT_UINT32;    // Index type

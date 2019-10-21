@@ -1,7 +1,7 @@
 #include "passsetrt.h"
 
 PassSetRT::PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt)
-    : base(parentTechnique), m_pRT(rt)
+    : base(parentTechnique), m_pRenderTarget(rt)
 {
 }
 
@@ -9,7 +9,7 @@ PassSetRT::~PassSetRT() {}
 
 void PassSetRT::Render()
 {
-    if (m_pRT) {
-        m_pRT->Bind();
+    if (m_pRenderTarget) {
+        m_pRenderTarget->Bind();
     }
 }

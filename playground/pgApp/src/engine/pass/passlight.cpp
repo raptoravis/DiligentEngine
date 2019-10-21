@@ -4,7 +4,6 @@
 #include "../utils/mathutils.h"
 
 
-const char* PassLight::kScreenToViewParams = "ScreenToViewParams";
 const char* PassLight::kLightIndexBuffer = "LightIndexBuffer";
 
 static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
@@ -14,17 +13,17 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
     bool bInitGBuffer = !!GbufferRT;
     if (pixelShader) {
         auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            parentTechnique->GetResource(PassLight::kLightIndexBuffer));
+            parentTechnique->Get(PassLight::kLightIndexBuffer));
         auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            parentTechnique->GetResource(PassLight::kScreenToViewParams));
+            parentTechnique->Get(pgPassRender::kScreenToViewParams));
 
         pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer)
             .Set(lightIndexCB);
-        pixelShader->GetShaderParameterByName(PassLight::kScreenToViewParams)
+        pixelShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
             .Set(screenToViewParamsCB);
 
         auto lightsSB = std::dynamic_pointer_cast<StructuredBuffer>(
-            parentTechnique->GetResource(pgPassRender::kLightsName));
+            parentTechnique->Get(pgPassRender::kLightsName));
 
         pixelShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
 
@@ -72,13 +71,13 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarge
     m_pSubPassDir = std::make_shared<pgPassPilpeline>(
         m_pTechniqueDir.get(), m_pDirectionalLightScene, m_DirectionalLightPipeline);
 
-    m_pTechniqueSphere->addPass(m_pSubPassSphere0);
-    m_pTechniqueSphere->addPass(m_pSubPassSphere1);
+    m_pTechniqueSphere->AddPass(m_pSubPassSphere0);
+    m_pTechniqueSphere->AddPass(m_pSubPassSphere1);
 
-    m_pTechniqueSpot->addPass(m_pSubPassSpot0);
-    m_pTechniqueSpot->addPass(m_pSubPassSpot1);
+    m_pTechniqueSpot->AddPass(m_pSubPassSpot0);
+    m_pTechniqueSpot->AddPass(m_pSubPassSpot1);
 
-    m_pTechniqueDir->addPass(m_pSubPassDir);
+    m_pTechniqueDir->AddPass(m_pSubPassDir);
 
     InitShaderParams(m_parentTechnique, m_LightPipeline0.get(), nullptr);
     InitShaderParams(m_parentTechnique, m_LightPipeline1.get(), m_pGBufferRT);
@@ -93,7 +92,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
 
     {
         auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(kLightIndexBuffer));
+            m_parentTechnique->Get(kLightIndexBuffer));
 
         LightParams lightParamData;
 
@@ -103,7 +102,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
 
     {
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(pgPassRender::kPerObjectName));
+            m_parentTechnique->Get(pgPassRender::kPerObjectName));
 
         pgPassRender::PerObject perObjectData;
 
@@ -158,7 +157,7 @@ void PassLight::updateScreenToViewParams()
 
     {
         auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->GetResource(kScreenToViewParams));
+            m_parentTechnique->Get(pgPassRender::kScreenToViewParams));
 
         ScreenToViewParams screenToViewParamsData;
 
