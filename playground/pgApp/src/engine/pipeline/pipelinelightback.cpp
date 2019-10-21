@@ -32,4 +32,6 @@ void PipelineLightBack::InitPSODesc()
     // pass.
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.StencilEnable = True;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.BackFace.StencilFunc = COMPARISON_FUNC_EQUAL;
+
+	SetStencilRef(1);
 }

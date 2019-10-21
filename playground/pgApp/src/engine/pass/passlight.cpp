@@ -11,7 +11,7 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
                              std::shared_ptr<pgRenderTarget> GbufferRT)
 {
     std::shared_ptr<Shader> pixelShader = pipeline->GetShader(Shader::PixelShader);
-    bool bInitGBuffer = !!GbufferRT; 
+    bool bInitGBuffer = !!GbufferRT;
     if (pixelShader) {
         auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
             parentTechnique->GetResource(PassLight::kLightIndexBuffer));
@@ -22,6 +22,11 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
             .SetResource(lightIndexCB);
         pixelShader->GetShaderParameterByName(PassLight::kScreenToViewParams)
             .SetResource(screenToViewParamsCB);
+
+        auto lightsSB = std::dynamic_pointer_cast<StructuredBuffer>(
+            parentTechnique->GetResource(pgPassRender::kLightsName));
+
+        pixelShader->GetShaderParameterByName(pgPassRender::kLightsName).SetResource(lightsSB);
 
         if (bInitGBuffer) {
             auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);

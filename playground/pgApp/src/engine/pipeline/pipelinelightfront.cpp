@@ -33,4 +33,6 @@ void PipelineLightFront::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_GREATER;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.StencilEnable = True;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.FrontFace.StencilPassOp = STENCIL_OP_DECR_SAT;
+
+	SetStencilRef(1);
 }

@@ -976,6 +976,7 @@ class pgPipeline : public pgObject
     typedef std::map<Shader::ShaderType, std::shared_ptr<Shader>> ShaderMap;
 
     bool m_bInited = false;
+    uint32_t m_stencilRef = 0;
 
   protected:
     Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_pPSO;
@@ -1013,6 +1014,8 @@ class pgPipeline : public pgObject
 
     void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
     Diligent::DepthStencilStateDesc& GetDepthStencilState();
+
+    void SetStencilRef(uint32_t ref);
 
     void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
     std::shared_ptr<pgRenderTarget> GetRenderTarget() const;

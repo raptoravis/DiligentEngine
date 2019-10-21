@@ -126,6 +126,11 @@ Diligent::DepthStencilStateDesc& pgPipeline::GetDepthStencilState()
     return m_PSODesc.GraphicsPipeline.DepthStencilDesc;
 }
 
+void pgPipeline::SetStencilRef(uint32_t ref)
+{
+    m_stencilRef = ref;
+}
+
 void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
 {
     if (!m_bInited) {
@@ -168,6 +173,8 @@ void pgPipeline::Bind()
 
     // Set the pipeline state
     pgApp::s_ctx->SetPipelineState(m_pPSO);
+
+    pgApp::s_ctx->SetStencilRef(m_stencilRef);
 
     for (auto shader : m_Shaders) {
         std::shared_ptr<Shader> pShader = shader.second;
