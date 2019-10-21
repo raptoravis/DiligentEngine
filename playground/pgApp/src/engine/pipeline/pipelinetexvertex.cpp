@@ -13,7 +13,7 @@ PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(
     m_pPS = std::make_shared<Shader>();
     m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cubetex.psh", "main");
 
-    m_pPS->GetShaderParameterByName("g_Texture").SetResource(m_Texture);
+    m_pPS->GetShaderParameterByName("g_Texture").Set(m_Texture);
 
     SetShader(Shader::Shader::VertexShader, m_pVS);
     SetShader(Shader::Shader::PixelShader, m_pPS);

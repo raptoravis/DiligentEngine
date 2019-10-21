@@ -2,7 +2,7 @@
 
 PassTransparent::PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                                  std::shared_ptr<pgPipeline> pipeline,
-                                 const std::vector<pgLight>& lights)
+                                 std::vector<pgLight>* lights)
     : base(parentTechnique, scene, pipeline, lights)
 {
 }

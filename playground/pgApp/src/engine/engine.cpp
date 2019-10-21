@@ -37,6 +37,31 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
     throw new std::exception(message.c_str());
 }
 
+pgRenderEventArgs::pgRenderEventArgs()
+    : pApp(0), pDeviceContext(0), pCamera(0), pPass(0), pScene(0), pSceneNode(0), pMaterial(0)
+{
+}
+
+
+void pgRenderEventArgs::set(float currentTime, float elapsedTime, pgApp* caller, pgCamera* camera,
+                            Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx)
+{
+    pApp = caller;
+    pDeviceContext = ctx;
+    pCamera = camera;
+    CurrTime = currentTime;
+    ElapsedTime = elapsedTime;
+
+    pTechnique = nullptr;
+    pPass = nullptr;
+    pPipeline = nullptr;
+    pScene = nullptr;
+    pSceneNode = nullptr;
+    pMaterial = nullptr;
+    pMesh = nullptr;
+}
+
+
 uint32_t pgObject::s_uuid = 0;
 
 pgObject::pgObject() : m_uuid(++pgObject::s_uuid) {}

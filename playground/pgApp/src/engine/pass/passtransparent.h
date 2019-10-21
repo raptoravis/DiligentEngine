@@ -14,7 +14,7 @@ class PassTransparent : public pgPassRender {
 
 public:
     PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
-               const std::vector<pgLight>& lights);
+               std::vector<pgLight>* lights);
 
 	virtual ~PassTransparent();
 

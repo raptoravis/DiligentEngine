@@ -22,7 +22,7 @@ void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
     if (shader) {
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
             m_parentTechnique->GetResource(kPerObjectName));
-        shader->GetShaderParameterByName(kPerObjectName).SetResource(perObjectCB);
+        shader->GetShaderParameterByName(kPerObjectName).Set(perObjectCB);
     }
 }
 

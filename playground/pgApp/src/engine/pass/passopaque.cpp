@@ -1,7 +1,7 @@
 #include "passopaque.h"
 
 PassOpaque::PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                       std::shared_ptr<pgPipeline> pipeline, const std::vector<pgLight>& lights)
+                       std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
     : base(parentTechnique, scene, pipeline, lights)
 {
 }

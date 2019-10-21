@@ -14,7 +14,7 @@ std::weak_ptr<pgObject> ShaderParameter::GetResource() {
 	return m_pResource;
 }
 
-void ShaderParameter::SetResource(std::shared_ptr<pgObject> resource) {
+void ShaderParameter::Set(std::shared_ptr<pgObject> resource) {
 	m_pResource = resource;
 }
 

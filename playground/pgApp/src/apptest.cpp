@@ -187,33 +187,33 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     // if (m_renderingTechnique == RenderingTechnique::Forward)
     {
         auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
-        forwardTech->SetResource(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        forwardTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
-        forwardTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        forwardTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
+        forwardTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
+        forwardTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-        forwardTech->init(testScene, m_Lights);
+        forwardTech->init(testScene, &m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::Deferred)
     {
         auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
 
-        deferredTech->SetResource(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        deferredTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
-        deferredTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        deferredTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
+        deferredTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
+        deferredTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-        deferredTech->init(testScene, m_Lights);
+        deferredTech->init(testScene, &m_Lights);
     }
 
     //if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
 	{
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 
-        fpTech->SetResource(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        fpTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
-        fpTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        fpTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
+        fpTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
+        fpTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-        fpTech->init(testScene, m_Lights);
+        fpTech->init(testScene, &m_Lights);
     }
 }
 

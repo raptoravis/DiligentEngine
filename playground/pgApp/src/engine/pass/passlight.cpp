@@ -19,14 +19,14 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
             parentTechnique->GetResource(PassLight::kScreenToViewParams));
 
         pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer)
-            .SetResource(lightIndexCB);
+            .Set(lightIndexCB);
         pixelShader->GetShaderParameterByName(PassLight::kScreenToViewParams)
-            .SetResource(screenToViewParamsCB);
+            .Set(screenToViewParamsCB);
 
         auto lightsSB = std::dynamic_pointer_cast<StructuredBuffer>(
             parentTechnique->GetResource(pgPassRender::kLightsName));
 
-        pixelShader->GetShaderParameterByName(pgPassRender::kLightsName).SetResource(lightsSB);
+        pixelShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
 
         if (bInitGBuffer) {
             auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
@@ -34,11 +34,11 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
             auto normalTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
             auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
-            pixelShader->GetShaderParameterByName("DiffuseTextureVS").SetResource(diffuseTex);
-            pixelShader->GetShaderParameterByName("SpecularTextureVS").SetResource(specularTex);
+            pixelShader->GetShaderParameterByName("DiffuseTextureVS").Set(diffuseTex);
+            pixelShader->GetShaderParameterByName("SpecularTextureVS").Set(specularTex);
 
-            pixelShader->GetShaderParameterByName("NormalTextureVS").SetResource(normalTex);
-            pixelShader->GetShaderParameterByName("DepthTextureVS").SetResource(depthTex);
+            pixelShader->GetShaderParameterByName("NormalTextureVS").Set(normalTex);
+            pixelShader->GetShaderParameterByName("DepthTextureVS").Set(depthTex);
         }
     }
 }
@@ -47,7 +47,7 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
 PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> pGBufferRT,
                      std::shared_ptr<PipelineLightFront> front,
                      std::shared_ptr<PipelineLightBack> back, std::shared_ptr<PipelineLightDir> dir,
-                     const std::vector<pgLight>* Lights)
+                     std::vector<pgLight>* Lights)
     : base(parentTechnique), m_pGBufferRT(pGBufferRT), m_pLights(Lights), m_LightPipeline0(front),
       m_LightPipeline1(back), m_DirectionalLightPipeline(dir)
 {

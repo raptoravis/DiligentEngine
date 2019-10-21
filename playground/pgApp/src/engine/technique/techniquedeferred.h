@@ -35,5 +35,5 @@ class TechniqueDeferred : public pgTechnique
     TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueDeferred();
 
-    void init(const std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights);
+    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
 };

@@ -35,7 +35,7 @@ class PassLight : public pgPass
 
   protected:
     std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-    const std::vector<pgLight>* m_pLights;
+    std::vector<pgLight>* m_pLights;
 
     std::shared_ptr<PipelineLightFront> m_LightPipeline0;
     std::shared_ptr<PipelineLightBack> m_LightPipeline1;
@@ -63,7 +63,7 @@ class PassLight : public pgPass
   public:
     PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> pGBufferRT,
               std::shared_ptr<PipelineLightFront> front, std::shared_ptr<PipelineLightBack> back,
-              std::shared_ptr<PipelineLightDir> dir, const std::vector<pgLight>* Lights);
+              std::shared_ptr<PipelineLightDir> dir, std::vector<pgLight>* Lights);
 
     virtual ~PassLight();
 

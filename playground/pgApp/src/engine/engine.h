@@ -188,20 +188,10 @@ class pgRenderEventArgs
     pgMesh* pMesh;
 
   public:
-    pgRenderEventArgs()
-        : pApp(0), pDeviceContext(0), pCamera(0), pPass(0), pScene(0), pSceneNode(0), pMaterial(0)
-    {
-    }
+    pgRenderEventArgs();
 
     void set(float currentTime, float elapsedTime, pgApp* caller, pgCamera* camera,
-             Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx)
-    {
-        pApp = caller;
-        pDeviceContext = ctx;
-        pCamera = camera;
-        CurrTime = currentTime;
-        ElapsedTime = elapsedTime;
-    }
+             Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx);
 };
 
 // Defines either a semantic (HLSL) or an input index (GLSL/HLSL)
@@ -268,7 +258,7 @@ class ShaderParameter : public pgObject
     virtual void UnBind();
 
     std::weak_ptr<pgObject> GetResource();
-    void SetResource(std::shared_ptr<pgObject> resource);
+    void Set(std::shared_ptr<pgObject> resource);
 
   private:
     std::string m_Name;
@@ -969,6 +959,11 @@ class pgScene : public pgObject
     void setRootNode(std::shared_ptr<pgSceneNode> root) { m_pRootNode = root; }
 
     virtual void Accept(Visitor& visitor);
+
+    static std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height,
+                                                      uint16_t slices,
+                                                      Diligent::TEXTURE_FORMAT format,
+                                                      CPUAccess cpuAccess, bool gpuWrite);
 };
 
 class pgPipeline : public pgObject
@@ -1089,7 +1084,7 @@ class pgTechnique : public pgObject
 
     virtual void Render();
 
-    void SetResource(const std::string& name, std::shared_ptr<pgObject> res);
+    void Set(const std::string& name, std::shared_ptr<pgObject> res);
     std::shared_ptr<pgObject> GetResource(const std::string& name);
 
   private:

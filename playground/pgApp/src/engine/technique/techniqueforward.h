@@ -22,5 +22,5 @@ class TechniqueForward : public pgTechnique
     TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueForward();
 
-    void init(std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights);
+    void init(std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
 };

@@ -19,12 +19,12 @@ class pgPassRender : public pgPassPilpeline
         float4x4 ModelView;
     };
 
-	static const char* kPerObjectName;
+    static const char* kPerObjectName;
     static const char* kMaterialName;
     static const char* kLightsName;
 
   protected:
-    std::vector<pgLight> m_Lights;
+    std::vector<pgLight>* m_pLights;
 
     // Set and bind the constant buffer data.
     void SetPerObjectConstantBufferData(PerObject& perObjectData);
@@ -37,10 +37,11 @@ class pgPassRender : public pgPassPilpeline
 
     void BindLightsBuffer(std::shared_ptr<Shader> shader);
 
-	void SetMaterialData(pgMaterial* mat);
+    void SetMaterialData(pgMaterial* mat);
+
   public:
-    pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
-                               const std::vector<pgLight>& lights);
+    pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                               std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights);
     virtual ~pgPassRender();
 
     // Render the pass. This should only be called by the RenderTechnique.

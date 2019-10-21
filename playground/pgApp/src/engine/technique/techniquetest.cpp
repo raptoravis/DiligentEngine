@@ -48,7 +48,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
 
         //
         m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
-        this->SetResource("Constants", m_VSConstants);
+        this->Set("Constants", m_VSConstants);
 
         std::shared_ptr<PipelineColorVertex> pipelineColorVertex =
             std::make_shared<PipelineColorVertex>(m_pRT);

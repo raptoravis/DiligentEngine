@@ -27,7 +27,7 @@ std::shared_ptr<pgPass> pgTechnique::getPass(unsigned int ID) const
 }
 
 
-void pgTechnique::SetResource(const std::string& name, std::shared_ptr<pgObject> res)
+void pgTechnique::Set(const std::string& name, std::shared_ptr<pgObject> res)
 {
     m_resourceMap[name] = res;
 }

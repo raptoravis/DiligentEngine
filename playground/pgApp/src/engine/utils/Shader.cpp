@@ -59,7 +59,7 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
         pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
         shaderTypeStr = "ps";
     } else if (shaderType == ShaderType::ComputeShader) {
-        ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
+        ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_COMPUTE;
         ShaderCI.EntryPoint = entryPoint.c_str();
         ShaderCI.Desc.Name = entryPoint.c_str();
         ShaderCI.FilePath = fileName.c_str();

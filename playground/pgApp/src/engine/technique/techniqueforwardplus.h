@@ -63,9 +63,13 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterOpaque;
     std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterTransparent;
 
+	std::shared_ptr<pgTexture> g_pLightGridOpaque;
+    std::shared_ptr<pgTexture> g_pLightGridTransparent;
+
+	void UpdateGridFrustums();
   public:
     TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueForwardPlus();
 
-    void init(const std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights);
+    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
 };

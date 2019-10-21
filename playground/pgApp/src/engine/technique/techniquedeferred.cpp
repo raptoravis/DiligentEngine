@@ -107,11 +107,10 @@ void TechniqueDeferred::createBuffers()
     }
 }
 
-void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
-                             const std::vector<pgLight>& lights)
+void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
 {
-    this->SetResource(PassLight::kScreenToViewParams, m_ScreenToViewParamsCB);
-    this->SetResource(PassLight::kLightIndexBuffer, m_LightParamsCB);
+    this->Set(PassLight::kScreenToViewParams, m_ScreenToViewParamsCB);
+    this->Set(PassLight::kLightIndexBuffer, m_LightParamsCB);
 
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pGBufferRT);
     addPass(pSetRTPass);
@@ -119,7 +118,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
     std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pGBufferRT);
     addPass(pClearRTPass);
 
-	g_pVertexShader = std::make_shared<Shader>();
+    g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
                                         "./resources/shaders");
 
@@ -141,8 +140,9 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
     g_pGeometryPipeline->SetShader(Shader::PixelShader, g_pGeometryPixelShader);
     g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);
 
+	// not use lights
     std::shared_ptr<PassOpaque> pPassOpaque =
-        std::make_shared<PassOpaque>(this, scene, g_pGeometryPipeline, lights);
+        std::make_shared<PassOpaque>(this, scene, g_pGeometryPipeline, nullptr);
     addPass(pPassOpaque);
 
     {
@@ -162,18 +162,16 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene,
         std::make_shared<PipelineLightFront>(m_pDepthOnlyRT);
     pFront->SetShader(Shader::VertexShader, g_pVertexShader);
 
-    std::shared_ptr<PipelineLightBack> pBack =
-        std::make_shared<PipelineLightBack>(m_pRT);
+    std::shared_ptr<PipelineLightBack> pBack = std::make_shared<PipelineLightBack>(m_pRT);
     pBack->SetShader(Shader::VertexShader, g_pVertexShader);
     pBack->SetShader(Shader::PixelShader, g_pDeferredLightingPixelShader);
 
-    std::shared_ptr<PipelineLightDir> pDir =
-        std::make_shared<PipelineLightDir>(m_pRT);
+    std::shared_ptr<PipelineLightDir> pDir = std::make_shared<PipelineLightDir>(m_pRT);
     pDir->SetShader(Shader::VertexShader, g_pVertexShader);
     pDir->SetShader(Shader::PixelShader, g_pDeferredLightingPixelShader);
 
     std::shared_ptr<PassLight> pLightPass =
-        std::make_shared<PassLight>(this, m_pGBufferRT, pFront, pBack, pDir, &lights);
+        std::make_shared<PassLight>(this, m_pGBufferRT, pFront, pBack, pDir, lights);
     addPass(pLightPass);
 
     g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRT);

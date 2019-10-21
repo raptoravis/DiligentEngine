@@ -17,7 +17,7 @@ TechniqueForward::TechniqueForward(std::shared_ptr<pgRenderTarget> rt,
 
 TechniqueForward::~TechniqueForward() {}
 
-void TechniqueForward::init(std::shared_ptr<pgScene> scene, const std::vector<pgLight>& lights)
+void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
 {
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
     addPass(pSetRTPass);

@@ -1,4 +1,4 @@
-#include "PipelineTransparent.h"
+#include "pipelinetransparent.h"
 
 using namespace Diligent;
 

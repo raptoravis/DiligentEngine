@@ -6,8 +6,8 @@ const char* pgPassRender::kLightsName = "Lights";
 
 
 pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                           std::shared_ptr<pgPipeline> pipeline, const std::vector<pgLight>& lights)
-    : base(parentTechnique, scene, pipeline), m_Lights(lights)
+                           std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
+    : base(parentTechnique, scene, pipeline), m_pLights(lights)
 {
 }
 
@@ -36,7 +36,7 @@ void pgPassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
             m_parentTechnique->GetResource(kPerObjectName));
 
-        shader->GetShaderParameterByName(kPerObjectName).SetResource(perObjectCB);
+        shader->GetShaderParameterByName(kPerObjectName).Set(perObjectCB);
     }
 }
 
@@ -46,7 +46,7 @@ void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
         auto materialCB = std::dynamic_pointer_cast<ConstantBuffer>(
             m_parentTechnique->GetResource(kMaterialName));
 
-        shader->GetShaderParameterByName(kMaterialName).SetResource(materialCB);
+        shader->GetShaderParameterByName(kMaterialName).Set(materialCB);
     }
 }
 
@@ -74,21 +74,30 @@ void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
         auto lightsBuffer = std::dynamic_pointer_cast<StructuredBuffer>(
             m_parentTechnique->GetResource(kLightsName));
 
-        shader->GetShaderParameterByName(kLightsName).SetResource(lightsBuffer);
+        shader->GetShaderParameterByName(kLightsName).Set(lightsBuffer);
     }
 }
 
 
 void pgPassRender::PreRender()
 {
-    //base::PreRender();
+    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
+
+    // base::PreRender();
 
     if (m_pPipeline) {
+        auto vertexShader = m_pPipeline->GetShader(Shader::VertexShader);
+        auto pixelShader = m_pPipeline->GetShader(Shader::PixelShader);
+
         // Make sure the per object constant buffer is bound to the vertex shader.
-        BindPerObjectConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
-        BindMaterialConstantBuffer(m_pPipeline->GetShader(Shader::PixelShader));
-        BindLightsBuffer(m_pPipeline->GetShader(Shader::PixelShader));
-        SetLightsBufferData(m_Lights);
+        BindPerObjectConstantBuffer(vertexShader);
+
+        BindMaterialConstantBuffer(pixelShader);
+
+        if (m_pLights) {
+            BindLightsBuffer(pixelShader);
+            SetLightsBufferData(*m_pLights);
+        }
 
         m_pPipeline->Bind();
     }

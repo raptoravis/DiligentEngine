@@ -170,3 +170,29 @@ void pgScene::Accept(Visitor& visitor)
         m_pRootNode->Accept(visitor);
     }
 }
+
+std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t height,
+                                                    uint16_t slices,
+                                                    Diligent::TEXTURE_FORMAT format,
+                                                    CPUAccess cpuAccess, bool gpuWrite)
+{
+    Diligent::ITexture* texture = 0;
+    Diligent::TextureDesc TexDesc;
+    TexDesc.Name = "pgScene Texture";
+    TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+    TexDesc.Usage = Diligent::USAGE_DEFAULT;
+    TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+    TexDesc.Width = width;
+    TexDesc.Height = height;
+    TexDesc.ArraySize = slices;
+    TexDesc.Format = format;    //Diligent::TEX_FORMAT_RGBA8_UNORM;
+    TexDesc.MipLevels = 0;
+    //TexDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_GENERATE_MIPS;
+    //Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
+
+    pgApp::s_device->CreateTexture(TexDesc, nullptr, &texture);
+
+    std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
+
+	return tex;
+}
