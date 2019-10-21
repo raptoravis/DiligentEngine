@@ -10,7 +10,8 @@ class PassDispatch : public pgPass
     typedef pgPass base;
 
   public:
-    PassDispatch(std::shared_ptr<Shader> computeShader, const Diligent::uint3& numGroups);
+    PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<Shader> computeShader,
+                 const Diligent::uint3& numGroups);
     virtual ~PassDispatch();
 
     void SetNumGroups(const Diligent::uint3& numGroups);

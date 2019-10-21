@@ -21,11 +21,13 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
                                 const std::vector<pgLight>& lights)
 {
     g_pVertexShader = std::make_shared<Shader>();
-    g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main");
+    g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
+                                        "./resources/shaders");
 
     g_pForwardPlusPixelShader = std::make_shared<Shader>();
     g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::Shader::VertexShader,
-                                                  "ForwardPlusRendering.hlsl", "PS_main");
+                                                  "ForwardPlusRendering.hlsl", "PS_main",
+                                                  "./resources/shaders");
 
     // Will be mapped to the "DispatchParams" in the Forward+ compute shaders.
     g_pDispatchParamsConstantBuffer =
@@ -50,12 +52,13 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
     g_pLightCullingComputeShader = std::make_shared<Shader>();
-    g_pLightCullingComputeShader->LoadShaderFromFile(Shader::ComputeShader,
-                                                     "ForwardPlusRendering.hlsl", "CS_main");
+    g_pLightCullingComputeShader->LoadShaderFromFile(
+        Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_main", "./resources/shaders");
 
     g_pComputeFrustumsComputeShader = std::make_shared<Shader>();
     g_pComputeFrustumsComputeShader->LoadShaderFromFile(
-        Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums");
+        Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums",
+        "./resources/shaders");
 
     std::shared_ptr<pgTexture> depthStencilBuffer =
         m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
@@ -67,6 +70,17 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
         .SetResource(g_pLightListIndexCounterTransparent);
 
     //
+    g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    g_pDepthOnlyRenderTarget->AttachTexture(
+        pgRenderTarget::AttachmentPoint::DepthStencil,
+        m_pRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+
+    //
+    g_pDepthPrepassPipeline = std::make_shared<pgPipeline>(g_pDepthOnlyRenderTarget);
+
+    g_pDepthPrepassPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
+    g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
+
     g_pForwardPlusOpaquePipeline = std::make_shared<pgPipeline>(m_pRT);
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
@@ -109,14 +123,27 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene,
 
     g_pForwardPlusTransparentPipeline->SetBlendState(BlendDesc);
     //
+    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRT);
+    addPass(pSetRTPass);
+
+    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRT);
+    addPass(pClearRTPass);
+
+    addPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
+
     addPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterOpaque,
                                              lightListIndexCounterInitialBuffer));
     addPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterTransparent,
                                              lightListIndexCounterInitialBuffer));
 
     std::shared_ptr<PassDispatch> g_LightCullingDispatchPass = std::make_shared<PassDispatch>(
-        g_pLightCullingComputeShader,
+        this, g_pLightCullingComputeShader,
         Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),
                         (uint32_t)ceil(pgApp::s_desc.Height / (float)g_LightCullingBlockSize), 1));
     addPass(g_LightCullingDispatchPass);
+
+    addPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
+
+    addPass(
+        std::make_shared<PassTransparent>(this, scene, g_pForwardPlusTransparentPipeline, lights));
 }

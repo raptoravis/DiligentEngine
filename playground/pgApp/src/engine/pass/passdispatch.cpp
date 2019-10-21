@@ -1,8 +1,9 @@
 #include "passdispatch.h"
 
 
-PassDispatch::PassDispatch(std::shared_ptr<Shader> computeShader, const Diligent::uint3& numGroups)
-    : base(nullptr), m_pComputeShader(computeShader), m_NumGroups(numGroups)
+PassDispatch::PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<Shader> computeShader,
+                           const Diligent::uint3& numGroups)
+    : base(parentTechnique), m_pComputeShader(computeShader), m_NumGroups(numGroups)
 {
 }
 

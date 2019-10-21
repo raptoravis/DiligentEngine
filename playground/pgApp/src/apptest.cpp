@@ -156,8 +156,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     createRT();
 
-    // m_renderingTechnique = RenderingTechnique::ForwardPlus;
-    m_renderingTechnique = RenderingTechnique::Deferred;
+    m_renderingTechnique = RenderingTechnique::ForwardPlus;
+    // m_renderingTechnique = RenderingTechnique::Deferred;
     // m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
 
@@ -191,7 +191,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         forwardTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
         forwardTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-		forwardTech->init(testScene, m_Lights);
+        forwardTech->init(testScene, m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::Deferred)
@@ -202,17 +202,18 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         deferredTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
         deferredTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-		deferredTech->init(testScene, m_Lights);
+        deferredTech->init(testScene, m_Lights);
     }
 
-    if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
+    //if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
+	{
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 
         fpTech->SetResource(pgPassRender::kPerObjectName, m_PerObjectConstants);
         fpTech->SetResource(pgPassRender::kMaterialName, m_MaterialConstants);
         fpTech->SetResource(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-		fpTech->init(testScene, m_Lights);
+        fpTech->init(testScene, m_Lights);
     }
 }
 

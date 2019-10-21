@@ -39,9 +39,12 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<Shader> g_pLightCullingComputeShader;
     // Compute the frustums for light culling.
     std::shared_ptr<Shader> g_pComputeFrustumsComputeShader;
-
     std::shared_ptr<Shader> g_pForwardPlusPixelShader;
 
+	std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> g_pColorOnlyRenderTarget;
+
+    std::shared_ptr<pgPipeline> g_pDepthPrepassPipeline;
     std::shared_ptr<pgPipeline> g_pForwardPlusOpaquePipeline;
     std::shared_ptr<pgPipeline> g_pForwardPlusTransparentPipeline;
 
