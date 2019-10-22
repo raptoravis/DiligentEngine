@@ -17,7 +17,7 @@ void PipelineLightBack::InitPSODesc()
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_FRONT;
     m_PSODesc.GraphicsPipeline.RasterizerDesc.DepthClipEnable = False;
-    // m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
+    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
 
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_ONE;
@@ -33,5 +33,5 @@ void PipelineLightBack::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.StencilEnable = True;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.BackFace.StencilFunc = COMPARISON_FUNC_EQUAL;
 
-	SetStencilRef(1);
+    SetStencilRef(1);
 }

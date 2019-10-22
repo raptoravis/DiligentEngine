@@ -27,8 +27,10 @@ void PipelineLightDir::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
     // Primitive topology defines what kind of primitives will be rendered by this pipeline state
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
+    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
 
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_ONE;

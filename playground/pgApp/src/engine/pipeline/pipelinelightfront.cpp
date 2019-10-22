@@ -2,9 +2,7 @@
 
 using namespace Diligent;
 
-PipelineLightFront::PipelineLightFront(std::shared_ptr<pgRenderTarget> rt) : base(rt)
-{
-}
+PipelineLightFront::PipelineLightFront(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineLightFront::~PipelineLightFront() {}
 
@@ -14,8 +12,8 @@ void PipelineLightFront::InitPSODesc()
 
     m_PSODesc.Name = "PipelineLightFront PSO";
 
-    //auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
-    //auto color0Format =
+    // auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    // auto color0Format =
     //    color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
@@ -33,7 +31,7 @@ void PipelineLightFront::InitPSODesc()
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
     m_PSODesc.GraphicsPipeline.RasterizerDesc.DepthClipEnable = True;
-    // m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
+    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
 
     // Enable depth testing
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;
@@ -42,5 +40,5 @@ void PipelineLightFront::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.StencilEnable = True;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.FrontFace.StencilPassOp = STENCIL_OP_DECR_SAT;
 
-	SetStencilRef(1);
+    SetStencilRef(1);
 }

@@ -1,5 +1,7 @@
 #include "../engine.h"
 
+using namespace Diligent;
+
 pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt) : m_pRenderTarget(rt), m_bDirty(true) {}
 
 pgPipeline::~pgPipeline()
@@ -34,6 +36,8 @@ void pgPipeline::InitPSODesc()
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
+    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
+
     // Enable depth testing
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
 
