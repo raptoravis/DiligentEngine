@@ -12,6 +12,7 @@
 #include "../pipeline/pipelinebase.h"
 #include "../pipeline/pipelinedispatch.h"
 #include "../pipeline/pipelinetransparent.h"
+#include "../pipeline/pipelinefpopaque.h"
 
 const uint32_t AVERAGE_OVERLAPPING_LIGHTS_PER_TILE = 200u;
 
@@ -46,14 +47,10 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
                         (uint32_t)ceil(numThreads.y / (float)g_LightCullingBlockSize), 1);
 
     g_pLightIndexListOpaque = std::make_shared<StructuredBuffer>(
-        nullptr,
-        numThreadGroups.x * numThreadGroups.y * numThreadGroups.z *
-            AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
+        nullptr, numThreads.x * numThreads.y * numThreads.z * AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
         (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
     g_pLightIndexListTransparent = std::make_shared<StructuredBuffer>(
-        nullptr,
-        numThreadGroups.x * numThreadGroups.y * numThreadGroups.z *
-            AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
+        nullptr, numThreads.x * numThreads.y * numThreads.z * AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
         (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
     // Update the number of thread groups for the compute frustums compute shader.
@@ -250,7 +247,8 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     AddPass(g_LightCullingDispatchPass);
 
     //
-    g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
+    //g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
+    g_pForwardPlusOpaquePipeline = std::make_shared<PipelineFPOpaque>(m_pRenderTarget);
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
