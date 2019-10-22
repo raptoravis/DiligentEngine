@@ -212,6 +212,7 @@ float4 ScreenToView( float4 screen )
     return ClipToView( clip );
 }
 
+// right-handed: the camera pointing towards the -z axis in view space
 // Compute a plane from 3 noncollinear points that form a triangle.
 // This equation assumes a right-handed (counter-clockwise winding order) 
 // coordinate system to determine the direction of the plane normal.
@@ -264,7 +265,7 @@ bool SphereInsideFrustum( Sphere sphere, Frustum frustum, float zNear, float zFa
     bool result = true;
 
     // First check depth
-    // Note: Here, the view vector points in the -Z axis so the 
+    // right-handed: Here, the view vector points in the -Z axis so the 
     // far depth value will be approaching -infinity.
     if ( sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar )
     {

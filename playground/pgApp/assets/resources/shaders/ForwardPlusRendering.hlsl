@@ -123,6 +123,7 @@ void CS_main( ComputeShaderInput IN )
     float maxDepthVS = ScreenToView( float4( 0, 0, fMaxDepth, 1 ) ).z;
     float nearClipVS = ScreenToView( float4( 0, 0, 0, 1 ) ).z;
 
+	// right-handed: the camera pointing towards the -z axis in view space
     // Clipping plane for minimum depth value 
     // (used for testing lights within the bounds of opaque geometry).
     Plane minPlane = { float3( 0, 0, -1 ), -minDepthVS };
@@ -242,6 +243,9 @@ RWStructuredBuffer<Frustum> out_Frustums : register( u0 );
 [numthreads( BLOCK_SIZE, BLOCK_SIZE, 1 )]
 void CS_ComputeFrustums( ComputeShaderInput IN )
 {
+	//right-handed: the camera is looking in the -z axis in view space
+	float zAxis = -1;
+	
     // View space eye position is always at the origin.
     const float3 eyePos = float3( 0, 0, 0 );
 
@@ -249,13 +253,13 @@ void CS_ComputeFrustums( ComputeShaderInput IN )
     // frustum vertices.
     float4 screenSpace[4];
     // Top left point
-    screenSpace[0] = float4( IN.dispatchThreadID.xy * BLOCK_SIZE, -1.0f, 1.0f );
+    screenSpace[0] = float4( IN.dispatchThreadID.xy * BLOCK_SIZE, zAxis, 1.0f );
     // Top right point
-    screenSpace[1] = float4( float2( IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y ) * BLOCK_SIZE, -1.0f, 1.0f );
+    screenSpace[1] = float4( float2( IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y ) * BLOCK_SIZE, zAxis, 1.0f );
     // Bottom left point
-    screenSpace[2] = float4( float2( IN.dispatchThreadID.x, IN.dispatchThreadID.y + 1 ) * BLOCK_SIZE, -1.0f, 1.0f );
+    screenSpace[2] = float4( float2( IN.dispatchThreadID.x, IN.dispatchThreadID.y + 1 ) * BLOCK_SIZE, zAxis, 1.0f );
     // Bottom right point
-    screenSpace[3] = float4( float2( IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y + 1 ) * BLOCK_SIZE, -1.0f, 1.0f );
+    screenSpace[3] = float4( float2( IN.dispatchThreadID.x + 1, IN.dispatchThreadID.y + 1 ) * BLOCK_SIZE, zAxis, 1.0f );
 
     float3 viewSpace[4];
     // Now convert the screen space points to view space
