@@ -4,6 +4,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(pgApp CXX)
 
+add_compile_definitions(_ENABLE_ATOMIC_ALIGNMENT_FIX=1)
+
+set (DE_TOP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
 set(SHADERS
     assets/shaders/env_map.vsh
     assets/shaders/env_map.psh
@@ -27,13 +31,16 @@ list(FILTER ASSETS EXCLUDE REGEX ".*\.obj$")
 file(GLOB_RECURSE SRC_SOURCE
 	RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/src/*.*)
-
-#source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX src FILES ${SRC_SOURCE})
-#source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX assets FILES ${ASSETS_ALL})
+	
+set(ZUPPLY_SOURCE	
+	${DE_TOP_PATH}/thirdparty/zupply/src/zupply.hpp
+	${DE_TOP_PATH}/thirdparty/zupply/src/zupply.cpp)
+	
+source_group(TREE ${DE_TOP_PATH} FILES ${ZUPPLY_SOURCE})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SRC_SOURCE})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ASSETS_ALL})
 
-
+set(SOURCE ${SOURCE} ${ZUPPLY_SOURCE})
 set(SOURCE ${SOURCE} ${SRC_SOURCE})
 
 set(PROJECT_NAME_TMP "pgApp")
@@ -55,8 +62,6 @@ target_include_directories(${PROJECT_NAME_TMP} PRIVATE
 )
 
 ######
-set (DE_TOP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-
 target_link_directories(${PROJECT_NAME_TMP} PRIVATE ""
 			)
 
@@ -71,6 +76,7 @@ target_include_directories(${PROJECT_NAME_TMP} PRIVATE
 						${DE_TOP_PATH}/thirdparty/flythrough_camera
 						${DE_TOP_PATH}/thirdparty/arcball_camera
 						${DE_TOP_PATH}/thirdparty/argparse
+						${DE_TOP_PATH}/thirdparty/zupply
 						)
 
 ######

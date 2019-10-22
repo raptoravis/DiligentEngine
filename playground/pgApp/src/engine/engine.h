@@ -295,11 +295,10 @@ class Shader : public pgObject
     ShaderType GetType() const;
 
     // Shader loading
-    bool LoadShaderFromFile(ShaderType type, const std::string& fileName,
-                            const std::string& entryPoint = "main",
-                            const std::string& searchPaths = "",
-                            bool UseCombinedTextureSamplers = false,
-                            const ShaderMacros& shaderMacros = Shader::ShaderMacros());
+    bool LoadShaderFromFile(
+        ShaderType type, const std::string& fileName, const std::string& entryPoint = "main",
+        const std::string& searchPaths = "", bool UseCombinedTextureSamplers = false,
+        const Diligent::ShaderMacro* shaderMacros = nullptr);
 
     Diligent::RefCntAutoPtr<Diligent::IShader> GetShader() { return m_pShader; }
 
@@ -664,7 +663,7 @@ class pgRenderTarget : public pgObject
     void AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture);
     std::shared_ptr<pgTexture> GetTexture(AttachmentPoint attachment);
 
-	uint32_t GetNumRTVs() const;
+    uint32_t GetNumRTVs() const;
 
     /**
      * Clear the contents of a texture attached to a specific attachment point.

@@ -72,11 +72,13 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<pgTexture> g_pLightCullingHeatMap;
 
 
-    void UpdateGridFrustums();
-    std::shared_ptr<pgTexture> LoadTexture(const std::wstring& path);
+    void UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera);
+    std::shared_ptr<pgTexture> LoadTexture(const std::string& path);
+
   public:
     TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueForwardPlus();
 
-    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
+    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights,
+              std::shared_ptr<pgCamera> pCamera);
 };

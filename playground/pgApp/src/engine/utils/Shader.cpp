@@ -22,7 +22,8 @@ Shader::ShaderType Shader::GetType() const
 
 bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileName,
                                 const std::string& entryPoint, const std::string& searchPaths,
-                                bool UseCombinedTextureSamplers, const ShaderMacros& shaderMacros)
+                                bool UseCombinedTextureSamplers,
+                                const Diligent::ShaderMacro* shaderMacros)
 {
     Diligent::ShaderCreateInfo ShaderCI;
     // Tell the system that the shader source code is in HLSL.
@@ -38,6 +39,10 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
     pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(searchPaths.c_str(),
                                                                    &pShaderSourceFactory);
     ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
+
+	if (shaderMacros) {
+	    ShaderCI.Macros = shaderMacros;
+	}
 
     m_ShaderType = shaderType;
 

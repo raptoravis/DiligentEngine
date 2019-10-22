@@ -72,9 +72,8 @@ void AppTest::initBuffers()
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(pgPassRender::PerObject));
     m_MaterialConstants =
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(pgMaterial::MaterialProperties));
-    m_LightsStructuredBuffer =
-        std::make_shared<StructuredBuffer>(m_Lights.data(), (uint32_t)m_Lights.size(),
-                                           (uint32_t)sizeof(pgLight), CPUAccess::Write);
+    m_LightsStructuredBuffer = std::make_shared<StructuredBuffer>(
+        m_Lights.data(), (uint32_t)m_Lights.size(), (uint32_t)sizeof(pgLight), CPUAccess::Write);
 }
 
 
@@ -129,7 +128,8 @@ void AppTest::createRT()
         m_pRenderTarget = std::make_shared<pgRenderTarget>();
 
         m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
-        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil, depthStencilTexture);
+        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil,
+                                       depthStencilTexture);
     }
 
     //
@@ -173,7 +173,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
     m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
-    m_pForwardPlusTechnique = std::make_shared<TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
+    m_pForwardPlusTechnique =
+        std::make_shared<TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
 
     //
     std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
@@ -205,15 +206,15 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         deferredTech->init(testScene, &m_Lights);
     }
 
-    //if (m_renderingTechnique == RenderingTechnique::ForwardPlus) 
-	{
+    // if (m_renderingTechnique == RenderingTechnique::ForwardPlus)
+    {
         auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 
         fpTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
         fpTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
         fpTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
-        fpTech->init(testScene, &m_Lights);
+        fpTech->init(testScene, &m_Lights, m_pCamera);
     }
 }
 

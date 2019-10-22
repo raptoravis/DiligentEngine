@@ -22,3 +22,6 @@
 [submodule "thirdparty/argparse"]
 	path = thirdparty/argparse
 	url = git@github.com:raptoravis/argparse.git
+[submodule "thirdparty/zupply"]
+	path = thirdparty/zupply
+	url = git@github.com:raptoravis/zupply.git

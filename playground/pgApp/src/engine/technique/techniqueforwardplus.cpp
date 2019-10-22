@@ -23,11 +23,18 @@ TechniqueForwardPlus::TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt,
 
 TechniqueForwardPlus::~TechniqueForwardPlus() {}
 
-void TechniqueForwardPlus::UpdateGridFrustums()
+void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
 {
     // Make sure we can create at least 1 thread (even if the window is minimized)
     uint32_t screenWidth = std::max(pgApp::s_desc.Width, 1u);
     uint32_t screenHeight = std::max(pgApp::s_desc.Height, 1u);
+
+    ScreenToViewParams screenToViewParams;
+    screenToViewParams.m_InverseProjectionMatrix = pCamera->getProjectionMatrix();
+    screenToViewParams.m_ScreenDimensions =
+        Diligent::float2((float)screenWidth, (float)screenHeight);
+
+    g_pScreenToViewParamsConstantBuffer->Set(screenToViewParams);
 
     // To compute the frustums for the grid tiles, each thread will compute a single
     // frustum for the tile.
@@ -85,13 +92,13 @@ void TechniqueForwardPlus::UpdateGridFrustums()
     g_pLightCullingComputeShader->GetShaderParameterByName("in_Frustums").Set(g_pGridFrustums);
 }
 
-std::shared_ptr<pgTexture> TechniqueForwardPlus::LoadTexture(const std::wstring& path)
+std::shared_ptr<pgTexture> TechniqueForwardPlus::LoadTexture(const std::string& path)
 {
     TextureLoadInfo loadInfo;
     loadInfo.IsSRGB = false;
     RefCntAutoPtr<ITexture> Tex;
     // CreateTextureFromFile("DGLogo.png", loadInfo, pgApp::s_device, &Tex);
-    CreateTextureFromFile("apple-logo.png", loadInfo, pgApp::s_device, &Tex);
+    CreateTextureFromFile(path.c_str(), loadInfo, pgApp::s_device, &Tex);
 
     std::shared_ptr<pgTexture> ret = std::make_shared<pgTexture>(Tex);
 
@@ -99,7 +106,8 @@ std::shared_ptr<pgTexture> TechniqueForwardPlus::LoadTexture(const std::wstring&
 }
 
 
-void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
+void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights,
+                                std::shared_ptr<pgCamera> pCamera)
 {
     //
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
@@ -141,14 +149,21 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_pLightListIndexCounterTransparent = std::make_shared<StructuredBuffer>(
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
+    uint32_t numLights = (uint32_t)lights->size();
+
+	Diligent::ShaderMacroHelper shaderMacros;
+    shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
+    shaderMacros.AddShaderMacro("BLOCK_SIZE", g_LightCullingBlockSize);
+
     g_pLightCullingComputeShader = std::make_shared<Shader>();
-    g_pLightCullingComputeShader->LoadShaderFromFile(
-        Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_main", "./resources/shaders");
+    g_pLightCullingComputeShader->LoadShaderFromFile(Shader::ComputeShader,
+                                                     "ForwardPlusRendering.hlsl", "CS_main",
+                                                     "./resources/shaders", false, shaderMacros);
 
     g_pComputeFrustumsComputeShader = std::make_shared<Shader>();
     g_pComputeFrustumsComputeShader->LoadShaderFromFile(
         Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums",
-        "./resources/shaders");
+        "./resources/shaders", false, shaderMacros);
 
     auto numThreadGroups =
         Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),
@@ -162,7 +177,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
         lightGridFormat, CPUAccess::None, true);
 
-    UpdateGridFrustums();
+    UpdateGridFrustums(pCamera);
 
     DispatchParams dispatchParams;
     dispatchParams.m_NumThreadGroups = numThreadGroups;
@@ -198,7 +213,8 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_pLightCullingComputeShader->GetShaderParameterByName("DebugTexture")
         .Set(g_pLightCullingDebugTexture);
 
-    g_pLightCullingHeatMap = LoadTexture(L"./resources/textures/LightCountHeatMap.psd");
+    // g_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.psd");
+    g_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.png");
     g_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
         .Set(g_pLightCullingHeatMap);
 
