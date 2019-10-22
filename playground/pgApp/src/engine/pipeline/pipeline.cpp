@@ -20,7 +20,7 @@ void pgPipeline::InitPSODesc()
         color0 ? color0->GetTexture()->GetDesc().Format : pgApp::s_desc.ColorBufferFormat;
 
     auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
-    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : pgApp::s_desc.DepthBufferFormat;
+    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     // This tutorial will render to a single render target
     m_PSODesc.GraphicsPipeline.NumRenderTargets = (uint8_t)m_pRenderTarget->GetNumRTVs();

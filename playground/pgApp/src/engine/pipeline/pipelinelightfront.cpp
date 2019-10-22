@@ -14,12 +14,20 @@ void PipelineLightFront::InitPSODesc()
 
     m_PSODesc.Name = "PipelineLightFront PSO";
 
+    //auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    //auto color0Format =
+    //    color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
+
+    auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : pgApp::s_desc.DepthBufferFormat;
+
     // This tutorial will render to a single render target
     m_PSODesc.GraphicsPipeline.NumRenderTargets = 0;
     // Set render target format which is the format of the swap chain's color buffer
     // m_PSODesc.GraphicsPipeline.RTVFormats[0] = pgApp::s_desc.ColorBufferFormat;
     // Set depth buffer format which is the format of the swap chain's back buffer
-    m_PSODesc.GraphicsPipeline.DSVFormat = pgApp::s_desc.DepthBufferFormat;
+    m_PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
+
     // Primitive topology defines what kind of primitives will be rendered by this pipeline state
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     // Cull back faces

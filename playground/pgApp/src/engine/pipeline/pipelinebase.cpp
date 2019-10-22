@@ -19,7 +19,7 @@ void PipelineBase::InitPSODesc()
 
     auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
     auto color0Format =
-        color0 ? color0->GetTexture()->GetDesc().Format : pgApp::s_desc.ColorBufferFormat;
+        color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
     auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : pgApp::s_desc.DepthBufferFormat;

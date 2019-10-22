@@ -13,6 +13,8 @@
 #include "../pipeline/pipelinedispatch.h"
 #include "../pipeline/pipelinetransparent.h"
 
+const uint32_t AVERAGE_OVERLAPPING_LIGHTS_PER_TILE = 200u;
+
 TechniqueForwardPlus::TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt,
                                            std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer)
@@ -35,6 +37,17 @@ void TechniqueForwardPlus::UpdateGridFrustums()
     Diligent::uint3 numThreadGroups =
         Diligent::uint3((uint32_t)ceil(numThreads.x / (float)g_LightCullingBlockSize),
                         (uint32_t)ceil(numThreads.y / (float)g_LightCullingBlockSize), 1);
+
+    g_pLightIndexListOpaque = std::make_shared<StructuredBuffer>(
+        nullptr,
+        numThreadGroups.x * numThreadGroups.y * numThreadGroups.z *
+            AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
+        (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
+    g_pLightIndexListTransparent = std::make_shared<StructuredBuffer>(
+        nullptr,
+        numThreadGroups.x * numThreadGroups.y * numThreadGroups.z *
+            AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
+        (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
     // Update the number of thread groups for the compute frustums compute shader.
     DispatchParams dispatchParams;
@@ -64,8 +77,8 @@ void TechniqueForwardPlus::UpdateGridFrustums()
     std::shared_ptr<PassDispatch> frustumComputeDispatchPass =
         std::make_shared<PassDispatch>(this, dispatchPipeline);
 
-	frustumComputeDispatchPass->PreRender();
-	frustumComputeDispatchPass->Render();
+    frustumComputeDispatchPass->PreRender();
+    frustumComputeDispatchPass->Render();
     frustumComputeDispatchPass->PostRender();
 
     // Update the light culling compute shader with the computed grid frustums StructuredBuffer.
@@ -92,7 +105,8 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
     AddPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRenderTarget);
+    std::shared_ptr<PassClearRT> pClearRTPass =
+        std::make_shared<PassClearRT>(this, m_pRenderTarget);
     AddPass(pClearRTPass);
 
     g_pVertexShader = std::make_shared<Shader>();
@@ -104,7 +118,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     //                                              "PS_main", "./resources/shaders");
     g_pForwardPlusPixelShader->LoadShaderFromFile(
         Shader::Shader::PixelShader, "ForwardPlusRendering.hlsl", "PS_main", "./resources/shaders");
-#if 1
+
     // Will be mapped to the "DispatchParams" in the Forward+ compute shaders.
     g_pDispatchParamsConstantBuffer =
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(DispatchParams));
@@ -188,6 +202,11 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
         .Set(g_pLightCullingHeatMap);
 
+    auto lightsSB =
+        std::dynamic_pointer_cast<StructuredBuffer>(this->Get(pgPassRender::kLightsName));
+
+    g_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
+
     //
     g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
     g_pDepthOnlyRenderTarget->AttachTexture(
@@ -214,13 +233,6 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         std::make_shared<PassDispatch>(this, dispatchPipeline);
     AddPass(g_LightCullingDispatchPass);
 
-    AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
-        // Make sure the pixel shader has the right parameters set before executing the opaque pass.
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
-            .Set(g_pLightIndexListOpaque);
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid").Set(g_pLightGridOpaque);
-    }));
-#endif
     //
     g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
 
@@ -236,12 +248,19 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
         g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
+            .Set(g_pLightIndexListOpaque);
+        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid").Set(g_pLightGridOpaque);
+    }));
+
+    AddPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
+
+    AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
+        // Make sure the pixel shader has the right parameters set before executing the opaque pass.
+        g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
             .Set(g_pLightIndexListTransparent);
         g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid")
             .Set(g_pLightGridTransparent);
     }));
-
-    AddPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
 
     AddPass(
         std::make_shared<PassTransparent>(this, scene, g_pForwardPlusTransparentPipeline, lights));
