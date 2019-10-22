@@ -125,8 +125,12 @@ void CS_main( ComputeShaderInput IN )
 
 	// right-handed: the camera pointing towards the -z axis in view space
     // Clipping plane for minimum depth value 
-    // (used for testing lights within the bounds of opaque geometry).
+#ifdef RIGHT_HANDED
     Plane minPlane = { float3( 0, 0, -1 ), -minDepthVS };
+#else
+    // (used for testing lights within the bounds of opaque geometry).
+    Plane minPlane = { float3( 0, 0, 1 ), minDepthVS };
+#endif
 
     // Cull lights
     // Each thread in a group will cull 1 light until all lights have been culled.
@@ -243,8 +247,12 @@ RWStructuredBuffer<Frustum> out_Frustums : register( u0 );
 [numthreads( BLOCK_SIZE, BLOCK_SIZE, 1 )]
 void CS_ComputeFrustums( ComputeShaderInput IN )
 {
+#ifdef RIGHT_HANDED    
 	//right-handed: the camera is looking in the -z axis in view space
 	float zAxis = -1;
+#else
+	float zAxis = 1;
+#endif
 	
     // View space eye position is always at the origin.
     const float3 eyePos = float3( 0, 0, 0 );

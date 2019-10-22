@@ -220,8 +220,13 @@ Plane ComputePlane( float3 p0, float3 p1, float3 p2 )
 {
     Plane plane;
 
+#ifdef RIGHT_HANDED
     float3 v0 = p1 - p0;
     float3 v2 = p2 - p0;
+#else
+    float3 v0 = p2 - p0;
+    float3 v2 = p1 - p0;
+#endif
 
     plane.N = normalize( cross( v0, v2 ) );
 
@@ -267,7 +272,11 @@ bool SphereInsideFrustum( Sphere sphere, Frustum frustum, float zNear, float zFa
     // First check depth
     // right-handed: Here, the view vector points in the -Z axis so the 
     // far depth value will be approaching -infinity.
+#ifdef RIGHT_HANDED
     if ( sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar )
+#else
+    if ( sphere.c.z - sphere.r > zFar || sphere.c.z + sphere.r < zNear )
+#endif
     {
         result = false;
     }
