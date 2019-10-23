@@ -66,8 +66,14 @@ void AppTest::initLightData()
 
     pgLight light2;
 
+#if RIGHT_HANDED	
+	float dirz = -0.760157943f;
+#else
+    float dirz = 0.760157943f;
+#endif
+
     light2.m_PositionWS = { -16.1441193f, 2.10133481f, 21.5686855f, 1.00000000f };
-    light2.m_DirectionWS = { 0.585131526f, -0.282768548f, -0.760157943f, 0.000000000f };
+    light2.m_DirectionWS = { 0.585131526f, -0.282768548f, dirz, 0.000000000f };
     light2.m_PositionVS = { 0, 0, 0, 1.f};
     light2.m_DirectionVS = { 0, 0, 0, 1.f};
     light2.m_Color = { .4f, 0.4f, 0.4f, 1.0f };

@@ -54,7 +54,7 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarge
 #if RIGHT_HANDED
     m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
 #else
-    m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, -1);
+    m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
 #endif
 
     m_pTechniqueSphere = std::make_shared<pgTechnique>(nullptr, nullptr);

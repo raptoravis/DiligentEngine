@@ -29,7 +29,7 @@ void PipelineLightDir::InitPSODesc()
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
     // Cull back faces
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_NONE;
 #if RIGHT_HANDED
     m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
 #else
