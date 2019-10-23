@@ -121,7 +121,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     shaderMacros.AddShaderMacro("BLOCK_SIZE", g_LightCullingBlockSize);
 
 #if RIGHT_HANDED
-    bool bRightHanded = true;
+    bool bRightHanded = false;
 #else
     bool bRightHanded = false;
 #endif

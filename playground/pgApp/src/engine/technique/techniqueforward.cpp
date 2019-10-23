@@ -30,7 +30,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
 
 #if RIGHT_HANDED
-    bool bRightHanded = true;
+    bool bRightHanded = false;
 #else
     bool bRightHanded = false;
 #endif
