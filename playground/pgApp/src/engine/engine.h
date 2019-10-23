@@ -313,12 +313,12 @@ class Shader : public pgObject
     ParametersList GetConstantBuffers();
     ParametersList GetNonConstantBuffers();
 
-    void Bind();
-    void UnBind();
+    //void Bind();
+    //void UnBind();
 
   protected:
     // Destroy the contents of this shader (in case we are loading a new shader).
-    virtual void Destroy();
+    void Destroy();
 
   private:
     ShaderType m_ShaderType;

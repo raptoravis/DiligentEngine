@@ -223,16 +223,16 @@ Shader::ParametersList Shader::GetNonConstantBuffers()
     return ret;
 }
 
-void Shader::Bind()
-{
-    for (ParameterMap::value_type value : m_ShaderParameters) {
-        value.second->Bind();
-    }
-}
-
-void Shader::UnBind()
-{
-    for (ParameterMap::value_type value : m_ShaderParameters) {
-        value.second->UnBind();
-    }
-}
+//void Shader::Bind()
+//{
+//    for (ParameterMap::value_type value : m_ShaderParameters) {
+//        value.second->Bind();
+//    }
+//}
+//
+//void Shader::UnBind()
+//{
+//    for (ParameterMap::value_type value : m_ShaderParameters) {
+//        value.second->UnBind();
+//    }
+//}

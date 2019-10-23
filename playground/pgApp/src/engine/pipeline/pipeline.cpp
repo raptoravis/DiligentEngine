@@ -188,12 +188,12 @@ void pgPipeline::Bind()
 
     pgApp::s_ctx->SetStencilRef(m_stencilRef);
 
-    for (auto shader : m_Shaders) {
-        std::shared_ptr<Shader> pShader = shader.second;
-        if (pShader) {
-            pShader->Bind();
-        }
-    }
+    //for (auto shader : m_Shaders) {
+    //    std::shared_ptr<Shader> pShader = shader.second;
+    //    if (pShader) {
+    //        pShader->Bind();
+    //    }
+    //}
 
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
@@ -207,12 +207,12 @@ void pgPipeline::UnBind()
         m_pRenderTarget->UnBind();
     }
 
-    for (auto shader : m_Shaders) {
-        std::shared_ptr<Shader> pShader = shader.second;
-        if (pShader) {
-            pShader->UnBind();
-        }
-    }
+    //for (auto shader : m_Shaders) {
+    //    std::shared_ptr<Shader> pShader = shader.second;
+    //    if (pShader) {
+    //        pShader->UnBind();
+    //    }
+    //}
 }
 
 void pgPipeline::SetStaticVariables()
