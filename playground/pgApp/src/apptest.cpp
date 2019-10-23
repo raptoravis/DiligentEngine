@@ -163,7 +163,12 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
     if (m_renderingTechnique != RenderingTechnique::Test) {
-        pos = float3(0, 0, -25);
+#if RIGHT_HANDED
+        float z = 25;
+#else
+        float z = -25;
+#endif
+        pos = float3(0, 0, z);
     }
 
     m_pCamera = std::make_shared<pgCamera>(pos, Diligent::float3(0, 0, -1));
@@ -305,7 +310,13 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         if (m_renderingTechnique == RenderingTechnique::Test) {
             m_pCamera->reset(float3(0, 0, 0), float3(0, 0, -1));
         } else {
-            m_pCamera->reset(float3(0, 0, -25), float3(0, 0, -1));
+#if RIGHT_HANDED
+            float z = 25.0f;
+#else
+            float z = -25.0f;
+#endif
+
+            m_pCamera->reset(float3(0, 0, z), float3(0, 0, -1));
         }
     }
 

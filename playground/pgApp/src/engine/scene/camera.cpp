@@ -45,14 +45,11 @@ void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
 
 void pgCamera::setLook(const Diligent::float3& dir)
 {
-#if RIGHT_HANDED
     look = dir;
-#else
-    look = dir;
-#endif
 }
 
-Diligent::float3 pgCamera::getLook() const {
+Diligent::float3 pgCamera::getLook() const
+{
     return Diligent::float3(m_viewMatrix._31, m_viewMatrix._32, m_viewMatrix._33);
 }
 
@@ -73,9 +70,22 @@ static Diligent::float4x4 _setProjectionMatrix(float fov, float aspectRatio, flo
     mOut._22 = yScale;
 
     if (bIsGL) {
+        // Note that OpenGL uses right-handed coordinate system, where
+        // camera is looking in negative z direction:
+        //   OO
+        //  |__|<--------------------
+        //         -z             +z
+        // Consequently, OpenGL projection matrix given by these two
+        // references inverts z axis.
+
+        // We do not need to do this, because we use DX coordinate
+        // system for the camera space. Thus we need to invert the
+        // sign of the values in the third column in the matrix
+        // from the references:
+
         mOut._33 = -(-(zFar + zNear) / (zFar - zNear));
         mOut._43 = -2 * zNear * zFar / (zFar - zNear);
-        mOut._34 = (-1);
+        mOut._34 = -(-1);
     } else {
         mOut._33 = zFar / (zFar - zNear);
         mOut._43 = -zNear * zFar / (zFar - zNear);
@@ -152,9 +162,13 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
 
         float delta_time_sec = ElapsedTime;
 #if RIGHT_HANDED
-        //int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
-        int flag = 0;
+        int mf = moveForward;
+        int mb = moveBackward;
+        int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
 #else
+        int mf = moveBackward;
+        int mb = moveForward;
+
         int flag = 0;
 #endif
 
@@ -164,8 +178,8 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
                                  2.0f * (accelerate ? 5.0f : 1.0f),    // eye_speed
                                  0.1f,                                 // degrees_per_cursor_move
                                  80.0f,                                // max_pitch_rotation_degrees
-                                 (int)MouseDeltaX, (int)MouseDeltaY, moveBackward, moveLeft,
-                                 moveForward, moveRight, jump, crouch, flag);
+                                 (int)MouseDeltaX, (int)MouseDeltaY, mf, moveLeft, mb, moveRight,
+                                 jump, crouch, flag);
 
         // m_viewMatrix = m_viewMatrix.Transpose();
     }
