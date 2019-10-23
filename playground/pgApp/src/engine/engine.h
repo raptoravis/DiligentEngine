@@ -128,7 +128,7 @@ class pgCamera : public pgObject
 
     void reset();
     void reset(const Diligent::float3& p, const Diligent::float3& dir);
-    void setProjectionMatrix(float NearPlane, float FarPlane);
+    void setProjectionMatrix(float NearPlane, float FarPlane, bool bRightHanded = false);
 
     void update(Diligent::InputController* pInputController, float ElapsedTime);
 

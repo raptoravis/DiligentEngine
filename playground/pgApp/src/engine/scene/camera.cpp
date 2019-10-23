@@ -9,7 +9,7 @@
 pgCamera::pgCamera(const Diligent::float3 pos, const Diligent::float3 dir) : _pos(pos), _look(dir)
 {
     reset(_pos, _look);
-    setProjectionMatrix(0.1f, 100.f);
+    setProjectionMatrix(0.1f, 1000.f);
 }
 
 pgCamera::~pgCamera()
@@ -36,35 +36,31 @@ void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
     m_viewMatrix = Diligent::float4x4::Identity();
 }
 
-Diligent::float4x4 perspectiveRH_NO(float fovy, float aspect, float zNear, float zFar)
+//Diligent::float4x4 perspectiveRH_NO(float fovy, float aspect, float zNear, float zFar)
+//{
+//    assert(abs(aspect - std::numeric_limits<float>::epsilon()) > static_cast<float>(0));
+//
+//    float const tanHalfFovy = tan(fovy / static_cast<float>(2));
+//
+//    Diligent::float4x4 Result(static_cast<float>(0));
+//
+//    Result[0][0] = static_cast<float>(1) / (aspect * tanHalfFovy);
+//    Result[1][1] = static_cast<float>(1) / (tanHalfFovy);
+//    Result[2][2] = -(zFar + zNear) / (zFar - zNear);
+//    Result[2][3] = -static_cast<float>(1);
+//    Result[3][2] = -(static_cast<float>(2) * zFar * zNear) / (zFar - zNear);
+//    return Result;
+//}
+
+
+void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane, bool bRightHanded)
 {
-    assert(abs(aspect - std::numeric_limits<float>::epsilon()) > static_cast<float>(0));
-
-    float const tanHalfFovy = tan(fovy / static_cast<float>(2));
-
-    Diligent::float4x4 Result(static_cast<float>(0));
-
-    Result[0][0] = static_cast<float>(1) / (aspect * tanHalfFovy);
-    Result[1][1] = static_cast<float>(1) / (tanHalfFovy);
-    Result[2][2] = -(zFar + zNear) / (zFar - zNear);
-    Result[2][3] = -static_cast<float>(1);
-    Result[3][2] = -(static_cast<float>(2) * zFar * zNear) / (zFar - zNear);
-    return Result;
-}
-
-
-void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane)
-{
-    const bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
-
     float aspectRatio =
         static_cast<float>(pgApp::s_desc.Width) / static_cast<float>(pgApp::s_desc.Height);
 
     // Projection matrix differs between DX and OpenGL
     m_projectionMatrix = Diligent::float4x4::Projection(Diligent::PI_F / 4.f, aspectRatio,
-                                                        NearPlane, FarPlane, IsGL);
-    // m_projectionMatrix = perspectiveRH_NO(Diligent::PI_F / 4.f, aspectRatio, NearPlane,
-    // FarPlane);
+                                                        NearPlane, FarPlane, bRightHanded);
 }
 
 void pgCamera::update(Diligent::InputController* pInputController, float ElapsedTime)
