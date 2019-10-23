@@ -169,7 +169,12 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
         int mf = moveBackward;
         int mb = moveForward;
 
+		// dir is inverted and right is inverted
+		// side: -1, 0, 0
+		// up : 0, 1, 0
+		// dir: 0, 0, 1
         int flag = 0;
+        //int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
 #endif
 
         float* view = &m_viewMatrix.m00;

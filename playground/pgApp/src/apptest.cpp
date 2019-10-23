@@ -187,17 +187,20 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     if (m_renderingTechnique != RenderingTechnique::Test) {
 #if RIGHT_HANDED
         float z = 25;
+        dir = Diligent::float3(0, 0, -1);
 #else
         float z = -25;
+        // inverted by camera
+        dir = Diligent::float3(0, 0, -1);
 #endif
         pos = float3(0, 0, z);
     } else {
 #if RIGHT_HANDED
-        float z = 1.0f;
+        dir = Diligent::float3(0, 0, 1);
 #else
-        float z = -1.0f;
+		// inverted by camera
+        dir = Diligent::float3(0, 0, -1);
 #endif
-        dir = float3(0, 0, z);
     }
 
     m_pCamera = std::make_shared<pgCamera>(pos, dir);
@@ -338,20 +341,24 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         if (m_renderingTechnique == RenderingTechnique::Test) {
 #if RIGHT_HANDED
-            float z = 1.0f;
+            float3 dir = Diligent::float3(0, 0, 1);
 #else
-            float z = -1.0f;
+            // inverted by camera
+            float3 dir = Diligent::float3(0, 0, -1);
 #endif
 
-            m_pCamera->reset(float3(0, 0, 0), float3(0, 0, z));
+            m_pCamera->reset(float3(0, 0, 0), dir);
         } else {
 #if RIGHT_HANDED
+            float3 dir = Diligent::float3(0, 0, -1);
             float z = 25.0f;
 #else
+            // inverted by camera
+            float3 dir = Diligent::float3(0, 0, -1);
             float z = -25.0f;
 #endif
 
-            m_pCamera->reset(float3(0, 0, z), float3(0, 0, -1));
+            m_pCamera->reset(float3(0, 0, z), dir);
         }
     }
 
