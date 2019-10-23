@@ -4,7 +4,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(pgApp CXX)
 
-add_compile_definitions(_ENABLE_ATOMIC_ALIGNMENT_FIX=1)
+add_compile_definitions(
+	_ENABLE_ATOMIC_ALIGNMENT_FIX=1
+	RIGHT_HANDED=0
+	)
 
 set (DE_TOP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
