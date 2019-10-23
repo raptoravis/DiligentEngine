@@ -125,7 +125,7 @@ void CS_main( ComputeShaderInput IN )
 
 	// right-handed: the camera pointing towards the -z axis in view space
     // Clipping plane for minimum depth value 
-#ifdef RIGHT_HANDED
+#if RIGHT_HANDED
     Plane minPlane = { float3( 0, 0, -1 ), -minDepthVS };
 #else
     // (used for testing lights within the bounds of opaque geometry).
@@ -247,7 +247,7 @@ RWStructuredBuffer<Frustum> out_Frustums : register( u0 );
 [numthreads( BLOCK_SIZE, BLOCK_SIZE, 1 )]
 void CS_ComputeFrustums( ComputeShaderInput IN )
 {
-#ifdef RIGHT_HANDED    
+#if RIGHT_HANDED    
 	//right-handed: the camera is looking in the -z axis in view space
 	float zAxis = -1;
 #else

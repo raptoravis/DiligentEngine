@@ -118,22 +118,35 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pGBufferRT);
     AddPass(pClearRTPass);
 
+	uint32_t numLights = (uint32_t)lights->size();
+
+    Diligent::ShaderMacroHelper shaderMacros;
+    shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
+
+#if RIGHT_HANDED
+    bool bRightHanded = true;
+#else
+    bool bRightHanded = false;
+#endif
+    shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
+
     g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
-                                        "./resources/shaders");
+                                        "./resources/shaders", false, shaderMacros);
 
     g_pPixelShader = std::make_shared<Shader>();
     g_pPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl", "PS_main",
-                                       "./resources/shaders");
+                                       "./resources/shaders", false, shaderMacros);
 
     g_pGeometryPixelShader = std::make_shared<Shader>();
     g_pGeometryPixelShader->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
-                                               "PS_Geometry", "./resources/shaders");
+                                               "PS_Geometry", "./resources/shaders", false,
+                                               shaderMacros);
 
     g_pDeferredLightingPixelShader = std::make_shared<Shader>();
     g_pDeferredLightingPixelShader->LoadShaderFromFile(
-        Shader::PixelShader, "DeferredRendering.hlsl", "PS_DeferredLighting",
-        "./resources/shaders");
+        Shader::PixelShader, "DeferredRendering.hlsl", "PS_DeferredLighting", "./resources/shaders",
+        false, shaderMacros);
 
     g_pGeometryPipeline = std::make_shared<PipelineBase>(m_pGBufferRT);
     g_pGeometryPipeline->SetShader(Shader::VertexShader, g_pVertexShader);

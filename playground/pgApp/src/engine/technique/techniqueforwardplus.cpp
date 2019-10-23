@@ -11,8 +11,8 @@
 
 #include "../pipeline/pipelinebase.h"
 #include "../pipeline/pipelinedispatch.h"
-#include "../pipeline/pipelinetransparent.h"
 #include "../pipeline/pipelinefpopaque.h"
+#include "../pipeline/pipelinetransparent.h"
 
 const uint32_t AVERAGE_OVERLAPPING_LIGHTS_PER_TILE = 200u;
 
@@ -114,15 +114,27 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         std::make_shared<PassClearRT>(this, m_pRenderTarget);
     AddPass(pClearRTPass);
 
+    uint32_t numLights = (uint32_t)lights->size();
+
+    Diligent::ShaderMacroHelper shaderMacros;
+    shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
+    shaderMacros.AddShaderMacro("BLOCK_SIZE", g_LightCullingBlockSize);
+
+#if RIGHT_HANDED
+    bool bRightHanded = true;
+#else
+    bool bRightHanded = false;
+#endif
+    shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
+
     g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
-                                        "./resources/shaders");
+                                        "./resources/shaders", false, shaderMacros);
 
     g_pForwardPlusPixelShader = std::make_shared<Shader>();
-    // g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl",
-    //                                              "PS_main", "./resources/shaders");
-    g_pForwardPlusPixelShader->LoadShaderFromFile(
-        Shader::Shader::PixelShader, "ForwardPlusRendering.hlsl", "PS_main", "./resources/shaders");
+    g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::Shader::PixelShader,
+                                                  "ForwardPlusRendering.hlsl", "PS_main",
+                                                  "./resources/shaders", false, shaderMacros);
 
     // Will be mapped to the "DispatchParams" in the Forward+ compute shaders.
     g_pDispatchParamsConstantBuffer =
@@ -145,12 +157,6 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
     g_pLightListIndexCounterTransparent = std::make_shared<StructuredBuffer>(
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
-
-    uint32_t numLights = (uint32_t)lights->size();
-
-	Diligent::ShaderMacroHelper shaderMacros;
-    shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
-    shaderMacros.AddShaderMacro("BLOCK_SIZE", g_LightCullingBlockSize);
 
     g_pLightCullingComputeShader = std::make_shared<Shader>();
     g_pLightCullingComputeShader->LoadShaderFromFile(Shader::ComputeShader,
@@ -247,7 +253,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     AddPass(g_LightCullingDispatchPass);
 
     //
-    //g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
+    // g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     g_pForwardPlusOpaquePipeline = std::make_shared<PipelineFPOpaque>(m_pRenderTarget);
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);

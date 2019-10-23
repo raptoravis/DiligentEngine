@@ -25,13 +25,24 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
     std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRenderTarget);
     AddPass(pClearRTPass);
 
+	uint32_t numLights = (uint32_t)lights->size();
+    Diligent::ShaderMacroHelper shaderMacros;
+    shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
+
+#if RIGHT_HANDED
+    bool bRightHanded = true;
+#else
+    bool bRightHanded = false;
+#endif
+    shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
+
     g_pVertexShader = std::make_shared<Shader>();
     g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
-                                        "./resources/shaders");
+                                        "./resources/shaders", false, shaderMacros);
 
     g_pPixelShader = std::make_shared<Shader>();
     g_pPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl", "PS_main",
-                                       "./resources/shaders");
+                                       "./resources/shaders", false, shaderMacros);
 
     g_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     g_pOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
