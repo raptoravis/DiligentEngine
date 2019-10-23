@@ -75,6 +75,12 @@ pgBuffer::pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer)
     }
 }
 
+pgBuffer::~pgBuffer()
+{
+    m_pBuffer.Release();
+    m_pBuffer.Detach();
+}
+
 Diligent::IBuffer* pgBuffer::GetBuffer()
 {
     return m_pBuffer;

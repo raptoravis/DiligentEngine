@@ -46,7 +46,8 @@ pgTexture::pgTexture(Diligent::ITexture* texture)
 }
 
 pgTexture::~pgTexture() {
-	//
+    m_pTexture.Release();
+    m_pTexture.Detach();
 }
 
 Diligent::ITexture* pgTexture::GetTexture() {

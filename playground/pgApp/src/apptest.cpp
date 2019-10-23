@@ -168,6 +168,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 {
     SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
+	// _CrtSetBreakAlloc(38791);
+
     //
     pgApp::s_device.Attach(pDevice);
     pgApp::s_ctx.Attach(*ppContexts);

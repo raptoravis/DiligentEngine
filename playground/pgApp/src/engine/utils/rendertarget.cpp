@@ -1,32 +1,37 @@
 #include "../engine.h"
 
-pgRenderTarget::pgRenderTarget()
-    : m_Width( 0 )
-    , m_Height( 0 )
-    , m_bCheckValidity( false )
+pgRenderTarget::pgRenderTarget() : m_Width(0), m_Height(0), m_bCheckValidity(false)
 {
-    m_Textures.resize( (size_t)pgRenderTarget::AttachmentPoint::NumAttachmentPoints + 1 );
-    m_StructuredBuffers.resize( 8 );
+    m_Textures.resize((size_t)pgRenderTarget::AttachmentPoint::NumAttachmentPoints + 1);
+    m_StructuredBuffers.resize(8);
 }
 
-pgRenderTarget::~pgRenderTarget()
+pgRenderTarget::~pgRenderTarget() 
 {
+    //for (uint32_t i = 0; i < 8; i++) {
+    //    std::shared_ptr<pgTexture> texture = m_Textures[i];
+    //    if (texture) {
+    //        texture->GetTexture()->Release();
+    //    }
+    //}
 }
 
-void pgRenderTarget::AttachTexture( AttachmentPoint attachment, std::shared_ptr<pgTexture> texture )
+void pgRenderTarget::AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture)
 {
+    //texture->GetTexture()->AddRef();
     m_Textures[(uint32_t)attachment] = texture;
 
     // Next time the render target is "bound", check that it is valid.
     m_bCheckValidity = true;
 }
 
-std::shared_ptr<pgTexture> pgRenderTarget::GetTexture( AttachmentPoint attachment )
+std::shared_ptr<pgTexture> pgRenderTarget::GetTexture(AttachmentPoint attachment)
 {
     return m_Textures[(uint32_t)attachment];
 }
 
-uint32_t pgRenderTarget::GetNumRTVs() const {
+uint32_t pgRenderTarget::GetNumRTVs() const
+{
     uint32_t numRTVs = 0;
 
     for (uint32_t i = 0; i < 8; i++) {
@@ -36,30 +41,30 @@ uint32_t pgRenderTarget::GetNumRTVs() const {
         }
     }
 
-	return numRTVs;
+    return numRTVs;
 }
 
-void pgRenderTarget::Clear( AttachmentPoint attachment, pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil )
+void pgRenderTarget::Clear(AttachmentPoint attachment, pgClearFlags clearFlags,
+                           const Diligent::float4& color, float depth, uint8_t stencil)
 {
     auto texture = m_Textures[(uint32_t)attachment];
-    if ( texture )
-    {
-        texture->Clear( clearFlags, color, depth, stencil );
+    if (texture) {
+        texture->Clear(clearFlags, color, depth, stencil);
     }
 }
 
-void pgRenderTarget::Clear( pgClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil )
+void pgRenderTarget::Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth,
+                           uint8_t stencil)
 {
-    for ( uint32_t i = 0; i < (uint32_t)AttachmentPoint::NumAttachmentPoints; ++i )
-    {
-        Clear( (AttachmentPoint)i, clearFlags, color, depth, stencil );
+    for (uint32_t i = 0; i < (uint32_t)AttachmentPoint::NumAttachmentPoints; ++i) {
+        Clear((AttachmentPoint)i, clearFlags, color, depth, stencil);
     }
 }
 
 void pgRenderTarget::GenerateMipMaps()
 {
-	assert(0);
-    //for ( auto texture : m_Textures )
+    assert(0);
+    // for ( auto texture : m_Textures )
     //{
     //    if ( texture )
     //    {
@@ -68,7 +73,7 @@ void pgRenderTarget::GenerateMipMaps()
     //}
 }
 
-void pgRenderTarget::AttachStructuredBuffer(uint8_t slot, std::shared_ptr<pgBuffer> rwBuffer )
+void pgRenderTarget::AttachStructuredBuffer(uint8_t slot, std::shared_ptr<pgBuffer> rwBuffer)
 {
     m_StructuredBuffers[slot] = rwBuffer;
 
@@ -76,20 +81,19 @@ void pgRenderTarget::AttachStructuredBuffer(uint8_t slot, std::shared_ptr<pgBuff
     m_bCheckValidity = true;
 }
 
-std::shared_ptr<pgBuffer> pgRenderTarget::GetStructuredBuffer(uint8_t slot )
+std::shared_ptr<pgBuffer> pgRenderTarget::GetStructuredBuffer(uint8_t slot)
 {
-    if ( slot < m_StructuredBuffers.size() )
-    {
+    if (slot < m_StructuredBuffers.size()) {
         return m_StructuredBuffers[slot];
     }
     return std::shared_ptr<pgBuffer>();
 }
 
 
-void pgRenderTarget::Resize( uint16_t width, uint16_t height )
+void pgRenderTarget::Resize(uint16_t width, uint16_t height)
 {
-	assert(0);
-    //if ( m_Width != width || m_Height != height )
+    assert(0);
+    // if ( m_Width != width || m_Height != height )
     //{
     //    m_Width = std::max<uint16_t>( width, 1 );
     //    m_Height = std::max<uint16_t>( height, 1 );
@@ -106,60 +110,53 @@ void pgRenderTarget::Resize( uint16_t width, uint16_t height )
 
 void pgRenderTarget::Bind()
 {
-    if ( m_bCheckValidity )
-    {
-        if ( !IsValid() )
-        {
-            ReportError( "Invalid render target." );
+    if (m_bCheckValidity) {
+        if (!IsValid()) {
+            ReportError("Invalid render target.");
         }
         m_bCheckValidity = false;
     }
 
     Diligent::ITextureView* renderTargetViews[8];
-	uint32_t numRTVs = 0;
+    uint32_t numRTVs = 0;
 
-    for ( uint32_t i = 0; i < 8; i++ )
-    {
+    for (uint32_t i = 0; i < 8; i++) {
         std::shared_ptr<pgTexture> texture = m_Textures[i];
-        if ( texture )
-        {
+        if (texture) {
             renderTargetViews[numRTVs++] = texture->GetRenderTargetView();
         }
     }
 
-	Diligent::IBufferView* uavViews[8];
-    //uint32_t uavStartSlot = numRTVs;
+    Diligent::IBufferView* uavViews[8];
+    // uint32_t uavStartSlot = numRTVs;
     uint32_t numUAVs = 0;
 
-    for (uint32_t i = 0; i < 8; i++ )
-    {
+    for (uint32_t i = 0; i < 8; i++) {
         std::shared_ptr<pgBuffer> rwbuffer = m_StructuredBuffers[i];
-        if ( rwbuffer )
-        {
+        if (rwbuffer) {
             uavViews[numUAVs++] = rwbuffer->GetUnorderedAccessView();
         }
     }
-    
-	Diligent::ITextureView* depthStencilView = nullptr;
-    std::shared_ptr<pgTexture> depthTexture = m_Textures[(uint32_t)AttachmentPoint::Depth];
-    std::shared_ptr<pgTexture> depthStencilTexture = m_Textures[(uint32_t)AttachmentPoint::DepthStencil];
 
-    if ( depthTexture )
-    {
+    Diligent::ITextureView* depthStencilView = nullptr;
+    std::shared_ptr<pgTexture> depthTexture = m_Textures[(uint32_t)AttachmentPoint::Depth];
+    std::shared_ptr<pgTexture> depthStencilTexture =
+        m_Textures[(uint32_t)AttachmentPoint::DepthStencil];
+
+    if (depthTexture) {
         depthStencilView = depthTexture->GetDepthStencilView();
-    }
-    else if ( depthStencilTexture )
-    {
+    } else if (depthStencilTexture) {
         depthStencilView = depthStencilTexture->GetDepthStencilView();
     }
 
-	pgApp::s_ctx->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView, 
-		Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    pgApp::s_ctx->SetRenderTargets(numRTVs, renderTargetViews, depthStencilView,
+                                   Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
 void pgRenderTarget::UnBind()
 {
-	pgApp::s_ctx->SetRenderTargets( 0, nullptr, nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    pgApp::s_ctx->SetRenderTargets(0, nullptr, nullptr,
+                                   Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
 bool pgRenderTarget::IsValid() const
@@ -168,44 +165,33 @@ bool pgRenderTarget::IsValid() const
     int width = -1;
     int height = -1;
 
-    for ( auto texture : m_Textures )
-    {
-        if ( texture )
-        {
-			if (texture->GetRenderTargetView()) {
-				++numRTV;
-			}
+    for (auto texture : m_Textures) {
+        if (texture) {
+            if (texture->GetRenderTargetView()) {
+                ++numRTV;
+            }
 
-            if ( width == -1 || height == -1 )
-            {
+            if (width == -1 || height == -1) {
                 width = texture->GetWidth();
                 height = texture->GetHeight();
-            }
-            else
-            {
-                if ( texture->GetWidth() != width || texture->GetHeight() != height )
-                {
+            } else {
+                if (texture->GetWidth() != width || texture->GetHeight() != height) {
                     return false;
                 }
             }
         }
     }
 
-	uint32_t numUAV = 0;
-    for ( auto rwBuffer : m_StructuredBuffers )
-    {
-        if ( rwBuffer )
-        {
+    uint32_t numUAV = 0;
+    for (auto rwBuffer : m_StructuredBuffers) {
+        if (rwBuffer) {
             ++numUAV;
         }
     }
 
-    if ( numRTV + numUAV > 8 )
-    {
+    if (numRTV + numUAV > 8) {
         return false;
     }
 
     return true;
 }
-
-

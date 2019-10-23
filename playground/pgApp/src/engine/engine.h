@@ -293,10 +293,11 @@ class Shader : public pgObject
     ShaderType GetType() const;
 
     // Shader loading
-    bool LoadShaderFromFile(
-        ShaderType type, const std::string& fileName, const std::string& entryPoint = "main",
-        const std::string& searchPaths = "", bool UseCombinedTextureSamplers = false,
-        const Diligent::ShaderMacro* shaderMacros = nullptr);
+    bool LoadShaderFromFile(ShaderType type, const std::string& fileName,
+                            const std::string& entryPoint = "main",
+                            const std::string& searchPaths = "",
+                            bool UseCombinedTextureSamplers = false,
+                            const Diligent::ShaderMacro* shaderMacros = nullptr);
 
     Diligent::RefCntAutoPtr<Diligent::IShader> GetShader() { return m_pShader; }
 
@@ -313,8 +314,8 @@ class Shader : public pgObject
     ParametersList GetConstantBuffers();
     ParametersList GetNonConstantBuffers();
 
-    //void Bind();
-    //void UnBind();
+    // void Bind();
+    // void UnBind();
 
   protected:
     // Destroy the contents of this shader (in case we are loading a new shader).
@@ -360,6 +361,7 @@ class pgBuffer : public pgResource
     enum BufferType { Unknown = 0, VertexBuffer, IndexBuffer, StructuredBuffer, ConstantBuffer };
 
     pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer);
+    virtual ~pgBuffer();
 
     Diligent::IBuffer* GetBuffer();
 
@@ -1012,7 +1014,7 @@ class pgPipeline : public pgObject
 
     void SetStencilRef(uint32_t ref);
 
-    //void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
+    // void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
     std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
 
     virtual void Bind();
