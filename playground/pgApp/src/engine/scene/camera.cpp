@@ -9,7 +9,13 @@
 pgCamera::pgCamera(const Diligent::float3 pos, const Diligent::float3 dir) : _pos(pos), _look(dir)
 {
     reset(_pos, _look);
-    setProjectionMatrix(0.1f, 1000.f);
+
+#if RIGHT_HANDED
+    bool bIsGL = true;
+#else
+    bool bIsGL = false;
+#endif
+    setProjectionMatrix(0.1f, 1000.f, bIsGL);
 }
 
 pgCamera::~pgCamera()
@@ -26,9 +32,10 @@ void pgCamera::reset()
 void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
 {
     // pos = { 0.0f, 0.0f, 0.0f };
-    pos = p;
+    setPos(p);
 
-    look = dir;
+    void setPos(const Diligent::float3& p);
+    setLook(dir);
     // look = { 0.0f, 0.0f, -1.0f };
     // look = { 0.0f, 0.0f, 1.0f };
     // look = { -1.0f, 0.0f, 0.0f };
@@ -36,31 +43,62 @@ void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
     m_viewMatrix = Diligent::float4x4::Identity();
 }
 
-//Diligent::float4x4 perspectiveRH_NO(float fovy, float aspect, float zNear, float zFar)
-//{
-//    assert(abs(aspect - std::numeric_limits<float>::epsilon()) > static_cast<float>(0));
-//
-//    float const tanHalfFovy = tan(fovy / static_cast<float>(2));
-//
-//    Diligent::float4x4 Result(static_cast<float>(0));
-//
-//    Result[0][0] = static_cast<float>(1) / (aspect * tanHalfFovy);
-//    Result[1][1] = static_cast<float>(1) / (tanHalfFovy);
-//    Result[2][2] = -(zFar + zNear) / (zFar - zNear);
-//    Result[2][3] = -static_cast<float>(1);
-//    Result[3][2] = -(static_cast<float>(2) * zFar * zNear) / (zFar - zNear);
-//    return Result;
-//}
+void pgCamera::setLook(const Diligent::float3& dir)
+{
+#if RIGHT_HANDED
+    look = dir;
+#else
+    look = dir;
+#endif
+}
+
+Diligent::float3 pgCamera::getLook() const {
+    return Diligent::float3(m_viewMatrix._31, m_viewMatrix._32, m_viewMatrix._33);
+}
+
+void pgCamera::setPos(const Diligent::float3& p)
+{
+    pos = p;
+}
+
+static void SetNearFarClipPlanes(Diligent::float4x4& mat, float zNear, float zFar, bool bIsGL) {}
+
+static Diligent::float4x4 _setProjectionMatrix(float fov, float aspectRatio, float zNear,
+                                               float zFar, bool bIsGL)
+{
+    Diligent::float4x4 mOut;
+    auto yScale = static_cast<float>(1) / std::tan(fov / static_cast<float>(2));
+    auto xScale = yScale / aspectRatio;
+    mOut._11 = xScale;
+    mOut._22 = yScale;
+
+    if (bIsGL) {
+        mOut._33 = -(-(zFar + zNear) / (zFar - zNear));
+        mOut._43 = -2 * zNear * zFar / (zFar - zNear);
+        mOut._34 = (-1);
+    } else {
+        mOut._33 = zFar / (zFar - zNear);
+        mOut._43 = -zNear * zFar / (zFar - zNear);
+        mOut._34 = 1;
+    }
 
 
-void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane, bool bRightHanded)
+    return mOut;
+}
+
+void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL)
 {
     float aspectRatio =
         static_cast<float>(pgApp::s_desc.Width) / static_cast<float>(pgApp::s_desc.Height);
 
-    // Projection matrix differs between DX and OpenGL
-    m_projectionMatrix = Diligent::float4x4::Projection(Diligent::PI_F / 4.f, aspectRatio,
-                                                        NearPlane, FarPlane, bRightHanded);
+    if (bIsGL) {
+        m_projectionMatrix =
+            _setProjectionMatrix(Diligent::PI_F / 4.f, aspectRatio, NearPlane, FarPlane, bIsGL);
+    } else {
+        // Projection matrix differs between DX and OpenGL
+        m_projectionMatrix = Diligent::float4x4::Projection(Diligent::PI_F / 4.f, aspectRatio,
+                                                            NearPlane, FarPlane, bIsGL);
+    }
 }
 
 void pgCamera::update(Diligent::InputController* pInputController, float ElapsedTime)
@@ -113,8 +151,12 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
         }
 
         float delta_time_sec = ElapsedTime;
-        // int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
+#if RIGHT_HANDED
+        //int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
         int flag = 0;
+#else
+        int flag = 0;
+#endif
 
         float* view = &m_viewMatrix.m00;
 

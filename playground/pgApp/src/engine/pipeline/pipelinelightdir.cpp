@@ -30,7 +30,12 @@ void PipelineLightDir::InitPSODesc()
 
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
-    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
+#if RIGHT_HANDED
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
+#else
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
+#endif
+
 
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_ONE;

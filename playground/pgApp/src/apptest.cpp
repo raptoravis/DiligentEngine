@@ -156,10 +156,10 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     createRT();
 
-    m_renderingTechnique = RenderingTechnique::ForwardPlus;
+    // m_renderingTechnique = RenderingTechnique::ForwardPlus;
     // m_renderingTechnique = RenderingTechnique::Deferred;
     // m_renderingTechnique = RenderingTechnique::Forward;
-    // m_renderingTechnique = RenderingTechnique::Test;
+    m_renderingTechnique = RenderingTechnique::Test;
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
     if (m_renderingTechnique != RenderingTechnique::Test) {
@@ -279,12 +279,11 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         // Quaternion rot = Quaternion(m_viewMatrix);
         // ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
         const float3& pos = m_pCamera->getPos();
-        const float3& look = m_pCamera->getLook();
+        float3 look = m_pCamera->getLook();
 
         ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
 
-        // we need to negative it
-        ImGui::Text("look: %f %f %f", -look.x, -look.y, -look.z);
+        ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
 
         if (ImGui::Button("Reset view")) {
             m_pCamera->reset();

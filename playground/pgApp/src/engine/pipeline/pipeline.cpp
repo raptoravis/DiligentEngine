@@ -36,7 +36,12 @@ void pgPipeline::InitPSODesc()
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
-    //m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
+#if RIGHT_HANDED
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = True;
+#else
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = False;
+#endif
+
 
     // Enable depth testing
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
