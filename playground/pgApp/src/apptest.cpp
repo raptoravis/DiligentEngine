@@ -156,12 +156,13 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     createRT();
 
-    // m_renderingTechnique = RenderingTechnique::ForwardPlus;
+    m_renderingTechnique = RenderingTechnique::ForwardPlus;
     // m_renderingTechnique = RenderingTechnique::Deferred;
     // m_renderingTechnique = RenderingTechnique::Forward;
-    m_renderingTechnique = RenderingTechnique::Test;
+    // m_renderingTechnique = RenderingTechnique::Test;
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
+    Diligent::float3 dir = Diligent::float3(0, 0, -1);
     if (m_renderingTechnique != RenderingTechnique::Test) {
 #if RIGHT_HANDED
         float z = 25;
@@ -169,9 +170,16 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         float z = -25;
 #endif
         pos = float3(0, 0, z);
+    } else {
+#if RIGHT_HANDED
+        float z = 1.0f;
+#else
+        float z = -1.0f;
+#endif
+        dir = float3(0, 0, z);
     }
 
-    m_pCamera = std::make_shared<pgCamera>(pos, Diligent::float3(0, 0, -1));
+    m_pCamera = std::make_shared<pgCamera>(pos, dir);
 
     // technique will clean up passed added in it
     m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
@@ -308,7 +316,13 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         m_renderingTechnique = (RenderingTechnique)technique;
 
         if (m_renderingTechnique == RenderingTechnique::Test) {
-            m_pCamera->reset(float3(0, 0, 0), float3(0, 0, -1));
+#if RIGHT_HANDED
+            float z = 1.0f;
+#else
+            float z = -1.0f;
+#endif
+
+            m_pCamera->reset(float3(0, 0, 0), float3(0, 0, z));
         } else {
 #if RIGHT_HANDED
             float z = 25.0f;

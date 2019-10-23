@@ -33,7 +33,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
         std::shared_ptr<MeshCubeTex> meshCubeTex = std::make_shared<MeshCubeTex>();
 
 #if RIGHT_HANDED
-        float z = -8.0f;
+        float z = 8.0f;
 #else
         float z = 8.0f;
 #endif
@@ -45,7 +45,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
         m_pSceneCube->setRootNode(root1);
 
 #if RIGHT_HANDED
-        z = -5.0f;
+        z = 5.0f;
 #else
         z = 5.0f;
 #endif
