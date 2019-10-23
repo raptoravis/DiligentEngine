@@ -31,7 +31,7 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
     uint32_t screenHeight = std::max(pgApp::s_desc.Height, 1u);
 
     ScreenToViewParams screenToViewParams;
-    screenToViewParams.m_InverseProjectionMatrix = pCamera->getProjectionMatrix();
+    screenToViewParams.m_InverseProjectionMatrix = pCamera->getProjectionMatrix().Inverse();
     screenToViewParams.m_ScreenDimensions =
         Diligent::float2((float)screenWidth, (float)screenHeight);
 
