@@ -151,7 +151,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     g_pGeometryPipeline = std::make_shared<PipelineBase>(m_pGBufferRT);
     g_pGeometryPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pGeometryPipeline->SetShader(Shader::PixelShader, g_pGeometryPixelShader);
-    g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);
+    //g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);
 
 	// not use lights
     std::shared_ptr<PassOpaque> pPassOpaque =
@@ -191,7 +191,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    //g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
         std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);

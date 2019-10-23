@@ -47,7 +47,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
     g_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     g_pOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pOpaquePipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    g_pOpaquePipeline->SetRenderTarget(m_pRenderTarget);
+    //g_pOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassOpaque> pOpaquePass =
         std::make_shared<PassOpaque>(this, scene, g_pOpaquePipeline, lights);
@@ -56,7 +56,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
     g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    //g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
         std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);

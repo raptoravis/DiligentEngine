@@ -1012,7 +1012,7 @@ class pgPipeline : public pgObject
 
     void SetStencilRef(uint32_t ref);
 
-    void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
+    //void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
     std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
 
     virtual void Bind();

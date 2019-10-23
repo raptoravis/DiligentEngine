@@ -143,16 +143,16 @@ void pgPipeline::SetStencilRef(uint32_t ref)
     m_stencilRef = ref;
 }
 
-void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
-{
-    if (!m_bInited) {
-        m_bInited = true;
-        InitPSODesc();
-    }
-
-    m_pRenderTarget = renderTarget;
-    m_bDirty = true;
-}
+//void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
+//{
+//    if (!m_bInited) {
+//        m_bInited = true;
+//        InitPSODesc();
+//    }
+//
+//    m_pRenderTarget = renderTarget;
+//    m_bDirty = true;
+//}
 
 std::shared_ptr<pgRenderTarget> pgPipeline::GetRenderTarget() const
 {

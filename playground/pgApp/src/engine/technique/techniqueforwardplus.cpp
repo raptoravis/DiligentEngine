@@ -235,7 +235,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_pDepthPrepassPipeline = std::make_shared<PipelineBase>(g_pDepthOnlyRenderTarget);
 
     g_pDepthPrepassPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
+    //g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
 
     AddPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
 
@@ -253,17 +253,16 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     AddPass(g_LightCullingDispatchPass);
 
     //
-    // g_pForwardPlusOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     g_pForwardPlusOpaquePipeline = std::make_shared<PipelineFPOpaque>(m_pRenderTarget);
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
+    //g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
     g_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    //g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
