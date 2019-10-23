@@ -17,8 +17,7 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
         auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
             parentTechnique->Get(pgPassRender::kScreenToViewParams));
 
-        pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer)
-            .Set(lightIndexCB);
+        pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer).Set(lightIndexCB);
         pixelShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
             .Set(screenToViewParamsCB);
 
@@ -52,7 +51,11 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarge
 {
     m_pPointLightScene = pgSceneAss::CreateSphere(1.0f);
     m_pSpotLightScene = pgSceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
+#if RIGHT_HANDED
+    m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
+#else
     m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, -1);
+#endif
 
     m_pTechniqueSphere = std::make_shared<pgTechnique>(nullptr, nullptr);
     m_pTechniqueSpot = std::make_shared<pgTechnique>(nullptr, nullptr);
@@ -91,8 +94,8 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
     pgRenderEventArgs& e = pgApp::s_eventArgs;
 
     {
-        auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->Get(kLightIndexBuffer));
+        auto lightIndexCB =
+            std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kLightIndexBuffer));
 
         LightParams lightParamData;
 
@@ -107,11 +110,15 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
         pgPassRender::PerObject perObjectData;
 
         if (light.m_Type == pgLight::LightType::Directional) {
-            // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
-            // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
-            bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
-            Diligent::float4x4 othoMat = Diligent::float4x4::Ortho(
-                (float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height, 0.f, 1.f, IsGL);
+// CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
+// CBConstants->ModelView = m_WorldViewMatrix.Transpose();
+// bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
+#if RIGHT_HANDED
+            bool IsGL = true;
+#else
+            bool IsGL = false;
+#endif
+            Diligent::float4x4 othoMat = Diligent::float4x4::Ortho(2.0f, 2.0f, 0.f, 1.f, IsGL);
 
             perObjectData.ModelViewProjection = othoMat;
             perObjectData.ModelView = float4x4::Identity();

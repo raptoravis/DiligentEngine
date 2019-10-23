@@ -36,25 +36,41 @@ void AppTest::initLightData()
 {
     pgLight light1;
 
-    light1.m_PositionVS = { -0.535466492f, -1.40531516f, 0.451306254f, 1.00000000f };
+    light1.m_PositionWS = { -2.5f, -1.40531516f, 0.451306254f, 1.00000000f };
     light1.m_DirectionWS = { 0.0116977794f, -0.170993939f, -0.985219836f, 0.000000000f };
-    light1.m_PositionVS = { -0.00858783722f, -0.924078941f, -32.9505081f, 1.00000000f };
-    light1.m_DirectionVS = { 0.0165561363f, -0.176791593f, -0.984109104f, 0.000000000f };
-    light1.m_Color = { 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f };
+    light1.m_PositionVS = { 0, 0, 0, 1.f };
+    light1.m_DirectionVS = { 0, 0, 0, 1.f };
+    light1.m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
     light1.m_SpotlightAngle = 36.2999992f;
-    light1.m_Range = 16.5599995f;
+    light1.m_Range = 12.f;
     light1.m_Intensity = 1.00000000f;
     light1.m_Enabled = 1;
     light1.m_Selected = 0;
     light1.m_Type = pgLight::LightType::Point;
 
+	m_Lights.push_back(light1);
+
+    light1.m_PositionWS = { 2.5f, -1.40531516f, 0.451306254f, 1.00000000f };
+    light1.m_DirectionWS = { 0.0116977794f, -0.170993939f, -0.985219836f, 0.000000000f };
+    light1.m_PositionVS = { 0, 0, 0, 1.f };
+    light1.m_DirectionVS = { 0, 0, 0, 1.f };
+    light1.m_Color = { 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f };
+    light1.m_SpotlightAngle = 36.2999992f;
+    light1.m_Range = 12.f;
+    light1.m_Intensity = 1.00000000f;
+    light1.m_Enabled = 1;
+    light1.m_Selected = 0;
+    light1.m_Type = pgLight::LightType::Spot;
+
+	m_Lights.push_back(light1);
+
     pgLight light2;
 
-    light2.m_PositionVS = { -16.1441193f, 2.10133481f, 21.5686855f, 1.00000000f };
+    light2.m_PositionWS = { -16.1441193f, 2.10133481f, 21.5686855f, 1.00000000f };
     light2.m_DirectionWS = { 0.585131526f, -0.282768548f, -0.760157943f, 0.000000000f };
-    light2.m_PositionVS = { -15.7199173f, 2.60687327f, -11.9134722f, 1.00000000f };
-    light2.m_DirectionVS = { 0.589790821f, -0.283460617f, -0.756172597f, 0.000000000f };
-    light2.m_Color = { 1.00000000f, 1.00000000f, 1.00000000f, 1.00000000f };
+    light2.m_PositionVS = { 0, 0, 0, 1.f};
+    light2.m_DirectionVS = { 0, 0, 0, 1.f};
+    light2.m_Color = { .4f, 0.4f, 0.4f, 1.0f };
     light2.m_SpotlightAngle = 45.f;
     light2.m_Range = 1.f;
     light2.m_Intensity = 1.00000000f;
@@ -62,7 +78,6 @@ void AppTest::initLightData()
     light2.m_Selected = 0;
     light2.m_Type = pgLight::LightType::Directional;
 
-    m_Lights.push_back(light1);
     m_Lights.push_back(light2);
 }
 
