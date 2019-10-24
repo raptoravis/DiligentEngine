@@ -43,16 +43,16 @@ void PipelineTexVertex::InitPSODesc() {
     //// to change on a per-instance basis
     // static ShaderResourceVariableDesc Vars[] =
     //{
-    //	{SHADER_TYPE_PIXEL, "g_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
+    //	{SHADER_TYPE_PIXEL, "m_Texture", SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}
     //};
     // m_PSODesc.ResourceLayout.Variables = Vars;
     // m_PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 
-    // Define static sampler for g_Texture. Static samplers should be used whenever possible
+    // Define static sampler for m_Texture. Static samplers should be used whenever possible
     // SamplerDesc SamLinearClampDesc{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
     //                                FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
     //                                TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
-    // static StaticSamplerDesc StaticSamplers[] = { { SHADER_TYPE_PIXEL, "g_Texture",
+    // static StaticSamplerDesc StaticSamplers[] = { { SHADER_TYPE_PIXEL, "m_Texture",
     //                                                SamLinearClampDesc } };
     // m_PSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
     // m_PSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
@@ -61,12 +61,12 @@ void PipelineTexVertex::InitPSODesc() {
                                     FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
                                     TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
 
-    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "g_Texture",
+    StaticSamplerDesc m_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "g_Texture",
                                                 linearClampSampler };
 
-    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+    m_LinearClampSampler = std::make_shared<SamplerState>(m_LinearClampSamplerDesc);
 
-    m_pPS->GetShaderParameterByName("g_Texture_sampler").Set(g_LinearClampSampler);
+    m_pPS->GetShaderParameterByName("g_Texture_sampler").Set(m_LinearClampSampler);
 
     m_pPS->GetShaderParameterByName("g_Texture").Set(m_Texture);
 }

@@ -18,35 +18,35 @@ class TechniqueDeferred : public pgTechnique
     void initDebug();
 
     std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-    std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
-    std::shared_ptr<pgRenderTarget> g_pColorOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> m_pColorOnlyRenderTarget;
     std::shared_ptr<pgTexture> m_depthStencilTexture;
 
     std::shared_ptr<ConstantBuffer> m_LightParamsCB;
     std::shared_ptr<ConstantBuffer> m_ScreenToViewParamsCB;
 
-	std::shared_ptr<Shader> g_pDebugTexturePixelShader;
-    std::shared_ptr<Shader> g_pDebugDepthTexturePixelShader;
+	std::shared_ptr<Shader> m_pDebugTexturePixelShader;
+    std::shared_ptr<Shader> m_pDebugDepthTexturePixelShader;
 
-    std::shared_ptr<Shader> g_pVertexShader;
-    std::shared_ptr<Shader> g_pPixelShader;
-    std::shared_ptr<Shader> g_pGeometryPixelShader;
-    std::shared_ptr<Shader> g_pDeferredLightingPixelShader;
+    std::shared_ptr<Shader> m_pVertexShader;
+    std::shared_ptr<Shader> m_pPixelShader;
+    std::shared_ptr<Shader> m_pGeometryPixelShader;
+    std::shared_ptr<Shader> m_pDeferredLightingPixelShader;
 
-    std::shared_ptr<pgPipeline> g_pDebugTexturePipeline;
-    std::shared_ptr<pgPipeline> g_pDebugDepthTexturePipeline;
+    std::shared_ptr<pgPipeline> m_pDebugTexturePipeline;
+    std::shared_ptr<pgPipeline> m_pDebugDepthTexturePipeline;
 
-    std::shared_ptr<pgPipeline> g_pGeometryPipeline;
-    std::shared_ptr<pgPipeline> g_pOpaquePipeline;
-    std::shared_ptr<pgPipeline> g_pTransparentPipeline;
+    std::shared_ptr<pgPipeline> m_pGeometryPipeline;
+    std::shared_ptr<pgPipeline> m_pOpaquePipeline;
+    std::shared_ptr<pgPipeline> m_pTransparentPipeline;
 
-    std::shared_ptr<SamplerState> g_LinearRepeatSampler;
-    std::shared_ptr<SamplerState> g_LinearClampSampler;
+    std::shared_ptr<SamplerState> m_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> m_LinearClampSampler;
 
-    std::shared_ptr<PassPostprocess> g_DebugTexture0Pass;
-    std::shared_ptr<PassPostprocess> g_DebugTexture1Pass;
-    std::shared_ptr<PassPostprocess> g_DebugTexture2Pass;
-    std::shared_ptr<PassPostprocess> g_DebugTexture3Pass;
+    std::shared_ptr<PassPostprocess> m_DebugTexture0Pass;
+    std::shared_ptr<PassPostprocess> m_DebugTexture1Pass;
+    std::shared_ptr<PassPostprocess> m_DebugTexture2Pass;
+    std::shared_ptr<PassPostprocess> m_DebugTexture3Pass;
 
     bool m_bDepth;
     bool m_bDiffuse;

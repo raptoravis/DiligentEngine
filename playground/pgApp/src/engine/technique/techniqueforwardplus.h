@@ -8,7 +8,7 @@
 
 using namespace Diligent;
 
-const uint16_t g_LightCullingBlockSize = 16;
+const uint16_t m_LightCullingBlockSize = 16;
 
 // Constant buffer to store the number of groups executed in a dispatch.
 __declspec(align(16)) struct DispatchParams {
@@ -34,45 +34,45 @@ class TechniqueForwardPlus : public pgTechnique
 {
     typedef pgTechnique base;
 
-    std::shared_ptr<Shader> g_pVertexShader;
+    std::shared_ptr<Shader> m_pVertexShader;
     // For light culling in compute shader
-    std::shared_ptr<Shader> g_pLightCullingComputeShader;
+    std::shared_ptr<Shader> m_pLightCullingComputeShader;
     // Compute the frustums for light culling.
-    std::shared_ptr<Shader> g_pComputeFrustumsComputeShader;
-    std::shared_ptr<Shader> g_pForwardPlusPixelShader;
+    std::shared_ptr<Shader> m_pComputeFrustumsComputeShader;
+    std::shared_ptr<Shader> m_pForwardPlusPixelShader;
 
-    std::shared_ptr<pgRenderTarget> g_pDepthOnlyRenderTarget;
-    std::shared_ptr<pgRenderTarget> g_pColorOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRenderTarget;
+    std::shared_ptr<pgRenderTarget> m_pColorOnlyRenderTarget;
 
-    std::shared_ptr<pgPipeline> g_pDepthPrepassPipeline;
-    std::shared_ptr<pgPipeline> g_pForwardPlusOpaquePipeline;
-    std::shared_ptr<pgPipeline> g_pForwardPlusTransparentPipeline;
+    std::shared_ptr<pgPipeline> m_pDepthPrepassPipeline;
+    std::shared_ptr<pgPipeline> m_pForwardPlusOpaquePipeline;
+    std::shared_ptr<pgPipeline> m_pForwardPlusTransparentPipeline;
 
-    std::shared_ptr<ConstantBuffer> g_pDispatchParamsConstantBuffer;
-    std::shared_ptr<ConstantBuffer> g_pScreenToViewParamsConstantBuffer;
+    std::shared_ptr<ConstantBuffer> m_pDispatchParamsConstantBuffer;
+    std::shared_ptr<ConstantBuffer> m_pScreenToViewParamsConstantBuffer;
 
     // Grid frustums for light culling.
-    std::shared_ptr<StructuredBuffer> g_pGridFrustums;
+    std::shared_ptr<StructuredBuffer> m_pGridFrustums;
     // The light index list stores the light indices per tile.
     // The light index list is produced by the light culling compute shader
     // and consumed by the forward+ pixel shader.
-    std::shared_ptr<StructuredBuffer> g_pLightIndexListOpaque;
-    std::shared_ptr<StructuredBuffer> g_pLightIndexListTransparent;
+    std::shared_ptr<StructuredBuffer> m_pLightIndexListOpaque;
+    std::shared_ptr<StructuredBuffer> m_pLightIndexListTransparent;
 
     // Keep track of the current index in the light list.
-    std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterOpaque;
-    std::shared_ptr<StructuredBuffer> g_pLightListIndexCounterTransparent;
+    std::shared_ptr<StructuredBuffer> m_pLightListIndexCounterOpaque;
+    std::shared_ptr<StructuredBuffer> m_pLightListIndexCounterTransparent;
 
-    std::shared_ptr<pgTexture> g_pLightGridOpaque;
-    std::shared_ptr<pgTexture> g_pLightGridTransparent;
+    std::shared_ptr<pgTexture> m_pLightGridOpaque;
+    std::shared_ptr<pgTexture> m_pLightGridTransparent;
 
     // For debugging of the light culling shader.
-    std::shared_ptr<pgTexture> g_pLightCullingDebugTexture;
+    std::shared_ptr<pgTexture> m_pLightCullingDebugTexture;
     // Heatmap texture for light culling debug.
-    std::shared_ptr<pgTexture> g_pLightCullingHeatMap;
+    std::shared_ptr<pgTexture> m_pLightCullingHeatMap;
 
-    std::shared_ptr<SamplerState> g_LinearRepeatSampler;
-    std::shared_ptr<SamplerState> g_LinearClampSampler;
+    std::shared_ptr<SamplerState> m_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> m_LinearClampSampler;
 
 
     void UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera);

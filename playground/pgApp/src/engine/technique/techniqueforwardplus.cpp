@@ -35,21 +35,21 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
     screenToViewParams.m_ScreenDimensions =
         Diligent::float2((float)screenWidth, (float)screenHeight);
 
-    g_pScreenToViewParamsConstantBuffer->Set(screenToViewParams);
+    m_pScreenToViewParamsConstantBuffer->Set(screenToViewParams);
 
     // To compute the frustums for the grid tiles, each thread will compute a single
     // frustum for the tile.
     Diligent::uint3 numThreads =
-        (Diligent::uint3((uint32_t)ceil(screenWidth / (float)g_LightCullingBlockSize),
-                         (uint32_t)ceil(screenHeight / (float)g_LightCullingBlockSize), 1));
+        (Diligent::uint3((uint32_t)ceil(screenWidth / (float)m_LightCullingBlockSize),
+                         (uint32_t)ceil(screenHeight / (float)m_LightCullingBlockSize), 1));
     Diligent::uint3 numThreadGroups =
-        Diligent::uint3((uint32_t)ceil(numThreads.x / (float)g_LightCullingBlockSize),
-                        (uint32_t)ceil(numThreads.y / (float)g_LightCullingBlockSize), 1);
+        Diligent::uint3((uint32_t)ceil(numThreads.x / (float)m_LightCullingBlockSize),
+                        (uint32_t)ceil(numThreads.y / (float)m_LightCullingBlockSize), 1);
 
-    g_pLightIndexListOpaque = std::make_shared<StructuredBuffer>(
+    m_pLightIndexListOpaque = std::make_shared<StructuredBuffer>(
         nullptr, numThreads.x * numThreads.y * numThreads.z * AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
         (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
-    g_pLightIndexListTransparent = std::make_shared<StructuredBuffer>(
+    m_pLightIndexListTransparent = std::make_shared<StructuredBuffer>(
         nullptr, numThreads.x * numThreads.y * numThreads.z * AVERAGE_OVERLAPPING_LIGHTS_PER_TILE,
         (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
@@ -57,26 +57,26 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
     DispatchParams dispatchParams;
     dispatchParams.m_NumThreadGroups = numThreadGroups;
     dispatchParams.m_NumThreads = numThreads;
-    g_pDispatchParamsConstantBuffer->Set(dispatchParams);
+    m_pDispatchParamsConstantBuffer->Set(dispatchParams);
 
     // Create a new RWStructuredBuffer for storing the grid frustums.
     // We need 1 frustum for each grid cell.
     // For 1280x720 screen resolution and 16x16 tile size, results in 80x45 grid
     // for a total of 3,600 frustums.
-    g_pGridFrustums =
+    m_pGridFrustums =
         std::make_shared<StructuredBuffer>(nullptr, numThreads.x * numThreads.y * numThreads.z,
                                            (uint32_t)sizeof(Frustum), CPUAccess::None, true);
 
     // Dispatch the compute shader to recompute the grid frustums.
-    g_pComputeFrustumsComputeShader->GetShaderParameterByName("DispatchParams")
-        .Set(g_pDispatchParamsConstantBuffer);
-    g_pComputeFrustumsComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
-        .Set(g_pScreenToViewParamsConstantBuffer);
-    g_pComputeFrustumsComputeShader->GetShaderParameterByName("out_Frustums").Set(g_pGridFrustums);
+    m_pComputeFrustumsComputeShader->GetShaderParameterByName("DispatchParams")
+        .Set(m_pDispatchParamsConstantBuffer);
+    m_pComputeFrustumsComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
+        .Set(m_pScreenToViewParamsConstantBuffer);
+    m_pComputeFrustumsComputeShader->GetShaderParameterByName("out_Frustums").Set(m_pGridFrustums);
 
     std::shared_ptr<PipelineDispatch> dispatchPipeline =
         std::make_shared<PipelineDispatch>(numThreadGroups);
-    dispatchPipeline->SetShader(Shader::ComputeShader, g_pComputeFrustumsComputeShader);
+    dispatchPipeline->SetShader(Shader::ComputeShader, m_pComputeFrustumsComputeShader);
 
     std::shared_ptr<PassDispatch> frustumComputeDispatchPass =
         std::make_shared<PassDispatch>(this, dispatchPipeline);
@@ -86,7 +86,7 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
     frustumComputeDispatchPass->PostRender();
 
     // Update the light culling compute shader with the computed grid frustums StructuredBuffer.
-    g_pLightCullingComputeShader->GetShaderParameterByName("in_Frustums").Set(g_pGridFrustums);
+    m_pLightCullingComputeShader->GetShaderParameterByName("in_Frustums").Set(m_pGridFrustums);
 }
 
 std::shared_ptr<pgTexture> TechniqueForwardPlus::LoadTexture(const std::string& path)
@@ -118,7 +118,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
 
     Diligent::ShaderMacroHelper shaderMacros;
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
-    shaderMacros.AddShaderMacro("BLOCK_SIZE", g_LightCullingBlockSize);
+    shaderMacros.AddShaderMacro("BLOCK_SIZE", m_LightCullingBlockSize);
 
 #if RIGHT_HANDED
     bool bRightHanded = false;
@@ -127,20 +127,20 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
 #endif
     shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
 
-    g_pVertexShader = std::make_shared<Shader>();
-    g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
+    m_pVertexShader = std::make_shared<Shader>();
+    m_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
                                         "./resources/shaders", false, shaderMacros);
 
-    g_pForwardPlusPixelShader = std::make_shared<Shader>();
-    g_pForwardPlusPixelShader->LoadShaderFromFile(Shader::Shader::PixelShader,
+    m_pForwardPlusPixelShader = std::make_shared<Shader>();
+    m_pForwardPlusPixelShader->LoadShaderFromFile(Shader::Shader::PixelShader,
                                                   "ForwardPlusRendering.hlsl", "PS_main",
                                                   "./resources/shaders", false, shaderMacros);
 
     // Will be mapped to the "DispatchParams" in the Forward+ compute shaders.
-    g_pDispatchParamsConstantBuffer =
+    m_pDispatchParamsConstantBuffer =
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(DispatchParams));
     // Will be mapped to the "ScreenToViewParams" in the CommonInclude.hlsl shader.
-    g_pScreenToViewParamsConstantBuffer =
+    m_pScreenToViewParamsConstantBuffer =
         std::make_shared<ConstantBuffer>((uint32_t)sizeof(ScreenToViewParams));
 
     // Light culling pass
@@ -153,18 +153,18 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
                                            (uint32_t)sizeof(uint32_t));
 
     // This one will be used as a RWStructuredBuffer in the compute shader.
-    g_pLightListIndexCounterOpaque = std::make_shared<StructuredBuffer>(
+    m_pLightListIndexCounterOpaque = std::make_shared<StructuredBuffer>(
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
-    g_pLightListIndexCounterTransparent = std::make_shared<StructuredBuffer>(
+    m_pLightListIndexCounterTransparent = std::make_shared<StructuredBuffer>(
         &lightListIndexCounterInitialValue, 1, (uint32_t)sizeof(uint32_t), CPUAccess::None, true);
 
-    g_pLightCullingComputeShader = std::make_shared<Shader>();
-    g_pLightCullingComputeShader->LoadShaderFromFile(Shader::ComputeShader,
+    m_pLightCullingComputeShader = std::make_shared<Shader>();
+    m_pLightCullingComputeShader->LoadShaderFromFile(Shader::ComputeShader,
                                                      "ForwardPlusRendering.hlsl", "CS_main",
                                                      "./resources/shaders", false, shaderMacros);
 
-    g_pComputeFrustumsComputeShader = std::make_shared<Shader>();
-    g_pComputeFrustumsComputeShader->LoadShaderFromFile(
+    m_pComputeFrustumsComputeShader = std::make_shared<Shader>();
+    m_pComputeFrustumsComputeShader->LoadShaderFromFile(
         Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums",
         "./resources/shaders", false, shaderMacros);
 
@@ -175,28 +175,28 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
                                     FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
                                     TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
 
-    StaticSamplerDesc g_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
+    StaticSamplerDesc m_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
                                                  linearRepeatSampler };
-    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL | SHADER_TYPE_COMPUTE,
+    StaticSamplerDesc m_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL | SHADER_TYPE_COMPUTE,
                                                 "LinearClampSampler", linearClampSampler };
 
-    g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
-    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+    m_LinearRepeatSampler = std::make_shared<SamplerState>(m_LinearRepeatSamplerDesc);
+    m_LinearClampSampler = std::make_shared<SamplerState>(m_LinearClampSamplerDesc);
 
-    g_pLightCullingComputeShader->GetShaderParameterByName("LinearClampSampler")
-        .Set(g_LinearClampSampler);
-    g_pForwardPlusPixelShader->GetShaderParameterByName("LinearRepeatSampler")
-        .Set(g_LinearRepeatSampler);
+    m_pLightCullingComputeShader->GetShaderParameterByName("LinearClampSampler")
+        .Set(m_LinearClampSampler);
+    m_pForwardPlusPixelShader->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(m_LinearRepeatSampler);
 
     auto numThreadGroups =
-        Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),
-                        (uint32_t)ceil(pgApp::s_desc.Height / (float)g_LightCullingBlockSize), 1);
+        Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)m_LightCullingBlockSize),
+                        (uint32_t)ceil(pgApp::s_desc.Height / (float)m_LightCullingBlockSize), 1);
 
     auto lightGridFormat = Diligent::TEX_FORMAT_RG32_UINT;
-    g_pLightGridOpaque = pgScene::CreateTexture2D(
+    m_pLightGridOpaque = pgScene::CreateTexture2D(
         (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
         lightGridFormat, CPUAccess::None, true);
-    g_pLightGridTransparent = pgScene::CreateTexture2D(
+    m_pLightGridTransparent = pgScene::CreateTexture2D(
         (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
         lightGridFormat, CPUAccess::None, true);
 
@@ -205,104 +205,104 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     DispatchParams dispatchParams;
     dispatchParams.m_NumThreadGroups = numThreadGroups;
     dispatchParams.m_NumThreads =
-        numThreadGroups * Diligent::uint3(g_LightCullingBlockSize, g_LightCullingBlockSize, 1);
-    g_pDispatchParamsConstantBuffer->Set(dispatchParams);
-    g_pLightCullingComputeShader->GetShaderParameterByName("DispatchParams")
-        .Set(g_pDispatchParamsConstantBuffer);
-    g_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
-        .Set(g_pScreenToViewParamsConstantBuffer);
+        numThreadGroups * Diligent::uint3(m_LightCullingBlockSize, m_LightCullingBlockSize, 1);
+    m_pDispatchParamsConstantBuffer->Set(dispatchParams);
+    m_pLightCullingComputeShader->GetShaderParameterByName("DispatchParams")
+        .Set(m_pDispatchParamsConstantBuffer);
+    m_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
+        .Set(m_pScreenToViewParamsConstantBuffer);
 
-    g_pLightCullingComputeShader->GetShaderParameterByName("o_LightGrid").Set(g_pLightGridOpaque);
-    g_pLightCullingComputeShader->GetShaderParameterByName("t_LightGrid")
-        .Set(g_pLightGridTransparent);
+    m_pLightCullingComputeShader->GetShaderParameterByName("o_LightGrid").Set(m_pLightGridOpaque);
+    m_pLightCullingComputeShader->GetShaderParameterByName("t_LightGrid")
+        .Set(m_pLightGridTransparent);
 
-    g_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexList")
-        .Set(g_pLightIndexListOpaque);
-    g_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexList")
-        .Set(g_pLightIndexListTransparent);
+    m_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexList")
+        .Set(m_pLightIndexListOpaque);
+    m_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexList")
+        .Set(m_pLightIndexListTransparent);
 
     std::shared_ptr<pgTexture> depthStencilBuffer =
         m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
-    g_pLightCullingComputeShader->GetShaderParameterByName("DepthTextureVS")
+    m_pLightCullingComputeShader->GetShaderParameterByName("DepthTextureVS")
         .Set(depthStencilBuffer);
-    g_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexCounter")
-        .Set(g_pLightListIndexCounterOpaque);
-    g_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexCounter")
-        .Set(g_pLightListIndexCounterTransparent);
+    m_pLightCullingComputeShader->GetShaderParameterByName("o_LightIndexCounter")
+        .Set(m_pLightListIndexCounterOpaque);
+    m_pLightCullingComputeShader->GetShaderParameterByName("t_LightIndexCounter")
+        .Set(m_pLightListIndexCounterTransparent);
 
-    g_pLightCullingDebugTexture =
+    m_pLightCullingDebugTexture =
         pgScene::CreateTexture2D((uint16_t)pgApp::s_desc.Width, (uint16_t)pgApp::s_desc.Height, 1,
                                  Diligent::TEX_FORMAT_RGBA32_FLOAT, CPUAccess::None, true);
-    g_pLightCullingComputeShader->GetShaderParameterByName("DebugTexture")
-        .Set(g_pLightCullingDebugTexture);
+    m_pLightCullingComputeShader->GetShaderParameterByName("DebugTexture")
+        .Set(m_pLightCullingDebugTexture);
 
-    // g_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.psd");
-    g_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.png");
-    g_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
-        .Set(g_pLightCullingHeatMap);
+    // m_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.psd");
+    m_pLightCullingHeatMap = LoadTexture("./resources/textures/LightCountHeatMap.png");
+    m_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
+        .Set(m_pLightCullingHeatMap);
 
     auto lightsSB =
         std::dynamic_pointer_cast<StructuredBuffer>(this->Get(pgPassRender::kLightsName));
 
-    g_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
+    m_pLightCullingComputeShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
 
     //
-    g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
-    g_pDepthOnlyRenderTarget->AttachTexture(
+    m_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    m_pDepthOnlyRenderTarget->AttachTexture(
         pgRenderTarget::AttachmentPoint::DepthStencil,
         m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
 
-    g_pDepthPrepassPipeline = std::make_shared<PipelineBase>(g_pDepthOnlyRenderTarget);
+    m_pDepthPrepassPipeline = std::make_shared<PipelineBase>(m_pDepthOnlyRenderTarget);
 
-    g_pDepthPrepassPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    // g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
+    m_pDepthPrepassPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    // m_pDepthPrepassPipeline->SetRenderTarget(m_pDepthOnlyRenderTarget);
 
-    AddPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
+    AddPass(std::make_shared<PassOpaque>(this, scene, m_pDepthPrepassPipeline, lights));
 
-    AddPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterOpaque,
+    AddPass(std::make_shared<PassCopyBuffer>(m_pLightListIndexCounterOpaque,
                                              lightListIndexCounterInitialBuffer));
-    AddPass(std::make_shared<PassCopyBuffer>(g_pLightListIndexCounterTransparent,
+    AddPass(std::make_shared<PassCopyBuffer>(m_pLightListIndexCounterTransparent,
                                              lightListIndexCounterInitialBuffer));
 
     std::shared_ptr<PipelineDispatch> dispatchPipeline =
         std::make_shared<PipelineDispatch>(numThreadGroups);
-    dispatchPipeline->SetShader(Shader::ComputeShader, g_pLightCullingComputeShader);
+    dispatchPipeline->SetShader(Shader::ComputeShader, m_pLightCullingComputeShader);
 
-    std::shared_ptr<PassDispatch> g_LightCullingDispatchPass =
+    std::shared_ptr<PassDispatch> m_LightCullingDispatchPass =
         std::make_shared<PassDispatch>(this, dispatchPipeline);
-    AddPass(g_LightCullingDispatchPass);
+    AddPass(m_LightCullingDispatchPass);
 
     //
-    g_pForwardPlusOpaquePipeline = std::make_shared<PipelineFPOpaque>(m_pRenderTarget);
+    m_pForwardPlusOpaquePipeline = std::make_shared<PipelineFPOpaque>(m_pRenderTarget);
 
-    g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    // g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
+    m_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    m_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, m_pForwardPlusPixelShader);
+    // m_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
-    g_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
-    g_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    g_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    // g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    m_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
+    m_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    m_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, m_pForwardPlusPixelShader);
+    // m_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
-            .Set(g_pLightIndexListOpaque);
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid").Set(g_pLightGridOpaque);
+        m_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
+            .Set(m_pLightIndexListOpaque);
+        m_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid").Set(m_pLightGridOpaque);
     }));
 
-    AddPass(std::make_shared<PassOpaque>(this, scene, g_pForwardPlusOpaquePipeline, lights));
+    AddPass(std::make_shared<PassOpaque>(this, scene, m_pForwardPlusOpaquePipeline, lights));
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
-            .Set(g_pLightIndexListTransparent);
-        g_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid")
-            .Set(g_pLightGridTransparent);
+        m_pForwardPlusPixelShader->GetShaderParameterByName("LightIndexList")
+            .Set(m_pLightIndexListTransparent);
+        m_pForwardPlusPixelShader->GetShaderParameterByName("LightGrid")
+            .Set(m_pLightGridTransparent);
     }));
 
     AddPass(
-        std::make_shared<PassTransparent>(this, scene, g_pForwardPlusTransparentPipeline, lights));
+        std::make_shared<PassTransparent>(this, scene, m_pForwardPlusTransparentPipeline, lights));
 
     {
         auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);

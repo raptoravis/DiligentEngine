@@ -37,12 +37,12 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
 #endif
     shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
 
-    g_pVertexShader = std::make_shared<Shader>();
-    g_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
+    m_pVertexShader = std::make_shared<Shader>();
+    m_pVertexShader->LoadShaderFromFile(Shader::VertexShader, "ForwardRendering.hlsl", "VS_main",
                                         "./resources/shaders", false, shaderMacros);
 
-    g_pPixelShader = std::make_shared<Shader>();
-    g_pPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl", "PS_main",
+    m_pPixelShader = std::make_shared<Shader>();
+    m_pPixelShader->LoadShaderFromFile(Shader::PixelShader, "ForwardRendering.hlsl", "PS_main",
                                        "./resources/shaders", false, shaderMacros);
 
     SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
@@ -52,32 +52,32 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
                                     FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
                                     TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
 
-    StaticSamplerDesc g_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
+    StaticSamplerDesc m_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
                                                  linearRepeatSampler };
-    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "LinearClampSampler",
+    StaticSamplerDesc m_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "LinearClampSampler",
                                                 linearClampSampler };
 
-    g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
-    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+    m_LinearRepeatSampler = std::make_shared<SamplerState>(m_LinearRepeatSamplerDesc);
+    m_LinearClampSampler = std::make_shared<SamplerState>(m_LinearClampSamplerDesc);
 
-    g_pPixelShader->GetShaderParameterByName("LinearRepeatSampler").Set(g_LinearRepeatSampler);
+    m_pPixelShader->GetShaderParameterByName("LinearRepeatSampler").Set(m_LinearRepeatSampler);
 
-    g_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
-    g_pOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    g_pOpaquePipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    // g_pOpaquePipeline->SetRenderTarget(m_pRenderTarget);
+    m_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
+    m_pOpaquePipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    m_pOpaquePipeline->SetShader(Shader::PixelShader, m_pPixelShader);
+    // m_pOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassOpaque> pOpaquePass =
-        std::make_shared<PassOpaque>(this, scene, g_pOpaquePipeline, lights);
+        std::make_shared<PassOpaque>(this, scene, m_pOpaquePipeline, lights);
     AddPass(pOpaquePass);
 
-    g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
-    g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    // g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    m_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
+    m_pTransparentPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    m_pTransparentPipeline->SetShader(Shader::PixelShader, m_pPixelShader);
+    // m_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
-        std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);
+        std::make_shared<PassTransparent>(this, scene, m_pTransparentPipeline, lights);
     AddPass(pTransparentPass);
 
     {

@@ -12,14 +12,14 @@ class TechniqueForward : public pgTechnique
 {
     typedef pgTechnique base;
 
-    std::shared_ptr<Shader> g_pVertexShader;
-    std::shared_ptr<Shader> g_pPixelShader;
+    std::shared_ptr<Shader> m_pVertexShader;
+    std::shared_ptr<Shader> m_pPixelShader;
 
-    std::shared_ptr<SamplerState> g_LinearRepeatSampler;
-    std::shared_ptr<SamplerState> g_LinearClampSampler;
+    std::shared_ptr<SamplerState> m_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> m_LinearClampSampler;
 
-    std::shared_ptr<pgPipeline> g_pOpaquePipeline;
-    std::shared_ptr<pgPipeline> g_pTransparentPipeline;
+    std::shared_ptr<pgPipeline> m_pOpaquePipeline;
+    std::shared_ptr<pgPipeline> m_pTransparentPipeline;
 
   public:
     TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
