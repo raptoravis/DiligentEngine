@@ -9,7 +9,7 @@ PassCopyTexture::PassCopyTexture(pgTechnique* parentTechnique,
 
 PassCopyTexture::~PassCopyTexture() {}
 
-void PassCopyTexture::Render()
+void PassCopyTexture::Render(pgPipeline* pipeline)
 {
     Diligent::CopyTextureAttribs CopyAttribs(
         m_srcTexture->GetTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,

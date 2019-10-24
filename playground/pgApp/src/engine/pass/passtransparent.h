@@ -18,6 +18,6 @@ public:
 
 	virtual ~PassTransparent();
 
-	virtual void Visit(pgMesh& mesh);
+	virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
 };
 

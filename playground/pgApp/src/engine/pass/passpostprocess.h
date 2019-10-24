@@ -17,9 +17,9 @@ class PassPostprocess : public pgPassRender
                     const Diligent::float4x4& projectionMatrix, std::shared_ptr<pgTexture> texture);
 
     virtual void PreRender();
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
 
-    virtual void Visit(pgSceneNode& node);
+    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
 
   protected:
   private:

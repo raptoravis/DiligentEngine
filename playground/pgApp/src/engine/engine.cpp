@@ -38,7 +38,7 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
 }
 
 pgRenderEventArgs::pgRenderEventArgs()
-    : pApp(0), pDeviceContext(0), pCamera(0), pPass(0), pScene(0), pSceneNode(0), pMaterial(0)
+    : pApp(0), pDeviceContext(0), pCamera(0)
 {
 }
 
@@ -51,14 +51,6 @@ void pgRenderEventArgs::set(float currentTime, float elapsedTime, pgApp* caller,
     pCamera = camera;
     CurrTime = currentTime;
     ElapsedTime = elapsedTime;
-
-    pTechnique = nullptr;
-    pPass = nullptr;
-    pPipeline = nullptr;
-    pScene = nullptr;
-    pSceneNode = nullptr;
-    pMaterial = nullptr;
-    pMesh = nullptr;
 }
 
 
@@ -163,7 +155,7 @@ void pgPass::PreRender()
     //
 }
 
-void pgPass::Render()
+void pgPass::Render(pgPipeline* pipeline)
 {
     //
 }
@@ -173,19 +165,19 @@ void pgPass::PostRender()
     //
 }
 
-void pgPass::Visit(pgScene& scene)
+void pgPass::Visit(pgScene& scene, pgPipeline* pipeline)
 {
     //
 }
 
-void pgPass::Visit(pgSceneNode& node)
+void pgPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     //
 }
 
-void pgPass::Visit(pgMesh& mesh)
+void pgPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
-    mesh.Render();
+    mesh.Render(pipeline);
 }
 
 
@@ -200,18 +192,16 @@ pgPassPilpeline::~pgPassPilpeline() {}
 
 void pgPassPilpeline::PreRender()
 {
-    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
-
     if (m_pPipeline) {
         m_pPipeline->Bind();
     }
 }
 
 
-void pgPassPilpeline::Render()
+void pgPassPilpeline::Render(pgPipeline* pipeline)
 {
     if (m_pScene) {
-        m_pScene->Accept(*this);
+        m_pScene->Accept(*this, m_pPipeline.get());
     }
 }
 

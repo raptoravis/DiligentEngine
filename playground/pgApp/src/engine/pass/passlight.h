@@ -67,10 +67,10 @@ class PassLight : public pgPass
     virtual ~PassLight();
 
     virtual void PreRender();
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
     virtual void PostRender();
 
     // Inherited from Visitor
-    virtual void Visit(pgScene& scene);
-    virtual void Visit(pgSceneNode& node);
+    virtual void Visit(pgScene& scene, pgPipeline* pipeline);
+    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
 };

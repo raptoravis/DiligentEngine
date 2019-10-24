@@ -8,13 +8,13 @@ PassOpaque::PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> sc
 
 PassOpaque::~PassOpaque() {}
 
-void PassOpaque::Visit(pgMesh& mesh)
+void PassOpaque::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
     std::shared_ptr<pgMaterial> pMaterial = mesh.getMaterial();
     if (pMaterial && !pMaterial->IsTransparent()) {
         SetMaterialData(pMaterial.get());
 
-        mesh.Render();
+        mesh.Render(pipeline);
     }
 }
 
@@ -23,7 +23,7 @@ void PassOpaque::PreRender()
     base::PreRender();
 }
 
-void PassOpaque::Render()
+void PassOpaque::Render(pgPipeline* pipeline)
 {
-    base::Render();
+    base::Render(pipeline);
 }

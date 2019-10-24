@@ -14,6 +14,8 @@ class PassDispatch : public pgPassPilpeline
     PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline);
     virtual ~PassDispatch();
 
+	virtual void Dispatch();
+
     virtual void PreRender();
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
 };

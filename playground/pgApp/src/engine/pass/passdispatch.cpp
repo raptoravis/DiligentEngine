@@ -14,14 +14,14 @@ void PassDispatch::PreRender()
 }
 
 
-void PassDispatch::Render()
+void PassDispatch::Render(pgPipeline* pipeline)
 {
-    base::Render();
+    base::Render(pipeline);
 
-	std::shared_ptr<PipelineDispatch> dispatchPipeline =
+    std::shared_ptr<PipelineDispatch> dispatchPipeline =
         std::dynamic_pointer_cast<PipelineDispatch>(m_pPipeline);
 
-	const auto& numGroups = dispatchPipeline->GetNumGroups();
+    const auto& numGroups = dispatchPipeline->GetNumGroups();
 
     Diligent::DispatchComputeAttribs DispatAttribs;
     DispatAttribs.ThreadGroupCountX = numGroups.x;
@@ -29,4 +29,11 @@ void PassDispatch::Render()
     DispatAttribs.ThreadGroupCountZ = numGroups.z;
 
     pgApp::s_ctx->DispatchCompute(DispatAttribs);
+}
+
+void PassDispatch::Dispatch()
+{
+    PreRender();
+    Render(nullptr);
+    PostRender();
 }

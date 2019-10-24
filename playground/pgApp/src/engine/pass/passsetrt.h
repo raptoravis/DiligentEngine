@@ -15,5 +15,5 @@ class PassSetRT : public pgPass
     virtual ~PassSetRT();
 
 
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
 };

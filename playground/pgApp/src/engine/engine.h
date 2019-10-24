@@ -95,13 +95,14 @@ class pgObject
 class pgScene;
 class pgSceneNode;
 class pgMesh;
+class pgPipeline;
 
 class Visitor : public pgObject
 {
   public:
-    virtual void Visit(pgScene& scene) = 0;
-    virtual void Visit(pgSceneNode& node) = 0;
-    virtual void Visit(pgMesh& mesh) = 0;
+    virtual void Visit(pgScene& scene, pgPipeline* pipeline) = 0;
+    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline) = 0;
+    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline) = 0;
 };
 
 
@@ -175,15 +176,6 @@ class pgRenderEventArgs
     pgCamera* pCamera;
 
     Diligent::RefCntAutoPtr<Diligent::IDeviceContext> pDeviceContext;
-
-    //
-    pgTechnique* pTechnique;
-    pgPass* pPass;
-    pgPipeline* pPipeline;
-    pgScene* pScene;
-    pgSceneNode* pSceneNode;
-    pgMaterial* pMaterial;
-    pgMesh* pMesh;
 
   public:
     pgRenderEventArgs();
@@ -806,8 +798,8 @@ class pgMesh : public pgObject
     virtual void setMaterial(std::shared_ptr<pgMaterial> material);
     virtual std::shared_ptr<pgMaterial> getMaterial() const;
 
-    virtual void Render();
-    virtual void Accept(Visitor& visitor);
+    virtual void Render(pgPipeline* pipeline);
+    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
 };
 
 class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
@@ -839,7 +831,7 @@ class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgScene
     void addMesh(std::shared_ptr<pgMesh> mesh);
     void RemoveMesh(std::shared_ptr<pgMesh> mesh);
 
-    virtual void Accept(Visitor& visitor);
+    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
 
   protected:
     Diligent::float4x4 GetParentWorldTransform() const;
@@ -876,7 +868,7 @@ class pgScene : public pgObject
     std::shared_ptr<pgSceneNode> getRootNode() const { return m_pRootNode; }
     void setRootNode(std::shared_ptr<pgSceneNode> root) { m_pRootNode = root; }
 
-    virtual void Accept(Visitor& visitor);
+    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
 
     static std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height,
                                                       uint16_t slices,
@@ -960,12 +952,12 @@ class pgPass : public Visitor
     virtual bool IsEnabled() const { return m_bEnabled; }
 
     virtual void PreRender();
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
     virtual void PostRender();
 
-    virtual void Visit(pgScene& scene);
-    virtual void Visit(pgSceneNode& node);
-    virtual void Visit(pgMesh& mesh);
+    virtual void Visit(pgScene& scene, pgPipeline* pipeline);
+    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
+    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
 };
 
 
@@ -983,7 +975,7 @@ class pgPassPilpeline : public pgPass
     virtual ~pgPassPilpeline();
 
     virtual void PreRender();
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
 };
 
 class RenderPass;

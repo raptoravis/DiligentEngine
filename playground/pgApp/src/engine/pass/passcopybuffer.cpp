@@ -9,7 +9,7 @@ PassCopyBuffer::PassCopyBuffer(std::shared_ptr<pgBuffer> dstBuffer,
 PassCopyBuffer::~PassCopyBuffer() {}
 
 // Render a frame
-void PassCopyBuffer::Render()
+void PassCopyBuffer::Render(pgPipeline* pipeline)
 {
     CHECK_ERR(m_srcBuffer->GetSize() <= m_dstBuffer->GetSize());
 

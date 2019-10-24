@@ -22,7 +22,7 @@ void PassPostprocess::PreRender()
 	base::PreRender();
 }
 
-void PassPostprocess::Render()
+void PassPostprocess::Render(pgPipeline* pipeline)
 {
     PerObject perObjectData;
     perObjectData.ModelView = Diligent::float4x4::Identity();
@@ -30,10 +30,10 @@ void PassPostprocess::Render()
 
     SetPerObjectConstantBufferData(perObjectData);
 
-    base::Render();
+    base::Render(pipeline);
 }
 
-void PassPostprocess::Visit(pgSceneNode& node)
+void PassPostprocess::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     // Do nothing in this case
 }

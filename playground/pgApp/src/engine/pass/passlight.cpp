@@ -180,7 +180,7 @@ void PassLight::updateScreenToViewParams()
 }
 
 // Render a frame
-void PassLight::Render()
+void PassLight::Render(pgPipeline* pipeline)
 {
     updateScreenToViewParams();
 
@@ -233,12 +233,12 @@ void PassLight::PostRender()
     base::PostRender();
 }
 
-void PassLight::Visit(pgScene& scene)
+void PassLight::Visit(pgScene& scene, pgPipeline* pipeline)
 {
     //
 }
 
-void PassLight::Visit(pgSceneNode& node)
+void PassLight::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
-    base::Visit(node);
+    base::Visit(node, pipeline);
 }

@@ -7,7 +7,7 @@ PassSetRT::PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarge
 
 PassSetRT::~PassSetRT() {}
 
-void PassSetRT::Render()
+void PassSetRT::Render(pgPipeline* pipeline)
 {
     if (m_pRenderTarget) {
         m_pRenderTarget->Bind();

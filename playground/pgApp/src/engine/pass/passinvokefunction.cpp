@@ -7,7 +7,7 @@ PassInvokeFunction::PassInvokeFunction(pgTechnique* parentTechnique, std::functi
 
 PassInvokeFunction::~PassInvokeFunction() {}
 
-void PassInvokeFunction::Render()
+void PassInvokeFunction::Render(pgPipeline* pipeline)
 {
     if (m_Func) {
         m_Func();

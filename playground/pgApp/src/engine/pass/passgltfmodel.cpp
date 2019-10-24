@@ -309,7 +309,7 @@ void PassGltf::PreRender()
     }
 }
 
-void PassGltf::Render()
+void PassGltf::Render(pgPipeline* pipeline)
 {
     pgRenderEventArgs& e = pgApp::s_eventArgs;
 

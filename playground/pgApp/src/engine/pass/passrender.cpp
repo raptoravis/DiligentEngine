@@ -82,8 +82,6 @@ void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
 
 void pgPassRender::PreRender()
 {
-    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
-
     // base::PreRender();
 
     if (m_pPipeline) {
@@ -104,10 +102,10 @@ void pgPassRender::PreRender()
     }
 }
 
-void pgPassRender::Render()
+void pgPassRender::Render(pgPipeline* pipeline)
 {
     if (m_pScene) {
-        m_pScene->Accept(*this);
+        m_pScene->Accept(*this, m_pPipeline.get());
     }
 }
 
@@ -119,12 +117,12 @@ void pgPassRender::PostRender()
 }
 
 // Inherited from Visitor
-void pgPassRender::Visit(pgScene& scene)
+void pgPassRender::Visit(pgScene& scene, pgPipeline* pipeline)
 {
     //
 }
 
-void pgPassRender::Visit(pgSceneNode& node)
+void pgPassRender::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     pgRenderEventArgs& e = pgApp::s_eventArgs;
 
@@ -148,7 +146,7 @@ void pgPassRender::Visit(pgSceneNode& node)
     SetPerObjectConstantBufferData(perObjectData);
 }
 
-void pgPassRender::Visit(pgMesh& mesh)
+void pgPassRender::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
-    mesh.Render();
+    mesh.Render(m_pPipeline.get());
 }

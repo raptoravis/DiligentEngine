@@ -14,6 +14,6 @@ public:
 	PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
 	virtual ~PassCopyTexture();
 
-	virtual void Render();
+	virtual void Render(pgPipeline* pipeline);
 
 };

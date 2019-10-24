@@ -10,7 +10,7 @@ PassClearRT::PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderT
 
 PassClearRT::~PassClearRT() {}
 
-void PassClearRT::Render()
+void PassClearRT::Render(pgPipeline* pipeline)
 {
     if (m_RenderTarget) {
         m_RenderTarget->Clear(m_ClearFlags, m_ClearColor, m_ClearDepth, m_ClearStencil);

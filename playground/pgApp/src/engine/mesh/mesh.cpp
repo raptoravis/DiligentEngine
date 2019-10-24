@@ -53,7 +53,7 @@ static uint32_t getSlot(const pgBufferBinding& binding)
     return 0;
 }
 
-void pgMesh::Render()
+void pgMesh::Render(pgPipeline* pipeline)
 {
     std::shared_ptr<Shader> pVS;
 
@@ -61,8 +61,6 @@ void pgMesh::Render()
     // shaders in the mesh's default material.
     // Material material( *m_pMaterial );
 
-    // Use the vertex shader to convert the buffer semantics to slot ID's
-    auto pipeline = pgApp::s_eventArgs.pPipeline;
     if (pipeline) {
         pVS = pipeline->GetShader(Shader::VertexShader);
 
@@ -100,10 +98,12 @@ void pgMesh::Render()
         DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
         pgApp::s_ctx->DrawIndexed(DrawAttrs);
+    } else {
+        CHECK_ERR(false, "inavlid pipeline in pgMesh::Render");
     }
 }
 
-void pgMesh::Accept(Visitor& visitor)
+void pgMesh::Accept(Visitor& visitor, pgPipeline* pipeline)
 {
-    visitor.Visit(*this);
+    visitor.Visit(*this, pipeline);
 }

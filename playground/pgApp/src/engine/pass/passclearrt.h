@@ -23,6 +23,6 @@ public:
 
 	virtual ~PassClearRT();
 
-	virtual void Render();
+	virtual void Render(pgPipeline* pipeline);
 
 };

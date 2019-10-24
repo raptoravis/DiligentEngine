@@ -28,8 +28,6 @@ void TestPass::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 
 void TestPass::PreRender()
 {
-    pgApp::s_eventArgs.pPipeline = m_pPipeline.get();
-
     if (m_pPipeline) {
         // Make sure the per object constant buffer is bound to the vertex shader.
         BindPerObjectConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
@@ -37,10 +35,10 @@ void TestPass::PreRender()
     }
 }
 
-void TestPass::Render()
+void TestPass::Render(pgPipeline* pipeline)
 {
     if (m_pScene) {
-        m_pScene->Accept(*this);
+        m_pScene->Accept(*this, m_pPipeline.get());
     }
 }
 
@@ -52,9 +50,9 @@ void TestPass::PostRender()
 }
 
 // Inherited from Visitor
-void TestPass::Visit(pgScene& scene) {}
+void TestPass::Visit(pgScene& scene, pgPipeline* pipeline) {}
 
-void TestPass::Visit(pgSceneNode& node)
+void TestPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     pgCamera* camera = pgApp::s_eventArgs.pCamera;
     if (camera) {
@@ -79,7 +77,7 @@ void TestPass::Visit(pgSceneNode& node)
     }
 }
 
-void TestPass::Visit(pgMesh& mesh)
+void TestPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
-    mesh.Render();
+    mesh.Render(pipeline);
 }

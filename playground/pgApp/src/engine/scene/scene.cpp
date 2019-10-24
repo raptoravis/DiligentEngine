@@ -138,18 +138,18 @@ void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 }
 
 
-void pgSceneNode::Accept(Visitor& visitor)
+void pgSceneNode::Accept(Visitor& visitor, pgPipeline* pipeline)
 {
-    visitor.Visit(*this);
+    visitor.Visit(*this, pipeline);
 
     // Visit meshes.
     for (auto mesh : m_Meshes) {
-        mesh->Accept(visitor);
+        mesh->Accept(visitor, pipeline);
     }
 
     // Now visit children
     for (auto child : m_Children) {
-        child->Accept(visitor);
+        child->Accept(visitor, pipeline);
     }
 }
 
@@ -163,11 +163,11 @@ pgScene::~pgScene()
     //
 }
 
-void pgScene::Accept(Visitor& visitor)
+void pgScene::Accept(Visitor& visitor, pgPipeline* pipeline)
 {
-    visitor.Visit(*this);
+    visitor.Visit(*this, pipeline);
     if (m_pRootNode) {
-        m_pRootNode->Accept(visitor);
+        m_pRootNode->Accept(visitor, pipeline);
     }
 }
 

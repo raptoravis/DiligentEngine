@@ -58,7 +58,7 @@ public:
 
 	virtual void PreRender();
 
-	virtual void Render();
+	virtual void Render(pgPipeline* pipeline);
 
 	void UpdateUI();
 

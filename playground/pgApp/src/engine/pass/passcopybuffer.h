@@ -14,5 +14,5 @@ public:
 	PassCopyBuffer(std::shared_ptr<pgBuffer> dstBuffer, std::shared_ptr<pgBuffer> srcBuffer);
 	virtual ~PassCopyBuffer();
 
-	virtual void Render();
+	virtual void Render(pgPipeline* pipeline);
 };

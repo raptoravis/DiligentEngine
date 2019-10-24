@@ -57,7 +57,7 @@ void pgTechnique::Render()
         passIndex++;
         if (pass->IsEnabled()) {
             pass->PreRender();
-            pass->Render();
+            pass->Render(nullptr);
             pass->PostRender();
         }
     }

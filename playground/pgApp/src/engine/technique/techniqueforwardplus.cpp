@@ -81,9 +81,7 @@ void TechniqueForwardPlus::UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera)
     std::shared_ptr<PassDispatch> frustumComputeDispatchPass =
         std::make_shared<PassDispatch>(this, dispatchPipeline);
 
-    frustumComputeDispatchPass->PreRender();
-    frustumComputeDispatchPass->Render();
-    frustumComputeDispatchPass->PostRender();
+    frustumComputeDispatchPass->Dispatch();
 
     // Update the light culling compute shader with the computed grid frustums StructuredBuffer.
     m_pLightCullingComputeShader->GetShaderParameterByName("in_Frustums").Set(m_pGridFrustums);

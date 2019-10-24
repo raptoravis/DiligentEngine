@@ -9,12 +9,12 @@ PassTransparent::PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<p
 
 PassTransparent::~PassTransparent() {}
 
-void PassTransparent::Visit(pgMesh& mesh)
+void PassTransparent::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
     std::shared_ptr<pgMaterial> pMaterial = mesh.getMaterial();
     if (pMaterial && pMaterial->IsTransparent()) {
         SetMaterialData(pMaterial.get());
 
-        mesh.Render();
+        mesh.Render(pipeline);
     }
 }

@@ -20,5 +20,5 @@ class PassInvokeFunction : public pgPass
 
     virtual ~PassInvokeFunction();
 
-    virtual void Render();
+    virtual void Render(pgPipeline* pipeline);
 };
