@@ -336,6 +336,22 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         Quaternion rot = calculateRotation(camTt);
 
         ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
+
+		    if (m_renderingTechnique == RenderingTechnique::Test) {
+            m_pTechnique->Update();
+        }
+
+        if (m_renderingTechnique == RenderingTechnique::Forward) {
+            m_pForwardTechnique->Update();
+        }
+
+        if (m_renderingTechnique == RenderingTechnique::Deferred) {
+            m_pDeferredTechnique->Update();
+        }
+
+        if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
+            m_pForwardPlusTechnique->Update();
+        }
     }
 
     if ((int)m_renderingTechnique != technique) {

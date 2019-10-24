@@ -44,6 +44,10 @@ std::shared_ptr<pgObject> pgTechnique::Get(const std::string& name)
     return nullptr;
 }
 
+void pgTechnique::Update()
+{
+    //
+}
 
 void pgTechnique::Render()
 {

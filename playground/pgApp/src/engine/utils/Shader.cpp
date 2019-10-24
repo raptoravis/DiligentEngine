@@ -164,7 +164,8 @@ ShaderParameter& Shader::GetShaderParameterByName(const std::string& name) const
         return *(iter->second);
     }
 
-    CHECK_ERR(0, name.c_str(), " does not exist in ", m_EntryPoint.c_str(), " of ", m_ShaderFileName.c_str());
+    LOG_ERROR_MESSAGE_ONCE(name.c_str(), " does not exist in ", m_EntryPoint.c_str(), " of ",
+                             m_ShaderFileName.c_str());
 
     static ShaderParameter gs_InvalidShaderParameter("invalid", "vs",
                                                      ShaderParameter::Type::Invalid);

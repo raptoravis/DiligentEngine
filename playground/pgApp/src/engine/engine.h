@@ -1014,6 +1014,7 @@ class pgTechnique : public pgObject
     std::shared_ptr<pgObject> Get(const std::string& name);
 
     virtual void Render();
+    virtual void Update();
 };
 
 class pgApp : public Diligent::SampleBase
