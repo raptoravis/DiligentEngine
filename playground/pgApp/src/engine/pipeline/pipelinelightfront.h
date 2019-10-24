@@ -2,6 +2,9 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineLightFront : public PipelineBase
 {
     typedef PipelineBase base;
@@ -13,3 +16,5 @@ class PipelineLightFront : public PipelineBase
     PipelineLightFront(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineLightFront();
 };
+
+}    // namespace ade

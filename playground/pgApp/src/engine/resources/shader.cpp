@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 Shader::Shader() : m_ShaderType(UnknownShaderType) {}
 
 Shader::~Shader()
@@ -165,7 +168,7 @@ ShaderParameter& Shader::GetShaderParameterByName(const std::string& name) const
     }
 
     LOG_ERROR_MESSAGE_ONCE(name.c_str(), " does not exist in ", m_EntryPoint.c_str(), " of ",
-                             m_ShaderFileName.c_str());
+                           m_ShaderFileName.c_str());
 
     static ShaderParameter gs_InvalidShaderParameter("invalid", "vs",
                                                      ShaderParameter::Type::Invalid);
@@ -264,3 +267,5 @@ Shader::ParametersList Shader::GetStaticSamplers()
 //        value.second->UnBind();
 //    }
 //}
+
+}    // namespace ade

@@ -4,6 +4,9 @@
 
 #include "../engine.h"
 
+namespace ade
+{
+
 class PipelineDispatch;
 
 class PassDispatch : public pgPassPilpeline
@@ -14,8 +17,9 @@ class PassDispatch : public pgPassPilpeline
     PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline);
     virtual ~PassDispatch();
 
-	virtual void Dispatch();
+    virtual void Dispatch();
 
     virtual void PreRender();
     virtual void Render(pgPipeline* pipeline);
 };
+}    // namespace ade

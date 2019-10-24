@@ -37,13 +37,15 @@
 
 #pragma warning(disable : 4996)
 
+// Report an error message and throw an std::exception.
+#define ReportError(msg) ade::ReportErrorAndThrow(__FILE__, __LINE__, __FUNCTION__, (msg))
+
+namespace ade
+{
 // Report an error to the Debug output in Visual Studio, display a message box with the error
 // message and throw an exception.
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function,
                          const std::string& message);
-
-// Report an error message and throw an std::exception.
-#define ReportError(msg) ReportErrorAndThrow(__FILE__, __LINE__, __FUNCTION__, (msg))
 
 template <typename T>
 inline void SafeDelete(T& ptr)
@@ -1099,3 +1101,4 @@ class pgApp : public Diligent::SampleBase
     virtual void Update(double CurrTime, double ElapsedTime) override;
     virtual const Diligent::Char* GetSampleName() const override { return "pgApp"; }
 };
+}    // namespace ade

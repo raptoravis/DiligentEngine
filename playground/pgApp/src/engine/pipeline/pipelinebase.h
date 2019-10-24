@@ -2,6 +2,9 @@
 
 #include "engine/engine.h"
 
+namespace ade
+{
+
 class PipelineBase : public pgPipeline
 {
     typedef pgPipeline base;
@@ -13,3 +16,5 @@ class PipelineBase : public pgPipeline
     PipelineBase(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineBase();
 };
+
+}    // namespace ade

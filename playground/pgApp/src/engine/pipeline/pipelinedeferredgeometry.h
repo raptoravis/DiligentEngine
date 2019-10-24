@@ -2,6 +2,9 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineDeferredGeometry : public PipelineBase
 {
     typedef PipelineBase base;
@@ -13,3 +16,5 @@ class PipelineDeferredGeometry : public PipelineBase
     PipelineDeferredGeometry(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineDeferredGeometry();
 };
+
+}    // namespace ade

@@ -4,12 +4,16 @@
 
 #include "../engine.h"
 
-class MeshCube : public pgMesh {
-	void CreateVertexBuffer();
-	void CreateIndexBuffer();
+namespace ade
+{
 
-public:
-	MeshCube();
-	virtual ~MeshCube();
+class MeshCube : public pgMesh
+{
+    void CreateVertexBuffer();
+    void CreateIndexBuffer();
 
+  public:
+    MeshCube();
+    virtual ~MeshCube();
 };
+}    // namespace ade

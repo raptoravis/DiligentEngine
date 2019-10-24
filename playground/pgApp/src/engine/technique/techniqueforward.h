@@ -7,6 +7,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 class TechniqueForward : public pgTechnique
 {
     typedef pgTechnique base;
@@ -26,3 +29,5 @@ class TechniqueForward : public pgTechnique
 
     void init(std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
 };
+
+}    // namespace ade

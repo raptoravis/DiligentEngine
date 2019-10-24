@@ -4,15 +4,20 @@
 
 #include "../engine.h"
 
-class PassCopyBuffer : public pgPass {
-	typedef pgPass base;
+namespace ade
+{
 
-	std::shared_ptr<pgBuffer>         m_srcBuffer;
-	std::shared_ptr<pgBuffer>         m_dstBuffer;
+class PassCopyBuffer : public pgPass
+{
+    typedef pgPass base;
 
-public:
-	PassCopyBuffer(std::shared_ptr<pgBuffer> dstBuffer, std::shared_ptr<pgBuffer> srcBuffer);
-	virtual ~PassCopyBuffer();
+    std::shared_ptr<pgBuffer> m_srcBuffer;
+    std::shared_ptr<pgBuffer> m_dstBuffer;
 
-	virtual void Render(pgPipeline* pipeline);
+  public:
+    PassCopyBuffer(std::shared_ptr<pgBuffer> dstBuffer, std::shared_ptr<pgBuffer> srcBuffer);
+    virtual ~PassCopyBuffer();
+
+    virtual void Render(pgPipeline* pipeline);
 };
+}    // namespace ade

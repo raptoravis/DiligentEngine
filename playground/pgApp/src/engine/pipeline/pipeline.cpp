@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt) : m_pRenderTarget(rt), m_bDirty(true) {}
 
 pgPipeline::~pgPipeline()
@@ -418,3 +421,5 @@ void pgPipeline::SetDynamicVariables()
         }
     }
 }
+
+}    // namespace ade

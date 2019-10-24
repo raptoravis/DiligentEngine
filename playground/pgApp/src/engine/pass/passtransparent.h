@@ -8,15 +8,20 @@
 
 using namespace Diligent;
 
-class PassTransparent : public pgPassRender {
-	typedef pgPassRender base;
+namespace ade
+{
 
-public:
-    PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene, std::shared_ptr<pgPipeline> pipeline,
-               std::vector<pgLight>* lights);
+class PassTransparent : public pgPassRender
+{
+    typedef pgPassRender base;
 
-	virtual ~PassTransparent();
+  public:
+    PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
+                    std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights);
 
-	virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
+    virtual ~PassTransparent();
+
+    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
 };
 
+}    // namespace ade

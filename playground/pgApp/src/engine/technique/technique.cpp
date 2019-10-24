@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 pgTechnique::pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
     : m_pRenderTarget(rt), m_pBackBuffer(backBuffer)
 {
@@ -62,3 +65,5 @@ void pgTechnique::Render()
         }
     }
 }
+
+}    // namespace ade

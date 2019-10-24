@@ -9,6 +9,9 @@
 #include "../pass/passsetrt.h"
 #include "../pass/passtransparent.h"
 
+namespace ade
+{
+
 TechniqueForward::TechniqueForward(std::shared_ptr<pgRenderTarget> rt,
                                    std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer)
@@ -62,7 +65,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
 
     m_pPixelShader->GetShaderParameterByName("LinearRepeatSampler").Set(m_LinearRepeatSampler);
 
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     m_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     m_pOpaquePipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pOpaquePipeline->SetShader(Shader::PixelShader, m_pPixelShader);
@@ -72,7 +75,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
         std::make_shared<PassOpaque>(this, scene, m_pOpaquePipeline, lights);
     AddPass(pOpaquePass);
 
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     m_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     m_pTransparentPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pTransparentPipeline->SetShader(Shader::PixelShader, m_pPixelShader);
@@ -82,7 +85,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
         std::make_shared<PassTransparent>(this, scene, m_pTransparentPipeline, lights);
     AddPass(pTransparentPass);
 
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     {
         auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
@@ -92,3 +95,5 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
         AddPass(pCopyTexPass);
     }
 }
+
+}    // namespace ade

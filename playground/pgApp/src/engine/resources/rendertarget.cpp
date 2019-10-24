@@ -1,14 +1,17 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 pgRenderTarget::pgRenderTarget() : m_Width(0), m_Height(0), m_bCheckValidity(false)
 {
     m_Textures.resize((size_t)pgRenderTarget::AttachmentPoint::NumAttachmentPoints + 1);
     m_StructuredBuffers.resize(8);
 }
 
-pgRenderTarget::~pgRenderTarget() 
+pgRenderTarget::~pgRenderTarget()
 {
-    //for (uint32_t i = 0; i < 8; i++) {
+    // for (uint32_t i = 0; i < 8; i++) {
     //    std::shared_ptr<pgTexture> texture = m_Textures[i];
     //    if (texture) {
     //        texture->GetTexture()->Release();
@@ -18,7 +21,7 @@ pgRenderTarget::~pgRenderTarget()
 
 void pgRenderTarget::AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture)
 {
-    //texture->GetTexture()->AddRef();
+    // texture->GetTexture()->AddRef();
     m_Textures[(uint32_t)attachment] = texture;
 
     // Next time the render target is "bound", check that it is valid.
@@ -195,3 +198,5 @@ bool pgRenderTarget::IsValid() const
 
     return true;
 }
+
+}    // namespace ade

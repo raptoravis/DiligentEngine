@@ -13,16 +13,18 @@ namespace Diligent
 
 namespace
 {
-struct EnvMapRenderAttribs {
-    ToneMappingAttribs TMAttribs;
+    struct EnvMapRenderAttribs {
+        ToneMappingAttribs TMAttribs;
 
-    float AverageLogLum;
-    float MipLevel;
-    float Unusued1;
-    float Unusued2;
-};
+        float AverageLogLum;
+        float MipLevel;
+        float Unusued1;
+        float Unusued2;
+    };
 }    // namespace
 
+namespace ade
+{
 
 const std::pair<const char*, const char*> PassGltf::GLTFModels[] = {
     { "Sponza", "models/Sponza/Sponza.gltf" },
@@ -365,3 +367,4 @@ void PassGltf::Render(pgPipeline* pipeline)
         pgApp::s_ctx->Draw(drawAttribs);
     }
 }
+}    // namespace ade

@@ -14,6 +14,9 @@
 #include "../pipeline/pipelinefpopaque.h"
 #include "../pipeline/pipelinetransparent.h"
 
+namespace ade
+{
+
 const uint32_t AVERAGE_OVERLAPPING_LIGHTS_PER_TILE = 200u;
 
 TechniqueForwardPlus::TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt,
@@ -311,3 +314,5 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         AddPass(pCopyTexPass);
     }
 }
+
+}    // namespace ade

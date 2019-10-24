@@ -2,6 +2,9 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineFPOpaque : public PipelineBase
 {
     typedef PipelineBase base;
@@ -13,3 +16,5 @@ class PipelineFPOpaque : public PipelineBase
     PipelineFPOpaque(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineFPOpaque();
 };
+
+}    // namespace ade

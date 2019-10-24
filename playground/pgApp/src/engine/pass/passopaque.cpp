@@ -1,5 +1,8 @@
 #include "passopaque.h"
 
+namespace ade
+{
+
 PassOpaque::PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                        std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
     : base(parentTechnique, scene, pipeline, lights)
@@ -27,3 +30,4 @@ void PassOpaque::Render(pgPipeline* pipeline)
 {
     base::Render(pipeline);
 }
+}    // namespace ade

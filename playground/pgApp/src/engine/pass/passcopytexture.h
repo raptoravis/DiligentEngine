@@ -4,16 +4,21 @@
 
 #include "../engine.h"
 
-class PassCopyTexture : public pgPass {
-	typedef pgPass base;
+namespace ade
+{
 
-	std::shared_ptr<pgTexture>         m_srcTexture;
-	std::shared_ptr<pgTexture>         m_dstTexture;
+class PassCopyTexture : public pgPass
+{
+    typedef pgPass base;
 
-public:
-	PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture, std::shared_ptr<pgTexture> srcTexture);
-	virtual ~PassCopyTexture();
+    std::shared_ptr<pgTexture> m_srcTexture;
+    std::shared_ptr<pgTexture> m_dstTexture;
 
-	virtual void Render(pgPipeline* pipeline);
+  public:
+    PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture,
+                    std::shared_ptr<pgTexture> srcTexture);
+    virtual ~PassCopyTexture();
 
+    virtual void Render(pgPipeline* pipeline);
 };
+}    // namespace ade

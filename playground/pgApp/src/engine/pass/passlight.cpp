@@ -3,6 +3,8 @@
 
 #include "../utils/mathutils.h"
 
+namespace ade
+{
 
 const char* PassLight::kLightIndexBuffer = "LightIndexBuffer";
 
@@ -242,3 +244,4 @@ void PassLight::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     base::Visit(node, pipeline);
 }
+}    // namespace ade

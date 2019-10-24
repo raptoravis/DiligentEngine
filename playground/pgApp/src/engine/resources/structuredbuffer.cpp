@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 StructuredBuffer::StructuredBuffer(const void* data, uint32_t count, uint32_t stride,
                                    CPUAccess cpuAccess, bool bUAV)
     : base(stride, count, nullptr)
@@ -78,3 +81,5 @@ unsigned int StructuredBuffer::GetElementCount() const
 {
     return m_uiCount;
 }
+
+}    // namespace ade

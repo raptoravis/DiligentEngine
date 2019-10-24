@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 pgPassPilpeline::pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                                  std::shared_ptr<pgPipeline> pipeline)
     : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
@@ -23,3 +26,4 @@ void pgPassPilpeline::Render(pgPipeline* pipeline)
         m_pScene->Accept(*this, m_pPipeline.get());
     }
 }
+}    // namespace ade

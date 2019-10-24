@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+namespace ade
+{
 void ReportErrorAndThrow(const std::string& file, int line, const std::string& function,
                          const std::string& message)
 {
@@ -27,10 +29,7 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
     throw new std::exception(message.c_str());
 }
 //////////////////////////////////////////////////////////////////////////
-pgRenderEventArgs::pgRenderEventArgs()
-    : pApp(0), pDeviceContext(0), pCamera(0)
-{
-}
+pgRenderEventArgs::pgRenderEventArgs() : pApp(0), pDeviceContext(0), pCamera(0) {}
 
 
 void pgRenderEventArgs::set(float currentTime, float elapsedTime, pgApp* caller, pgCamera* camera,
@@ -86,3 +85,4 @@ void pgApp::Update(double CurrTime, double ElapsedTime)
 {
     //
 }
+}    // namespace ade

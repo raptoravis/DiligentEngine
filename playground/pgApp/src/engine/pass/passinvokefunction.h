@@ -8,6 +8,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 class PassInvokeFunction : public pgPass
 {
     typedef pgPass base;
@@ -21,3 +24,4 @@ class PassInvokeFunction : public pgPass
 
     virtual void Render(pgPipeline* pipeline);
 };
+}    // namespace ade

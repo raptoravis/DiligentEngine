@@ -2,6 +2,9 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineLightDir : public PipelineBase
 {
     typedef PipelineBase base;
@@ -14,3 +17,5 @@ class PipelineLightDir : public PipelineBase
 
     virtual ~PipelineLightDir();
 };
+
+}    // namespace ade

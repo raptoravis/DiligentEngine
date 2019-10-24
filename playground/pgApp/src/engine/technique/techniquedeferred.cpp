@@ -16,6 +16,9 @@
 
 #include "../scene/sceneass.h"
 
+namespace ade
+{
+
 TechniqueDeferred::TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt,
                                      std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer), m_bDepth(false), m_bDiffuse(false), m_bSpecular(false), m_bNormal(false)
@@ -172,8 +175,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     m_pGeometryPixelShader->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
 
-	//////////////////////////////////////////////////////////////////////////
-	// gbuffer pass
+    //////////////////////////////////////////////////////////////////////////
+    // gbuffer pass
     m_pGeometryPipeline = std::make_shared<PipelineDeferredGeometry>(m_pGBufferRT);
     m_pGeometryPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pGeometryPipeline->SetShader(Shader::PixelShader, m_pGeometryPixelShader);
@@ -184,7 +187,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         std::make_shared<PassOpaque>(this, scene, m_pGeometryPipeline, nullptr);
     AddPass(pPassOpaque);
 
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     {
         auto srcTexture = m_depthStencilTexture;
         auto dstTexture =
@@ -195,8 +198,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         AddPass(pCopyTexPass);
     }
 
-	//////////////////////////////////////////////////////////////////////////
-	// light pass
+    //////////////////////////////////////////////////////////////////////////
+    // light pass
     m_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
     m_pDepthOnlyRenderTarget->AttachTexture(
         pgRenderTarget::AttachmentPoint::DepthStencil,
@@ -223,8 +226,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         std::make_shared<PassLight>(this, m_pGBufferRT, pFront, pBack, pDir, lights);
     AddPass(pLightPass);
 
-	//////////////////////////////////////////////////////////////////////////
-	//
+    //////////////////////////////////////////////////////////////////////////
+    //
     m_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     m_pTransparentPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pTransparentPipeline->SetShader(Shader::PixelShader, m_pPixelShader);
@@ -255,25 +258,25 @@ void TechniqueDeferred::initDebug()
     DSStateDesc.DepthEnable = False;
 
     // Pipeline for debugging textures on screen.
-	// duplicate the DebugTexturePixelShader as otherwise they would share the same debugged texture
+    // duplicate the DebugTexturePixelShader as otherwise they would share the same debugged texture
     std::shared_ptr<Shader> pDebugTexturePixelShader1 = std::make_shared<Shader>();
     pDebugTexturePixelShader1->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
-                                                   "PS_DebugTexture", "./resources/shaders", false,
-                                                   shaderMacros);
+                                                  "PS_DebugTexture", "./resources/shaders", false,
+                                                  shaderMacros);
     pDebugTexturePixelShader1->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
 
     std::shared_ptr<Shader> pDebugTexturePixelShader2 = std::make_shared<Shader>();
     pDebugTexturePixelShader2->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
-                                                    "PS_DebugTexture", "./resources/shaders", false,
-                                                    shaderMacros);
+                                                  "PS_DebugTexture", "./resources/shaders", false,
+                                                  shaderMacros);
     pDebugTexturePixelShader2->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
 
     std::shared_ptr<Shader> pDebugTexturePixelShader3 = std::make_shared<Shader>();
     pDebugTexturePixelShader3->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
-                                                    "PS_DebugTexture", "./resources/shaders", false,
-                                                    shaderMacros);
+                                                  "PS_DebugTexture", "./resources/shaders", false,
+                                                  shaderMacros);
     pDebugTexturePixelShader3->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
 
@@ -336,7 +339,7 @@ void TechniqueDeferred::initDebug()
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture1Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline2, orthographicProjection, specularTexture);
-    m_DebugTexture1Pass->SetEnabled(false);    // Initial disabled. 
+    m_DebugTexture1Pass->SetEnabled(false);    // Initial disabled.
     AddPass(m_DebugTexture1Pass);
 
     debugTextureScene =
@@ -377,3 +380,5 @@ void TechniqueDeferred::Update()
     m_DebugTexture2Pass->SetEnabled(m_bNormal);
     m_DebugTexture3Pass->SetEnabled(m_bDepth);
 }
+
+}    // namespace ade

@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 pgSceneNode::pgSceneNode(const Diligent::float4x4& localTransform)
     : m_LocalTransform(localTransform), m_Name("SceneNode")
 {
@@ -182,7 +185,7 @@ std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t hei
     Diligent::TextureDesc TexDesc;
     TexDesc.Name = "pgScene Texture";
     TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-    //TexDesc.Usage = Diligent::USAGE_DEFAULT;
+    // TexDesc.Usage = Diligent::USAGE_DEFAULT;
     TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
     TexDesc.Width = width;
     TexDesc.Height = height;
@@ -227,3 +230,5 @@ std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t hei
 
     return tex;
 }
+
+}    // namespace ade

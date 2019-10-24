@@ -7,6 +7,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 const uint16_t m_LightCullingBlockSize = 16;
 
 // Constant buffer to store the number of groups executed in a dispatch.
@@ -84,3 +87,5 @@ class TechniqueForwardPlus : public pgTechnique
     void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights,
               std::shared_ptr<pgCamera> pCamera);
 };
+
+}    // namespace ade

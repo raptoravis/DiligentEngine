@@ -12,6 +12,9 @@
 #include "engine/pass/passsetrt.h"
 #include "engine/pass/passtest.h"
 
+namespace ade
+{
+
 TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
                              std::shared_ptr<pgTexture> backBuffer)
     : base(rt, backBuffer)
@@ -19,7 +22,8 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
     AddPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pRenderTarget);
+    std::shared_ptr<PassClearRT> pClearRTPass =
+        std::make_shared<PassClearRT>(this, m_pRenderTarget);
     AddPass(pClearRTPass);
 
     bool bTestGltf = false;
@@ -37,8 +41,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
 #else
         float z = 8.0f;
 #endif
-        float4x4 trans1 =
-            float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
+        float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
         std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>(trans1);
         root1->addMesh(meshCube);
         m_pSceneCube = std::make_shared<pgScene>();
@@ -112,3 +115,5 @@ void TechniqueTest::Render()
 
     base::Render();
 }
+
+}    // namespace ade

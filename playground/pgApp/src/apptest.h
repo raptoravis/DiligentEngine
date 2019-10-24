@@ -1,60 +1,58 @@
-#pragma once 
+#pragma once
 
-#include <vector>
-#include "SampleBase.h"
 #include "BasicMath.h"
+#include "SampleBase.h"
+#include <vector>
 
 #include "engine/engine.h"
 
 using namespace Diligent;
 
-
-class AppTest final : public pgApp
+class AppTest final : public ade::pgApp
 {
-	enum class RenderingTechnique : int
-	{
-		Test, 
-		Forward,
-		Deferred,
-		ForwardPlus,
-		LightPrepass,
-		GDR,
-		NumTechniques
-	};
-public:
-	virtual ~AppTest();
+    enum class RenderingTechnique : int {
+        Test,
+        Forward,
+        Deferred,
+        ForwardPlus,
+        LightPrepass,
+        GDR,
+        NumTechniques
+    };
 
-	virtual void Initialize(IEngineFactory*   pEngineFactory,
-		IRenderDevice*    pDevice,
-		IDeviceContext**  ppContexts,
-		Uint32            NumDeferredCtx,
-		ISwapChain*       pSwapChain) override final;
+  public:
+    virtual ~AppTest();
 
-	virtual void Render()override final;
-	virtual void Update(double CurrTime, double ElapsedTime)override final;
-	virtual const Char* GetSampleName()const override final { return "AppTest"; }
+    virtual void Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
+                            IDeviceContext** ppContexts, Uint32 NumDeferredCtx,
+                            ISwapChain* pSwapChain) override final;
 
-private:
-	void initLightData();
-	void initBuffers();
-	void createRT();
-private:
-	std::vector<pgLight>						m_Lights;
+    virtual void Render() override final;
+    virtual void Update(double CurrTime, double ElapsedTime) override final;
+    virtual const Char* GetSampleName() const override final { return "AppTest"; }
 
-	std::shared_ptr<ConstantBuffer>				m_PerObjectConstants;
-    std::shared_ptr<ConstantBuffer>				m_MaterialConstants;
-    std::shared_ptr<StructuredBuffer>			m_LightsStructuredBuffer;
+  private:
+    void initLightData();
+    void initBuffers();
+    void createRT();
 
-	std::shared_ptr<pgRenderTarget>				m_pRenderTarget;
-	std::shared_ptr<pgTexture>					m_pBackBuffer;
-	std::shared_ptr<pgTexture>					m_pDepthStencilBuffer;
+  private:
+    std::vector<ade::pgLight> m_Lights;
 
-	// 
-	std::shared_ptr<pgTechnique>				m_pTechnique;
+    std::shared_ptr<ade::ConstantBuffer> m_PerObjectConstants;
+    std::shared_ptr<ade::ConstantBuffer> m_MaterialConstants;
+    std::shared_ptr<ade::StructuredBuffer> m_LightsStructuredBuffer;
 
-	std::shared_ptr<pgTechnique>				m_pForwardTechnique;
-	std::shared_ptr<pgTechnique>				m_pDeferredTechnique;
-	std::shared_ptr<pgTechnique>				m_pForwardPlusTechnique;
+    std::shared_ptr<ade::pgRenderTarget> m_pRenderTarget;
+    std::shared_ptr<ade::pgTexture> m_pBackBuffer;
+    std::shared_ptr<ade::pgTexture> m_pDepthStencilBuffer;
 
-	RenderingTechnique							m_renderingTechnique = RenderingTechnique::Test;
+    //
+    std::shared_ptr<ade::pgTechnique> m_pTechnique;
+
+    std::shared_ptr<ade::pgTechnique> m_pForwardTechnique;
+    std::shared_ptr<ade::pgTechnique> m_pDeferredTechnique;
+    std::shared_ptr<ade::pgTechnique> m_pForwardPlusTechnique;
+
+    RenderingTechnique m_renderingTechnique = RenderingTechnique::Test;
 };

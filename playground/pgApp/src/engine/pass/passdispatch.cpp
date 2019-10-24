@@ -1,6 +1,9 @@
 #include "passdispatch.h"
 #include "../pipeline/pipelinedispatch.h"
 
+namespace ade
+{
+
 PassDispatch::PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline)
     : base(parentTechnique, nullptr, pipeline)
 {
@@ -37,3 +40,4 @@ void PassDispatch::Dispatch()
     Render(nullptr);
     PostRender();
 }
+}    // namespace ade

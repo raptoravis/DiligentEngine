@@ -1,5 +1,8 @@
 #include "passsetrt.h"
 
+namespace ade
+{
+
 PassSetRT::PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt)
     : base(parentTechnique), m_pRenderTarget(rt)
 {
@@ -13,3 +16,5 @@ void PassSetRT::Render(pgPipeline* pipeline)
         m_pRenderTarget->Bind();
     }
 }
+
+}    // namespace ade

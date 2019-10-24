@@ -1,8 +1,10 @@
 #include "passtransparent.h"
 
+namespace ade
+{
+
 PassTransparent::PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                                 std::shared_ptr<pgPipeline> pipeline,
-                                 std::vector<pgLight>* lights)
+                                 std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
     : base(parentTechnique, scene, pipeline, lights)
 {
 }
@@ -18,3 +20,5 @@ void PassTransparent::Visit(pgMesh& mesh, pgPipeline* pipeline)
         mesh.Render(pipeline);
     }
 }
+
+}    // namespace ade

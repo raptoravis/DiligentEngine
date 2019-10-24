@@ -1,5 +1,7 @@
 #include "passtest.h"
 
+namespace ade
+{
 
 TestPass::TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                    std::shared_ptr<pgPipeline> pipeline)
@@ -65,11 +67,11 @@ void TestPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
 
         const Diligent::float4x4 nodeTransform = node.getWorldTransfom();
 
-		// the mat1 * mat2 should be left mul
+        // the mat1 * mat2 should be left mul
         Diligent::float4x4 worldView = nodeTransform * viewMatrix;
         Diligent::float4x4 worldViewProjMatrix = worldView * projMatrix;
 
-		// as cube.vsh, mul(vec, mat), mat should be row major, so to transpose it
+        // as cube.vsh, mul(vec, mat), mat should be row major, so to transpose it
         perObjectData.ModelViewProjection = worldViewProjMatrix.Transpose();
 
         // Update the constant buffer data
@@ -81,3 +83,5 @@ void TestPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
     mesh.Render(pipeline);
 }
+
+}    // namespace ade

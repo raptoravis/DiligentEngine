@@ -2,6 +2,9 @@
 
 #include "engine/engine.h"
 
+namespace ade
+{
+
 class PipelineDispatch : public pgPipeline
 {
     typedef pgPipeline base;
@@ -19,9 +22,11 @@ class PipelineDispatch : public pgPipeline
     PipelineDispatch(const Diligent::uint3& numGroups);
     virtual ~PipelineDispatch();
 
-    //void SetNumGroups(const Diligent::uint3& numGroups);
+    // void SetNumGroups(const Diligent::uint3& numGroups);
     const Diligent::uint3 GetNumGroups() const;
 
     virtual void Bind();
     virtual void UnBind();
 };
+
+}    // namespace ade

@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(rt)
 {
     LoadTexture();
@@ -19,7 +22,8 @@ PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(
 
 PipelineTexVertex::~PipelineTexVertex() {}
 
-void PipelineTexVertex::InitPSODesc() {
+void PipelineTexVertex::InitPSODesc()
+{
     base::InitPSODesc();
 
     // Define vertex shader input layout
@@ -81,3 +85,5 @@ void PipelineTexVertex::LoadTexture()
 
     m_Texture = std::make_shared<pgTexture>(Tex);
 }
+
+}    // namespace ade

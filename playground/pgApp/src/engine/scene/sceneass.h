@@ -6,6 +6,9 @@ struct aiMaterial;
 struct aiMesh;
 struct aiNode;
 
+namespace ade
+{
+
 class pgMaterial;
 class pgBuffer;
 class pgMesh;
@@ -19,61 +22,70 @@ namespace fs = std::filesystem;
 // Implements a basic model loader using Assimp.
 class pgSceneAss : public pgScene
 {
-public:
+  public:
     typedef pgScene base;
 
-	virtual std::shared_ptr<pgSceneNode> getRootNode() const;
-    virtual bool LoadFromFile( const std::wstring& fileName );
-    virtual bool LoadFromString( const std::string& scene, const std::string& format );
+    virtual std::shared_ptr<pgSceneNode> getRootNode() const;
+    virtual bool LoadFromFile(const std::wstring& fileName);
+    virtual bool LoadFromString(const std::string& scene, const std::string& format);
 
-	pgSceneAss();
-	virtual ~pgSceneAss();
+    pgSceneAss();
+    virtual ~pgSceneAss();
 
-	static std::shared_ptr<pgBuffer> createFloatVertexBuffer(Diligent::IRenderDevice* device, 
-		const float* data, uint32_t count, uint32_t stride);
-	static std::shared_ptr<pgBuffer> createUIntIndexBuffer(Diligent::IRenderDevice* device, 
-		const uint32_t* data, uint32_t sizeInBytes);
+    static std::shared_ptr<pgBuffer> createFloatVertexBuffer(Diligent::IRenderDevice* device,
+                                                             const float* data, uint32_t count,
+                                                             uint32_t stride);
+    static std::shared_ptr<pgBuffer> createUIntIndexBuffer(Diligent::IRenderDevice* device,
+                                                           const uint32_t* data,
+                                                           uint32_t sizeInBytes);
 
-	static std::shared_ptr<pgSceneAss> CreateScene();
-	static std::shared_ptr<pgScene> CreatePlane(float size, const Diligent::float3& N = Diligent::float3(0, 1, 0));
-	static std::shared_ptr<pgScene> CreateScreenQuad(float left = -1.0f, float right = 1.0f,
-		float bottom = -1.0f, float top = 1.0f, 
-		float z = 0.0f);
-	static std::shared_ptr<pgScene> CreateSphere(float radius, float tesselation = 4);
-	static std::shared_ptr<pgScene> CreateCube(float size);
-	static std::shared_ptr<pgScene> CreateCylinder(float baseRadius, float apexRadius, float height,
-		const Diligent::float3& axis = Diligent::float3(0, 1, 0));
-	static std::shared_ptr<pgScene> CreateCone(float baseRadius, float height);
-	static std::shared_ptr<pgScene> CreateArrow(const Diligent::float3& tail = Diligent::float3(0, 0, 0),
-		const Diligent::float3& head = Diligent::float3(0, 0, 1), float radius = 0.05f);
-	static std::shared_ptr<pgScene> CreateAxis(float radius = 0.05f, float length = 0.5f);
-	static void DestroyScene(std::shared_ptr<pgScene> scene);
+    static std::shared_ptr<pgSceneAss> CreateScene();
+    static std::shared_ptr<pgScene>
+        CreatePlane(float size, const Diligent::float3& N = Diligent::float3(0, 1, 0));
+    static std::shared_ptr<pgScene> CreateScreenQuad(float left = -1.0f, float right = 1.0f,
+                                                     float bottom = -1.0f, float top = 1.0f,
+                                                     float z = 0.0f);
+    static std::shared_ptr<pgScene> CreateSphere(float radius, float tesselation = 4);
+    static std::shared_ptr<pgScene> CreateCube(float size);
+    static std::shared_ptr<pgScene>
+        CreateCylinder(float baseRadius, float apexRadius, float height,
+                       const Diligent::float3& axis = Diligent::float3(0, 1, 0));
+    static std::shared_ptr<pgScene> CreateCone(float baseRadius, float height);
+    static std::shared_ptr<pgScene>
+        CreateArrow(const Diligent::float3& tail = Diligent::float3(0, 0, 0),
+                    const Diligent::float3& head = Diligent::float3(0, 0, 1), float radius = 0.05f);
+    static std::shared_ptr<pgScene> CreateAxis(float radius = 0.05f, float length = 0.5f);
+    static void DestroyScene(std::shared_ptr<pgScene> scene);
 
-protected:
+  protected:
     friend class ProgressHandler;
 
-    std::shared_ptr<pgBuffer> CreateFloatVertexBuffer( const float* data, uint32_t count, uint32_t stride );
-    std::shared_ptr<pgBuffer> CreateUIntIndexBuffer( const uint32_t* data, uint32_t count);
+    std::shared_ptr<pgBuffer> CreateFloatVertexBuffer(const float* data, uint32_t count,
+                                                      uint32_t stride);
+    std::shared_ptr<pgBuffer> CreateUIntIndexBuffer(const uint32_t* data, uint32_t count);
 
     std::shared_ptr<pgMesh> CreateMesh();
     std::shared_ptr<pgMaterial> CreateMaterial();
-    std::shared_ptr<pgTexture> CreateTexture(const std::wstring& fileName );
-    std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height );
+    std::shared_ptr<pgTexture> CreateTexture(const std::wstring& fileName);
+    std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height);
 
-    //virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
+    // virtual std::shared_ptr<pgTexture> GetDefaultTexture() = 0;
 
-protected:
-    typedef std::map<std::string, std::shared_ptr<pgMaterial> > MaterialMap;
-    typedef std::vector< std::shared_ptr<pgMaterial> > MaterialList;
-    typedef std::vector< std::shared_ptr<pgMesh> > MeshList;
+  protected:
+    typedef std::map<std::string, std::shared_ptr<pgMaterial>> MaterialMap;
+    typedef std::vector<std::shared_ptr<pgMaterial>> MaterialList;
+    typedef std::vector<std::shared_ptr<pgMesh>> MeshList;
 
     MaterialMap m_MaterialMap;
     MaterialList m_Materials;
     MeshList m_Meshes;
 
-    void ImportMaterial( const aiMaterial& material, fs::path parentPath );
-    void ImportMesh( const aiMesh& mesh );
-    std::shared_ptr<pgSceneNode> ImportSceneNode( std::shared_ptr<pgSceneNode> parent, aiNode* aiNode );
+    void ImportMaterial(const aiMaterial& material, fs::path parentPath);
+    void ImportMesh(const aiMesh& mesh);
+    std::shared_ptr<pgSceneNode> ImportSceneNode(std::shared_ptr<pgSceneNode> parent,
+                                                 aiNode* aiNode);
 
     std::wstring m_SceneFile;
 };
+
+}    // namespace ade

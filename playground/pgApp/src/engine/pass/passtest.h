@@ -2,6 +2,9 @@
 
 #include "../engine.h"
 
+namespace ade
+{
+
 class TestPass : public pgPass
 {
     typedef pgPass base;
@@ -42,3 +45,5 @@ class TestPass : public pgPass
     std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
 };
 
+
+}    // namespace ade

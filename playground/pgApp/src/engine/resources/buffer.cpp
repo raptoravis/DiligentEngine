@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 pgBuffer::pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer)
     : m_uiCount(count), m_uiStride(stride), m_BindFlags(0), m_bIsBound(false)
 {
@@ -81,3 +84,5 @@ void pgBuffer::Copy(std::shared_ptr<pgBuffer> other)
 {
     //
 }
+
+}    // namespace ade

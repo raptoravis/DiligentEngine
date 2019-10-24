@@ -1,5 +1,7 @@
 #include "passclearrt.h"
 
+namespace ade
+{
 PassClearRT::PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt,
                          pgClearFlags clearFlags, Diligent::float4 clearColor, float clearDepth,
                          uint8_t clearStencil)
@@ -20,3 +22,4 @@ void PassClearRT::Render(pgPipeline* pipeline)
         m_Texture->Clear(m_ClearFlags, m_ClearColor, m_ClearDepth, m_ClearStencil);
     }
 }
+}    // namespace ade

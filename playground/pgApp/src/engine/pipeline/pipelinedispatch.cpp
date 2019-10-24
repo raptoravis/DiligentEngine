@@ -2,6 +2,10 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
+
 PipelineDispatch::PipelineDispatch(const Diligent::uint3& numGroups)
     : base(nullptr), m_NumGroups(numGroups)
 {
@@ -32,3 +36,6 @@ void PipelineDispatch::UnBind()
 {
     base::UnBind();
 }
+
+
+}    // namespace ade

@@ -2,6 +2,9 @@
 
 #include "passpostprocess.h"
 
+namespace ade
+{
+
 PassPostprocess::PassPostprocess(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
                                  std::shared_ptr<pgPipeline> pipeline,
                                  const Diligent::float4x4& projectionMatrix,
@@ -15,11 +18,11 @@ void PassPostprocess::PreRender()
 {
     auto ps = m_pPipeline->GetShader(Shader::ShaderType::PixelShader);
 
-	if (ps) {
-		ps->GetShaderParameterByName("DebugTexture").Set(m_Texture);
-	}
+    if (ps) {
+        ps->GetShaderParameterByName("DebugTexture").Set(m_Texture);
+    }
 
-	base::PreRender();
+    base::PreRender();
 }
 
 void PassPostprocess::Render(pgPipeline* pipeline)
@@ -37,3 +40,4 @@ void PassPostprocess::Visit(pgSceneNode& node, pgPipeline* pipeline)
 {
     // Do nothing in this case
 }
+}    // namespace ade

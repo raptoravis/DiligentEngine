@@ -6,6 +6,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 class pgPassRender : public pgPassPilpeline
 {
     typedef pgPassPilpeline base;
@@ -53,3 +56,5 @@ class pgPassRender : public pgPassPilpeline
     virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
     virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
 };
+
+}    // namespace ade

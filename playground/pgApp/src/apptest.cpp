@@ -32,9 +32,11 @@ SampleBase* CreateSample()
 }
 }    // namespace Diligent
 
+//using namespace ade;
+
 void AppTest::initLightData()
 {
-    pgLight light1;
+    ade::pgLight light1;
 
     light1.m_PositionWS = { -2.5f, -1.40531516f, 0.451306254f, 1.00000000f };
     light1.m_DirectionWS = { 0.0116977794f, -0.170993939f, -0.985219836f, 0.000000000f };
@@ -46,7 +48,7 @@ void AppTest::initLightData()
     light1.m_Intensity = 1.00000000f;
     light1.m_Enabled = 1;
     light1.m_Selected = 0;
-    light1.m_Type = pgLight::LightType::Point;
+    light1.m_Type = ade::pgLight::LightType::Point;
 
     m_Lights.push_back(light1);
 
@@ -60,11 +62,11 @@ void AppTest::initLightData()
     light1.m_Intensity = 1.00000000f;
     light1.m_Enabled = 1;
     light1.m_Selected = 0;
-    light1.m_Type = pgLight::LightType::Spot;
+    light1.m_Type = ade::pgLight::LightType::Spot;
 
     m_Lights.push_back(light1);
 
-    pgLight light2;
+    ade::pgLight light2;
 
 #if RIGHT_HANDED
     float dirz = -0.760157943f;
@@ -82,7 +84,7 @@ void AppTest::initLightData()
     light2.m_Intensity = 1.00000000f;
     light2.m_Enabled = 1;
     light2.m_Selected = 0;
-    light2.m_Type = pgLight::LightType::Directional;
+    light2.m_Type = ade::pgLight::LightType::Directional;
 
     m_Lights.push_back(light2);
 }
@@ -90,11 +92,11 @@ void AppTest::initLightData()
 void AppTest::initBuffers()
 {
     m_PerObjectConstants =
-        std::make_shared<ConstantBuffer>((uint32_t)sizeof(pgPassRender::PerObject));
+        std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(ade::pgPassRender::PerObject));
     m_MaterialConstants =
-        std::make_shared<ConstantBuffer>((uint32_t)sizeof(pgMaterial::MaterialProperties));
-    m_LightsStructuredBuffer = std::make_shared<StructuredBuffer>(
-        m_Lights.data(), (uint32_t)m_Lights.size(), (uint32_t)sizeof(pgLight), CPUAccess::Write);
+        std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(ade::pgMaterial::MaterialProperties));
+    m_LightsStructuredBuffer = std::make_shared<ade::StructuredBuffer>(
+        m_Lights.data(), (uint32_t)m_Lights.size(), (uint32_t)sizeof(ade::pgLight), ade::CPUAccess::Write);
 }
 
 
@@ -105,10 +107,10 @@ void AppTest::createRT()
         TextureDesc RTColorDesc;
         RTColorDesc.Name = "RT Color";
         RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
-        RTColorDesc.Width = pgApp::s_desc.Width;
-        RTColorDesc.Height = pgApp::s_desc.Height;
+        RTColorDesc.Width = ade::pgApp::s_desc.Width;
+        RTColorDesc.Height = ade::pgApp::s_desc.Height;
         RTColorDesc.MipLevels = 1;
-        RTColorDesc.Format = pgApp::s_desc.ColorBufferFormat;
+        RTColorDesc.Format = ade::pgApp::s_desc.ColorBufferFormat;
         // The render target can be bound as a shader resource and as a render target
         RTColorDesc.BindFlags = BIND_SHADER_RESOURCE | BIND_RENDER_TARGET;
         // Define optimal clear value
@@ -119,37 +121,37 @@ void AppTest::createRT()
         RTColorDesc.ClearValue.Color[3] = 1.f;
 
         RefCntAutoPtr<ITexture> colorTextureI;
-        pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &colorTextureI);
+        ade::pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &colorTextureI);
 
-        std::shared_ptr<pgTexture> colorTexture = std::make_shared<pgTexture>(colorTextureI);
+        std::shared_ptr<ade::pgTexture> colorTexture = std::make_shared<ade::pgTexture>(colorTextureI);
 
         // Create depth buffer
         TextureDesc DepthBufferDesc;
         DepthBufferDesc.Name = "RT depth stencil";
         DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
-        DepthBufferDesc.Width = pgApp::s_desc.Width;
-        DepthBufferDesc.Height = pgApp::s_desc.Height;
+        DepthBufferDesc.Width = ade::pgApp::s_desc.Width;
+        DepthBufferDesc.Height = ade::pgApp::s_desc.Height;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        // DepthBufferDesc.Format = pgApp::s_desc.DepthBufferFormat;
+        // DepthBufferDesc.Format = ade::pgApp::s_desc.DepthBufferFormat;
         DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
-        DepthBufferDesc.SampleCount = pgApp::s_desc.SamplesCount;
+        DepthBufferDesc.SampleCount = ade::pgApp::s_desc.SamplesCount;
         DepthBufferDesc.Usage = USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
         DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
         DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
 
         RefCntAutoPtr<ITexture> depthStencilTextureI;
-        pgApp::s_device->CreateTexture(DepthBufferDesc, nullptr, &depthStencilTextureI);
+        ade::pgApp::s_device->CreateTexture(DepthBufferDesc, nullptr, &depthStencilTextureI);
 
-        std::shared_ptr<pgTexture> depthStencilTexture =
-            std::make_shared<pgTexture>(depthStencilTextureI);
+        std::shared_ptr<ade::pgTexture> depthStencilTexture =
+            std::make_shared<ade::pgTexture>(depthStencilTextureI);
 
         //
-        m_pRenderTarget = std::make_shared<pgRenderTarget>();
+        m_pRenderTarget = std::make_shared<ade::pgRenderTarget>();
 
-        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, colorTexture);
-        m_pRenderTarget->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil,
+        m_pRenderTarget->AttachTexture(ade::pgRenderTarget::AttachmentPoint::Color0, colorTexture);
+        m_pRenderTarget->AttachTexture(ade::pgRenderTarget::AttachmentPoint::DepthStencil,
                                        depthStencilTexture);
     }
 
@@ -158,8 +160,8 @@ void AppTest::createRT()
         auto colorTextureI = m_pSwapChain->GetCurrentBackBufferRTV()->GetTexture();
         auto depthStencilTextureI = m_pSwapChain->GetDepthBufferDSV()->GetTexture();
 
-        m_pBackBuffer = std::make_shared<pgTexture>(colorTextureI);
-        m_pDepthStencilBuffer = std::make_shared<pgTexture>(depthStencilTextureI);
+        m_pBackBuffer = std::make_shared<ade::pgTexture>(colorTextureI);
+        m_pDepthStencilBuffer = std::make_shared<ade::pgTexture>(depthStencilTextureI);
     }
 }
 
@@ -171,11 +173,11 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     // _CrtSetBreakAlloc(38791);
 
     //
-    pgApp::s_device.Attach(pDevice);
-    pgApp::s_ctx.Attach(*ppContexts);
-    pgApp::s_swapChain.Attach(pSwapChain);
-    pgApp::s_engineFactory.Attach(pEngineFactory);
-    pgApp::s_desc = pSwapChain->GetDesc();
+    ade::pgApp::s_device.Attach(pDevice);
+    ade::pgApp::s_ctx.Attach(*ppContexts);
+    ade::pgApp::s_swapChain.Attach(pSwapChain);
+    ade::pgApp::s_engineFactory.Attach(pEngineFactory);
+    ade::pgApp::s_desc = pSwapChain->GetDesc();
 
     createRT();
 
@@ -205,15 +207,15 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 #endif
     }
 
-    m_pCamera = std::make_shared<pgCamera>(pos, dir);
+    m_pCamera = std::make_shared<ade::pgCamera>(pos, dir);
 
     // technique will clean up passed added in it
-    m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
+    m_pTechnique = std::make_shared<ade::TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
 
-    m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
-    m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
+    m_pForwardTechnique = std::make_shared<ade::TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
+    m_pDeferredTechnique = std::make_shared<ade::TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
     m_pForwardPlusTechnique =
-        std::make_shared<TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
+        std::make_shared<ade::TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
 
     //
     std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
@@ -226,32 +228,32 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     // if (m_renderingTechnique == RenderingTechnique::Forward)
     {
-        auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
-        forwardTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        forwardTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
-        forwardTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        auto forwardTech = (ade::TechniqueForward*)m_pForwardTechnique.get();
+        forwardTech->Set(ade::pgPassRender::kPerObjectName, m_PerObjectConstants);
+        forwardTech->Set(ade::pgPassRender::kMaterialName, m_MaterialConstants);
+        forwardTech->Set(ade::pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
         forwardTech->init(testScene, &m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::Deferred)
     {
-        auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
+        auto deferredTech = (ade::TechniqueDeferred*)m_pDeferredTechnique.get();
 
-        deferredTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        deferredTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
-        deferredTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        deferredTech->Set(ade::pgPassRender::kPerObjectName, m_PerObjectConstants);
+        deferredTech->Set(ade::pgPassRender::kMaterialName, m_MaterialConstants);
+        deferredTech->Set(ade::pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
         deferredTech->init(testScene, &m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::ForwardPlus)
     {
-        auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
+        auto fpTech = (ade::TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 
-        fpTech->Set(pgPassRender::kPerObjectName, m_PerObjectConstants);
-        fpTech->Set(pgPassRender::kMaterialName, m_MaterialConstants);
-        fpTech->Set(pgPassRender::kLightsName, m_LightsStructuredBuffer);
+        fpTech->Set(ade::pgPassRender::kPerObjectName, m_PerObjectConstants);
+        fpTech->Set(ade::pgPassRender::kMaterialName, m_MaterialConstants);
+        fpTech->Set(ade::pgPassRender::kLightsName, m_LightsStructuredBuffer);
 
         fpTech->init(testScene, &m_Lights, m_pCamera);
     }
@@ -260,11 +262,11 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 AppTest::~AppTest()
 {
     //
-    pgApp::s_device.Detach();
-    pgApp::s_ctx.Detach();
-    pgApp::s_swapChain.Detach();
-    pgApp::s_engineFactory.Detach();
-    // pgApp::s_desc = pSwapChain->GetDesc();
+    ade::pgApp::s_device.Detach();
+    ade::pgApp::s_ctx.Detach();
+    ade::pgApp::s_swapChain.Detach();
+    ade::pgApp::s_engineFactory.Detach();
+    // ade::pgApp::s_desc = pSwapChain->GetDesc();
 }
 
 // Render a frame
@@ -272,8 +274,8 @@ void AppTest::Render()
 {
     //// Clear the back buffer
     // const float ClearColor[] = { 0.032f,  0.032f,  0.032f, 1.0f };
-    // pgApp::s_ctx->ClearRenderTarget(nullptr, ClearColor,
-    // RESOURCE_STATE_TRANSITION_MODE_TRANSITION); pgApp::s_ctx->ClearDepthStencil(nullptr,
+    // ade::pgApp::s_ctx->ClearRenderTarget(nullptr, ClearColor,
+    // RESOURCE_STATE_TRANSITION_MODE_TRANSITION); ade::pgApp::s_ctx->ClearDepthStencil(nullptr,
     // CLEAR_DEPTH_FLAG, 1.f, 0, RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     if (m_renderingTechnique == RenderingTechnique::Test) {
@@ -292,7 +294,7 @@ void AppTest::Render()
         m_pForwardPlusTechnique->Render();
     }
 
-    // auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    // auto srcTexture = m_pRenderTarget->GetTexture(ade::pgRenderTarget::AttachmentPoint::Color0);
     // srcTexture->Copy(m_pBackBuffer.get());
 }
 
@@ -303,8 +305,8 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
     m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
-    pgApp::s_eventArgs.set((float)CurrTime, (float)ElapsedTime, this, m_pCamera.get(),
-                           pgApp::s_ctx);
+    ade::pgApp::s_eventArgs.set((float)CurrTime, (float)ElapsedTime, this, m_pCamera.get(),
+                           ade::pgApp::s_ctx);
 
     int technique = (int)m_renderingTechnique;
 
@@ -332,8 +334,8 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         float4x4 camTt = m_pCamera->getViewMatrix();
 
-        // Quaternion rot = mRot2Quat(camTt);
-        Quaternion rot = calculateRotation(camTt);
+        // Quaternion rot = ade::mRot2Quat(camTt);
+        Quaternion rot = ade::calculateRotation(camTt);
 
         ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 

@@ -1,5 +1,8 @@
 #include "../engine.h"
 
+namespace ade
+{
+
 SamplerState::SamplerState(const Diligent::StaticSamplerDesc& desc) : base()
 {
     Set(desc);
@@ -30,3 +33,5 @@ void SamplerState::UnBind(uint32_t ID, Shader::ShaderType shaderType,
                           ShaderParameter::Type parameterType)
 {
 }
+
+}    // namespace ade

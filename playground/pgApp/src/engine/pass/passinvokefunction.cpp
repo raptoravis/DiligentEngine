@@ -1,5 +1,8 @@
 #include "PassInvokeFunction.h"
 
+namespace ade
+{
+
 PassInvokeFunction::PassInvokeFunction(pgTechnique* parentTechnique, std::function<void(void)> func)
     : base(parentTechnique), m_Func(func)
 {
@@ -13,3 +16,4 @@ void PassInvokeFunction::Render(pgPipeline* pipeline)
         m_Func();
     }
 }
+}    // namespace ade

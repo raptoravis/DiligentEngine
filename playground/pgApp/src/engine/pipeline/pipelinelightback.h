@@ -2,6 +2,9 @@
 
 #include "engine/pipeline//pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineLightBack : public PipelineBase
 {
     typedef PipelineBase base;
@@ -14,3 +17,5 @@ class PipelineLightBack : public PipelineBase
 
     virtual ~PipelineLightBack();
 };
+
+}    // namespace ade

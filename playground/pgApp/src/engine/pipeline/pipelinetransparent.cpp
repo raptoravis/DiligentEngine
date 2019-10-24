@@ -2,6 +2,10 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
+
 PipelineTransparent::PipelineTransparent(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineTransparent::~PipelineTransparent() {}
@@ -27,3 +31,5 @@ void PipelineTransparent::InitPSODesc()
     auto RasterizerDesc = m_PSODesc.GraphicsPipeline.RasterizerDesc;
     RasterizerDesc.CullMode = CULL_MODE_NONE;
 }
+
+}    // namespace ade

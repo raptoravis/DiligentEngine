@@ -2,6 +2,9 @@
 
 #include "engine/engine.h"
 
+namespace ade
+{
+
 class PipelineTexVertex : public pgPipeline
 {
     typedef pgPipeline base;
@@ -22,3 +25,5 @@ class PipelineTexVertex : public pgPipeline
 
     void LoadTexture();
 };
+
+}    // namespace ade

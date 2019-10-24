@@ -4,6 +4,9 @@
 
 #include "../engine.h"
 
+namespace ade
+{
+
 class PassSetRT : public pgPass
 {
     typedef pgPass base;
@@ -17,3 +20,5 @@ class PassSetRT : public pgPass
 
     virtual void Render(pgPipeline* pipeline);
 };
+
+}    // namespace ade

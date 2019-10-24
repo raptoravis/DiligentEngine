@@ -2,6 +2,9 @@
 
 #include "pipelinebase.h"
 
+namespace ade
+{
+
 class PipelineDebug : public PipelineBase
 {
     typedef PipelineBase base;
@@ -13,3 +16,5 @@ class PipelineDebug : public PipelineBase
     PipelineDebug(std::shared_ptr<pgRenderTarget> rt);
     virtual ~PipelineDebug();
 };
+
+}    // namespace ade

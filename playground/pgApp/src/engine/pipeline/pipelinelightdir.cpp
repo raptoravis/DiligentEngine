@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineLightDir::~PipelineLightDir() {}
@@ -12,8 +15,8 @@ void PipelineLightDir::InitPSODesc()
 
     m_PSODesc.Name = "PipelineLightDir PSO";
 
-     auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
-     auto color0Format =
+    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0Format =
         color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
@@ -46,3 +49,5 @@ void PipelineLightDir::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = False;
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_GREATER;
 }
+
+}    // namespace ade

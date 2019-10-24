@@ -5,7 +5,8 @@
 #include "../engine.h"
 #include "passrender.h"
 
-class Texture;
+namespace ade
+{
 
 class PassPostprocess : public pgPassRender
 {
@@ -26,3 +27,4 @@ class PassPostprocess : public pgPassRender
     Diligent::float4x4 m_ProjectionMatrix;
     std::shared_ptr<pgTexture> m_Texture;
 };
+}    // namespace ade

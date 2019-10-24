@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineLightBack::~PipelineLightBack() {}
@@ -40,3 +43,5 @@ void PipelineLightBack::InitPSODesc()
 
     SetStencilRef(1);
 }
+
+}    // namespace ade

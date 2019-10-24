@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 PipelineBase::PipelineBase(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineBase::~PipelineBase() {}
@@ -81,3 +84,5 @@ void PipelineBase::InitPSODesc()
     m_PSODesc.ResourceLayout.DefaultVariableType = SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 }
 
+
+}    // namespace ade

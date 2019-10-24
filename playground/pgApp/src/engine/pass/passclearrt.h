@@ -4,25 +4,28 @@
 
 #include "../engine.h"
 
-class PassClearRT : public pgPass {
-	typedef pgPass base;
+namespace ade
+{
 
-	std::shared_ptr<pgRenderTarget> m_RenderTarget;
-	std::shared_ptr<pgTexture> m_Texture;
-	pgClearFlags		m_ClearFlags;
-	Diligent::float4	m_ClearColor;
-	float				m_ClearDepth;
-	uint8_t				m_ClearStencil;
+class PassClearRT : public pgPass
+{
+    typedef pgPass base;
 
-public:
-    PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt, 
-		pgClearFlags clearFlags = pgClearFlags::All, 
-		Diligent::float4 clearColor = Diligent::float4(0.39f, 0.58f, 0.93f, 1.0f), 
-		float clearDepth = 1.0f, 
-		uint8_t clearStencil = 0);
+    std::shared_ptr<pgRenderTarget> m_RenderTarget;
+    std::shared_ptr<pgTexture> m_Texture;
+    pgClearFlags m_ClearFlags;
+    Diligent::float4 m_ClearColor;
+    float m_ClearDepth;
+    uint8_t m_ClearStencil;
 
-	virtual ~PassClearRT();
+  public:
+    PassClearRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt,
+                pgClearFlags clearFlags = pgClearFlags::All,
+                Diligent::float4 clearColor = Diligent::float4(0.39f, 0.58f, 0.93f, 1.0f),
+                float clearDepth = 1.0f, uint8_t clearStencil = 0);
 
-	virtual void Render(pgPipeline* pipeline);
+    virtual ~PassClearRT();
 
+    virtual void Render(pgPipeline* pipeline);
 };
+}    // namespace ade

@@ -12,6 +12,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 __declspec(align(16)) struct ScreenToViewParams {
     float4x4 m_InverseProjectionMatrix;
     float2 m_ScreenDimensions;
@@ -72,3 +75,4 @@ class PassLight : public pgPass
     virtual void Visit(pgScene& scene, pgPipeline* pipeline);
     virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
 };
+}    // namespace ade

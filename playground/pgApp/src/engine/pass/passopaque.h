@@ -8,6 +8,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 class PassOpaque : public pgPassRender
 {
     typedef pgPassRender base;
@@ -21,8 +24,9 @@ class PassOpaque : public pgPassRender
 
     virtual ~PassOpaque();
 
-	virtual void PreRender();
+    virtual void PreRender();
     virtual void Render(pgPipeline* pipeline);
 
     virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
 };
+}    // namespace ade

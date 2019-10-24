@@ -1,6 +1,8 @@
 #include "../engine.h"
 
 using namespace Diligent;
+namespace ade
+{
 
 pgMesh::pgMesh()
 {
@@ -72,7 +74,7 @@ void pgMesh::Render(pgPipeline* pipeline)
                 //	uint32_t slotID = pVS->GetSlotIDBySemantic(binding);
                 //	// Bind the vertex buffer to a particular slot ID.
                 //	buffer.second->Bind(slotID, Shader::VertexShader,
-                //ShaderParameter::Type::Buffer);
+                // ShaderParameter::Type::Buffer);
                 //}
                 uint32_t slot = getSlot(binding);
 
@@ -107,3 +109,4 @@ void pgMesh::Accept(Visitor& visitor, pgPipeline* pipeline)
 {
     visitor.Visit(*this, pipeline);
 }
+}    // namespace ade

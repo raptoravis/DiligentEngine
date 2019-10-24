@@ -1,5 +1,8 @@
 #include "passcopytexture.h"
 
+namespace ade
+{
+
 PassCopyTexture::PassCopyTexture(pgTechnique* parentTechnique,
                                  std::shared_ptr<pgTexture> dstTexture,
                                  std::shared_ptr<pgTexture> srcTexture)
@@ -20,3 +23,4 @@ void PassCopyTexture::Render(pgPipeline* pipeline)
 
     pgApp::s_ctx->CopyTexture(CopyAttribs);
 }
+}    // namespace ade

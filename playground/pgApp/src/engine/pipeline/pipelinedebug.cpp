@@ -2,6 +2,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 PipelineDebug::PipelineDebug(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
 
 PipelineDebug::~PipelineDebug() {}
@@ -20,3 +23,5 @@ void PipelineDebug::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DSVFormat = Diligent::TEX_FORMAT_UNKNOWN;
 }
 
+
+}    // namespace ade

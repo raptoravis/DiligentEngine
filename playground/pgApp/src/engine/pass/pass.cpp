@@ -1,5 +1,7 @@
 #include "../engine.h"
 
+namespace ade
+{
 pgPass::pgPass(pgTechnique* parentTechnique) : m_bEnabled(true), m_parentTechnique(parentTechnique)
 {
 }
@@ -38,4 +40,4 @@ void pgPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
 {
     mesh.Render(pipeline);
 }
-
+}    // namespace ade

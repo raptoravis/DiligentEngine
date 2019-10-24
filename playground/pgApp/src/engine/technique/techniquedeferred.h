@@ -8,6 +8,9 @@
 
 using namespace Diligent;
 
+namespace ade
+{
+
 class TechniqueDeferred : public pgTechnique
 {
     typedef pgTechnique base;
@@ -58,3 +61,5 @@ class TechniqueDeferred : public pgTechnique
 
     virtual void Update();
 };
+
+}    // namespace ade
