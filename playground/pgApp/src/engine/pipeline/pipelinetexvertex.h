@@ -11,6 +11,10 @@ class PipelineTexVertex : public pgPipeline
     std::shared_ptr<Shader> m_pPS;
 
     std::shared_ptr<pgTexture> m_Texture;
+    std::shared_ptr<SamplerState> g_LinearClampSampler;
+
+  protected:
+    virtual void InitPSODesc();
 
   public:
     PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt);

@@ -25,6 +25,9 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
                                 bool UseCombinedTextureSamplers,
                                 const Diligent::ShaderMacro* shaderMacros)
 {
+    m_ShaderFileName = fileName;
+    m_EntryPoint = entryPoint;
+
     Diligent::ShaderCreateInfo ShaderCI;
     // Tell the system that the shader source code is in HLSL.
     // For OpenGL, the engine will convert this into GLSL under the hood.
@@ -40,9 +43,9 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
                                                                    &pShaderSourceFactory);
     ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 
-	if (shaderMacros) {
-	    ShaderCI.Macros = shaderMacros;
-	}
+    if (shaderMacros) {
+        ShaderCI.Macros = shaderMacros;
+    }
 
     m_ShaderType = shaderType;
 
@@ -161,7 +164,7 @@ ShaderParameter& Shader::GetShaderParameterByName(const std::string& name) const
         return *(iter->second);
     }
 
-    CHECK_ERR(0, name.c_str(), " does not exist");
+    CHECK_ERR(0, name.c_str(), " does not exist in ", m_EntryPoint.c_str(), " of ", m_ShaderFileName.c_str());
 
     static ShaderParameter gs_InvalidShaderParameter("invalid", "vs",
                                                      ShaderParameter::Type::Invalid);
@@ -187,20 +190,31 @@ uint32_t Shader::GetSlotIDBySemantic(const pgBufferBinding& binding) const
     return (uint32_t)-1;
 }
 
-static bool isStaticType(ShaderParameter::Type type)
+static bool isStaticType(ShaderParameter* p)
 {
+    ShaderParameter::Type type = p->GetType();
+
     return (type == ShaderParameter::Type::CBuffer || type == ShaderParameter::Type::Buffer ||
             type == ShaderParameter::Type::RWBuffer || type == ShaderParameter::Type::Texture ||
             type == ShaderParameter::Type::RWTexture);
 }
 
-Shader::ParametersList Shader::GetConstantBuffers()
+
+static bool isDynamciType(ShaderParameter* p)
+{
+    ShaderParameter::Type type = p->GetType();
+
+    return (type != ShaderParameter::Type::Sampler && !isStaticType(p));
+}
+
+
+Shader::ParametersList Shader::GetStaticVariables()
 {
     Shader::ParametersList ret;
 
     for (ParameterMap::value_type value : m_ShaderParameters) {
         auto p = value.second;
-        if (isStaticType(p->GetType())) {
+        if (isStaticType(p.get())) {
             ret.push_back(p);
         }
     }
@@ -209,13 +223,13 @@ Shader::ParametersList Shader::GetConstantBuffers()
 }
 
 
-Shader::ParametersList Shader::GetNonConstantBuffers()
+Shader::ParametersList Shader::GetDynamicVariables()
 {
     Shader::ParametersList ret;
 
     for (ParameterMap::value_type value : m_ShaderParameters) {
         auto p = value.second;
-        if (!isStaticType(p->GetType())) {
+        if (isDynamciType(p.get())) {
             ret.push_back(p);
         }
     }
@@ -223,14 +237,29 @@ Shader::ParametersList Shader::GetNonConstantBuffers()
     return ret;
 }
 
-//void Shader::Bind()
+Shader::ParametersList Shader::GetStaticSamplers()
+{
+    Shader::ParametersList ret;
+
+    for (ParameterMap::value_type value : m_ShaderParameters) {
+        auto p = value.second;
+        if (p->GetType() == ShaderParameter::Type::Sampler) {
+            ret.push_back(p);
+        }
+    }
+
+    return ret;
+}
+
+
+// void Shader::Bind()
 //{
 //    for (ParameterMap::value_type value : m_ShaderParameters) {
 //        value.second->Bind();
 //    }
 //}
 //
-//void Shader::UnBind()
+// void Shader::UnBind()
 //{
 //    for (ParameterMap::value_type value : m_ShaderParameters) {
 //        value.second->UnBind();

@@ -15,6 +15,9 @@ class TechniqueForward : public pgTechnique
     std::shared_ptr<Shader> g_pVertexShader;
     std::shared_ptr<Shader> g_pPixelShader;
 
+    std::shared_ptr<SamplerState> g_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> g_LinearClampSampler;
+
     std::shared_ptr<pgPipeline> g_pOpaquePipeline;
     std::shared_ptr<pgPipeline> g_pTransparentPipeline;
 

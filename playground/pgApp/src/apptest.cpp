@@ -48,7 +48,7 @@ void AppTest::initLightData()
     light1.m_Selected = 0;
     light1.m_Type = pgLight::LightType::Point;
 
-	m_Lights.push_back(light1);
+    m_Lights.push_back(light1);
 
     light1.m_PositionWS = { 2.5f, -1.40531516f, 0.451306254f, 1.00000000f };
     light1.m_DirectionWS = { 0.0116977794f, -0.170993939f, -0.985219836f, 0.000000000f };
@@ -62,20 +62,20 @@ void AppTest::initLightData()
     light1.m_Selected = 0;
     light1.m_Type = pgLight::LightType::Spot;
 
-	m_Lights.push_back(light1);
+    m_Lights.push_back(light1);
 
     pgLight light2;
 
-#if RIGHT_HANDED	
-	float dirz = -0.760157943f;
+#if RIGHT_HANDED
+    float dirz = -0.760157943f;
 #else
     float dirz = 0.760157943f;
 #endif
 
     light2.m_PositionWS = { -16.1441193f, 2.10133481f, 21.5686855f, 1.00000000f };
     light2.m_DirectionWS = { 0.585131526f, -0.282768548f, dirz, 0.000000000f };
-    light2.m_PositionVS = { 0, 0, 0, 1.f};
-    light2.m_DirectionVS = { 0, 0, 0, 1.f};
+    light2.m_PositionVS = { 0, 0, 0, 1.f };
+    light2.m_DirectionVS = { 0, 0, 0, 1.f };
     light2.m_Color = { .4f, 0.4f, 0.4f, 1.0f };
     light2.m_SpotlightAngle = 45.f;
     light2.m_Range = 1.f;
@@ -168,7 +168,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 {
     SampleBase::Initialize(pEngineFactory, pDevice, ppContexts, NumDeferredCtx, pSwapChain);
 
-	// _CrtSetBreakAlloc(38791);
+    // _CrtSetBreakAlloc(38791);
 
     //
     pgApp::s_device.Attach(pDevice);
@@ -200,7 +200,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 #if RIGHT_HANDED
         dir = Diligent::float3(0, 0, 1);
 #else
-		// inverted by camera
+        // inverted by camera
         dir = Diligent::float3(0, 0, -1);
 #endif
     }

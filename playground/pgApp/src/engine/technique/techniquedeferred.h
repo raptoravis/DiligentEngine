@@ -31,6 +31,8 @@ class TechniqueDeferred : public pgTechnique
     std::shared_ptr<pgPipeline> g_pOpaquePipeline;
     std::shared_ptr<pgPipeline> g_pTransparentPipeline;
 
+	std::shared_ptr<SamplerState> g_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> g_LinearClampSampler;
   public:
     TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
     virtual ~TechniqueDeferred();

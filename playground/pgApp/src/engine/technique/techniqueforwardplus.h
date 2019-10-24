@@ -71,6 +71,9 @@ class TechniqueForwardPlus : public pgTechnique
     // Heatmap texture for light culling debug.
     std::shared_ptr<pgTexture> g_pLightCullingHeatMap;
 
+    std::shared_ptr<SamplerState> g_LinearRepeatSampler;
+    std::shared_ptr<SamplerState> g_LinearClampSampler;
+
 
     void UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera);
     std::shared_ptr<pgTexture> LoadTexture(const std::string& path);

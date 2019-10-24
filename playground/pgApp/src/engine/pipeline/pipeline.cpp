@@ -143,7 +143,7 @@ void pgPipeline::SetStencilRef(uint32_t ref)
     m_stencilRef = ref;
 }
 
-//void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
+// void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
 //{
 //    if (!m_bInited) {
 //        m_bInited = true;
@@ -162,10 +162,14 @@ std::shared_ptr<pgRenderTarget> pgPipeline::GetRenderTarget() const
 void pgPipeline::Bind()
 {
     if (m_bDirty) {
-        auto vars = GetVariableDecalarations();
+        auto vars = GetDynamicVariables();
 
         m_PSODesc.ResourceLayout.Variables = vars.data();
         m_PSODesc.ResourceLayout.NumVariables = (Diligent::Uint32)vars.size();
+
+        auto samplers = GetStaticSamplers();
+        m_PSODesc.ResourceLayout.StaticSamplers = samplers.data();
+        m_PSODesc.ResourceLayout.NumStaticSamplers = (Diligent::Uint32)samplers.size();
 
         pgApp::s_device->CreatePipelineState(m_PSODesc, &m_pPSO);
 
@@ -174,7 +178,7 @@ void pgPipeline::Bind()
         // Create a shader resource binding object and bind all static resources in it
         m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
 
-        SetVariables();
+        SetDynamicVariables();
 
         m_bDirty = false;
     }
@@ -188,7 +192,7 @@ void pgPipeline::Bind()
 
     pgApp::s_ctx->SetStencilRef(m_stencilRef);
 
-    //for (auto shader : m_Shaders) {
+    // for (auto shader : m_Shaders) {
     //    std::shared_ptr<Shader> pShader = shader.second;
     //    if (pShader) {
     //        pShader->Bind();
@@ -207,7 +211,7 @@ void pgPipeline::UnBind()
         m_pRenderTarget->UnBind();
     }
 
-    //for (auto shader : m_Shaders) {
+    // for (auto shader : m_Shaders) {
     //    std::shared_ptr<Shader> pShader = shader.second;
     //    if (pShader) {
     //        pShader->UnBind();
@@ -233,7 +237,7 @@ void pgPipeline::SetStaticVariables()
                 CHECK_ERR(false, "SetStaticVariables");
             }
 
-            auto cbs = pShader->GetConstantBuffers();
+            auto cbs = pShader->GetStaticVariables();
 
             if (cbs.size() > 0) {
                 for (auto p : cbs) {
@@ -278,7 +282,7 @@ void pgPipeline::SetStaticVariables()
     }
 }
 
-std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetVariableDecalarations() const
+std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetDynamicVariables() const
 {
     std::vector<Diligent::ShaderResourceVariableDesc> vars;
 
@@ -293,10 +297,10 @@ std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetVariableDecalar
             } else if (pShader->GetType() == Shader::ShaderType::ComputeShader) {
                 st = Diligent::SHADER_TYPE_COMPUTE;
             } else {
-                CHECK_ERR(0, "unsupported shader type in GetVariableDecalarations");
+                CHECK_ERR(0, "unsupported shader type in GetDynamicVariables");
             }
 
-            auto ncbs = pShader->GetNonConstantBuffers();
+            auto ncbs = pShader->GetDynamicVariables();
 
             if (ncbs.size() > 0) {
                 Diligent::ShaderResourceVariableDesc var;
@@ -318,7 +322,48 @@ std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetVariableDecalar
     return vars;
 }
 
-void pgPipeline::SetVariables()
+std::vector<Diligent::StaticSamplerDesc> pgPipeline::GetStaticSamplers() const
+{
+    std::vector<Diligent::StaticSamplerDesc> samplers;
+
+    for (auto shader : m_Shaders) {
+        std::shared_ptr<Shader> pShader = shader.second;
+        if (pShader) {
+            Diligent::SHADER_TYPE st = Diligent::SHADER_TYPE_UNKNOWN;
+            if (pShader->GetType() == Shader::ShaderType::VertexShader) {
+                st = Diligent::SHADER_TYPE_VERTEX;
+            } else if (pShader->GetType() == Shader::ShaderType::PixelShader) {
+                st = Diligent::SHADER_TYPE_PIXEL;
+            } else if (pShader->GetType() == Shader::ShaderType::ComputeShader) {
+                st = Diligent::SHADER_TYPE_COMPUTE;
+            } else {
+                CHECK_ERR(0, "unsupported shader type in GetStaticSamplers");
+            }
+
+            auto sams = pShader->GetStaticSamplers();
+
+            if (sams.size() > 0) {
+                for (auto p : sams) {
+                    if (p->GetType() == ShaderParameter::Type::Sampler) {
+                        if (std::shared_ptr<pgObject> pResource = p->Get().lock()) {
+                            std::shared_ptr<SamplerState> s =
+                                std::dynamic_pointer_cast<SamplerState>(pResource);
+
+							auto desc = s->Get();
+
+                            samplers.push_back(desc);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return samplers;
+}
+
+
+void pgPipeline::SetDynamicVariables()
 {
     // m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
     for (auto shader : m_Shaders) {
@@ -335,7 +380,7 @@ void pgPipeline::SetVariables()
                 CHECK_ERR(false, "unsupported shader type in SetVariables");
             }
 
-            auto ncbs = pShader->GetNonConstantBuffers();
+            auto ncbs = pShader->GetDynamicVariables();
 
             if (ncbs.size() > 0) {
                 for (auto p : ncbs) {

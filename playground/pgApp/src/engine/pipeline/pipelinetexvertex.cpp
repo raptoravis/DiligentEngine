@@ -11,12 +11,16 @@ PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(
     m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cubetex.vsh", "main");
 
     m_pPS = std::make_shared<Shader>();
-    m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cubetex.psh", "main");
-
-    m_pPS->GetShaderParameterByName("g_Texture").Set(m_Texture);
+    m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cubetex.psh", "main", "", true);
 
     SetShader(Shader::Shader::VertexShader, m_pVS);
     SetShader(Shader::Shader::PixelShader, m_pPS);
+}
+
+PipelineTexVertex::~PipelineTexVertex() {}
+
+void PipelineTexVertex::InitPSODesc() {
+    base::InitPSODesc();
 
     // Define vertex shader input layout
     static LayoutElement LayoutElems[] = { // Attribute 0 - vertex position
@@ -45,33 +49,27 @@ PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(
     // m_PSODesc.ResourceLayout.NumVariables = _countof(Vars);
 
     // Define static sampler for g_Texture. Static samplers should be used whenever possible
-    SamplerDesc SamLinearClampDesc{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
+    // SamplerDesc SamLinearClampDesc{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
+    //                                FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
+    //                                TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
+    // static StaticSamplerDesc StaticSamplers[] = { { SHADER_TYPE_PIXEL, "g_Texture",
+    //                                                SamLinearClampDesc } };
+    // m_PSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
+    // m_PSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
+
+    SamplerDesc linearClampSampler{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
                                     FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
                                     TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
-    static StaticSamplerDesc StaticSamplers[] = { { SHADER_TYPE_PIXEL, "g_Texture",
-                                                    SamLinearClampDesc } };
-    m_PSODesc.ResourceLayout.StaticSamplers = StaticSamplers;
-    m_PSODesc.ResourceLayout.NumStaticSamplers = _countof(StaticSamplers);
+
+    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "g_Texture",
+                                                linearClampSampler };
+
+    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+
+    m_pPS->GetShaderParameterByName("g_Texture_sampler").Set(g_LinearClampSampler);
+
+    m_pPS->GetShaderParameterByName("g_Texture").Set(m_Texture);
 }
-
-PipelineTexVertex::~PipelineTexVertex() {}
-
-// void PipelineTexVertex::CreatePipelineState()
-//{
-//	pgApp::s_device->CreatePipelineState(PSODesc, &m_pPSO);
-//
-//	// Since we did not explcitly specify the type for 'Constants' variable, default
-//	// type (SHADER_RESOURCE_VARIABLE_TYPE_STATIC) will be used. Static variables
-//	// never change and are bound directly through the pipeline state object.
-//	m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants);
-//
-//	// Since we are using mutable variable, we must create a shader resource binding object
-//	// http://diligentgraphics.com/2016/03/23/resource-binding-model-in-diligent-engine-2-0/
-//	m_pPSO->CreateShaderResourceBinding(&m_pSRB, true);
-//
-//	// Set texture SRV in the SRB
-//	m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
-//}
 
 void PipelineTexVertex::LoadTexture()
 {

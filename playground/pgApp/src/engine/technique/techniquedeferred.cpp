@@ -118,7 +118,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     std::shared_ptr<PassClearRT> pClearRTPass = std::make_shared<PassClearRT>(this, m_pGBufferRT);
     AddPass(pClearRTPass);
 
-	uint32_t numLights = (uint32_t)lights->size();
+    uint32_t numLights = (uint32_t)lights->size();
 
     Diligent::ShaderMacroHelper shaderMacros;
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
@@ -148,19 +148,44 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         Shader::PixelShader, "DeferredRendering.hlsl", "PS_DeferredLighting", "./resources/shaders",
         false, shaderMacros);
 
+    SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+                                     FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+                                     TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
+    SamplerDesc linearClampSampler{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
+                                    FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
+                                    TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
+
+    StaticSamplerDesc g_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
+                                                 linearRepeatSampler };
+    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "LinearClampSampler",
+                                                linearClampSampler };
+
+    g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
+    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+
+    g_pGeometryPixelShader->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(g_LinearRepeatSampler);
+    //g_pGeometryPixelShader->GetShaderParameterByName("LinearClampSampler")
+    //    .Set(g_LinearClampSampler);
+    //g_pDeferredLightingPixelShader->GetShaderParameterByName("LinearRepeatSampler")
+    //    .Set(g_LinearRepeatSampler);
+    //g_pDeferredLightingPixelShader->GetShaderParameterByName("LinearClampSampler")
+    //    .Set(g_LinearClampSampler);
+
     g_pGeometryPipeline = std::make_shared<PipelineBase>(m_pGBufferRT);
     g_pGeometryPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pGeometryPipeline->SetShader(Shader::PixelShader, g_pGeometryPixelShader);
-    //g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);
+    // g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);
 
-	// not use lights
+    // not use lights
     std::shared_ptr<PassOpaque> pPassOpaque =
         std::make_shared<PassOpaque>(this, scene, g_pGeometryPipeline, nullptr);
     AddPass(pPassOpaque);
 
     {
         auto srcTexture = m_depthStencilTexture;
-        auto dstTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+        auto dstTexture =
+            m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
             std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
@@ -170,7 +195,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     g_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
     g_pDepthOnlyRenderTarget->AttachTexture(
         pgRenderTarget::AttachmentPoint::DepthStencil,
-                                  m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+        m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
 
     std::shared_ptr<PipelineLightFront> pFront =
         std::make_shared<PipelineLightFront>(g_pDepthOnlyRenderTarget);
@@ -191,7 +216,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     g_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pTransparentPipeline->SetShader(Shader::PixelShader, g_pPixelShader);
-    //g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    // g_pTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     std::shared_ptr<PassTransparent> pTransparentPass =
         std::make_shared<PassTransparent>(this, scene, g_pTransparentPipeline, lights);

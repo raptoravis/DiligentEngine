@@ -168,6 +168,32 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
         Shader::ComputeShader, "ForwardPlusRendering.hlsl", "CS_ComputeFrustums",
         "./resources/shaders", false, shaderMacros);
 
+    SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+                                     FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+                                     TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
+    SamplerDesc linearClampSampler{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
+                                    FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
+                                    TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
+
+    StaticSamplerDesc g_LinearRepeatSamplerDesc{ SHADER_TYPE_PIXEL, "LinearRepeatSampler",
+                                                 linearRepeatSampler };
+    StaticSamplerDesc g_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL | SHADER_TYPE_COMPUTE,
+                                                "LinearClampSampler", linearClampSampler };
+
+    g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
+    g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
+
+
+    //g_pLightCullingComputeShader->GetShaderParameterByName("LinearRepeatSampler")
+    //    .Set(g_LinearRepeatSampler);
+    g_pLightCullingComputeShader->GetShaderParameterByName("LinearClampSampler")
+        .Set(g_LinearClampSampler);
+    g_pForwardPlusPixelShader->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(g_LinearRepeatSampler);
+    //g_pForwardPlusPixelShader->GetShaderParameterByName("LinearClampSampler")
+    //    .Set(g_LinearClampSampler);
+
+
     auto numThreadGroups =
         Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),
                         (uint32_t)ceil(pgApp::s_desc.Height / (float)g_LightCullingBlockSize), 1);
@@ -235,7 +261,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_pDepthPrepassPipeline = std::make_shared<PipelineBase>(g_pDepthOnlyRenderTarget);
 
     g_pDepthPrepassPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
-    //g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
+    // g_pDepthPrepassPipeline->SetRenderTarget(g_pDepthOnlyRenderTarget);
 
     AddPass(std::make_shared<PassOpaque>(this, scene, g_pDepthPrepassPipeline, lights));
 
@@ -257,12 +283,12 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
 
     g_pForwardPlusOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusOpaquePipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    //g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
+    // g_pForwardPlusOpaquePipeline->SetRenderTarget(m_pRenderTarget);
 
     g_pForwardPlusTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pForwardPlusTransparentPipeline->SetShader(Shader::PixelShader, g_pForwardPlusPixelShader);
-    //g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
+    // g_pForwardPlusTransparentPipeline->SetRenderTarget(m_pRenderTarget);
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Make sure the pixel shader has the right parameters set before executing the opaque pass.
