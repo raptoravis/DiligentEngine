@@ -183,16 +183,10 @@ void TechniqueForwardPlus::init(const std::shared_ptr<pgScene> scene, std::vecto
     g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
     g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
 
-
-    //g_pLightCullingComputeShader->GetShaderParameterByName("LinearRepeatSampler")
-    //    .Set(g_LinearRepeatSampler);
     g_pLightCullingComputeShader->GetShaderParameterByName("LinearClampSampler")
         .Set(g_LinearClampSampler);
     g_pForwardPlusPixelShader->GetShaderParameterByName("LinearRepeatSampler")
         .Set(g_LinearRepeatSampler);
-    //g_pForwardPlusPixelShader->GetShaderParameterByName("LinearClampSampler")
-    //    .Set(g_LinearClampSampler);
-
 
     auto numThreadGroups =
         Diligent::uint3((uint32_t)ceil(pgApp::s_desc.Width / (float)g_LightCullingBlockSize),

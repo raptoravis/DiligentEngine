@@ -7,6 +7,7 @@
 #include "../pass/passsetrt.h"
 #include "../pass/passtransparent.h"
 
+#include "../pipeline/pipelinedeferredgeometry.h"
 #include "../pipeline/pipelinelightback.h"
 #include "../pipeline/pipelinelightdir.h"
 #include "../pipeline/pipelinelightfront.h"
@@ -163,16 +164,12 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     g_LinearRepeatSampler = std::make_shared<SamplerState>(g_LinearRepeatSamplerDesc);
     g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
 
+    g_pPixelShader->GetShaderParameterByName("LinearRepeatSampler").Set(g_LinearRepeatSampler);
+
     g_pGeometryPixelShader->GetShaderParameterByName("LinearRepeatSampler")
         .Set(g_LinearRepeatSampler);
-    //g_pGeometryPixelShader->GetShaderParameterByName("LinearClampSampler")
-    //    .Set(g_LinearClampSampler);
-    //g_pDeferredLightingPixelShader->GetShaderParameterByName("LinearRepeatSampler")
-    //    .Set(g_LinearRepeatSampler);
-    //g_pDeferredLightingPixelShader->GetShaderParameterByName("LinearClampSampler")
-    //    .Set(g_LinearClampSampler);
 
-    g_pGeometryPipeline = std::make_shared<PipelineBase>(m_pGBufferRT);
+    g_pGeometryPipeline = std::make_shared<PipelineDeferredGeometry>(m_pGBufferRT);
     g_pGeometryPipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pGeometryPipeline->SetShader(Shader::PixelShader, g_pGeometryPixelShader);
     // g_pGeometryPipeline->SetRenderTarget(m_pGBufferRT);

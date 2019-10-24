@@ -61,7 +61,6 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
     g_LinearClampSampler = std::make_shared<SamplerState>(g_LinearClampSamplerDesc);
 
     g_pPixelShader->GetShaderParameterByName("LinearRepeatSampler").Set(g_LinearRepeatSampler);
-    //g_pPixelShader->GetShaderParameterByName("LinearClampSampler").Set(g_LinearClampSampler);
 
     g_pOpaquePipeline = std::make_shared<PipelineBase>(m_pRenderTarget);
     g_pOpaquePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
