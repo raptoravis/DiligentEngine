@@ -165,20 +165,28 @@ void pgCamera::update(Diligent::InputController* pInputController, float Elapsed
         int mf = moveForward;
         int mb = moveBackward;
         int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
+
+        // side: 1, 0, 0
+        // up : 0, 1, 0
+        // dir: 0, 0, -1
 #else
         int mf = moveBackward;
         int mb = moveForward;
 
-		// dir is inverted and right is inverted
-		// side: -1, 0, 0
+		// dir is inverted
+		// side: 1, 0, 0
 		// up : 0, 1, 0
-		// dir: 0, 0, 1
+		// dir: 0, 0, -(-1)
         int flag = 0;
         //int flag = FLYTHROUGH_CAMERA_LEFT_HANDED_BIT;
 #endif
 
         float* view = &m_viewMatrix.m00;
 
+		// flythrough_camera_update calculate in opengl right-handed space
+		// side = cross(look, up) (0, 0, -1) X (0, 1, 0) => (1, 0, 0)
+		// up = cross(side, look)
+		// if !FLYTHROUGH_CAMERA_LEFT_HANDED_BIT, look = -look
         flythrough_camera_update(&pos.x, &look.x, &up.x, view, delta_time_sec,
                                  2.0f * (accelerate ? 5.0f : 1.0f),    // eye_speed
                                  0.1f,                                 // degrees_per_cursor_move
