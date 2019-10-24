@@ -244,16 +244,49 @@ void TechniqueDeferred::initDebug()
 {
     Diligent::ShaderMacroHelper shaderMacros;
 
+    Diligent::DepthStencilStateDesc DSStateDesc;
+    DSStateDesc.DepthEnable = False;
+
     // Pipeline for debugging textures on screen.
-    m_pDebugTexturePixelShader = std::make_shared<Shader>();
-    m_pDebugTexturePixelShader->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
+	// duplicate the DebugTexturePixelShader as otherwise they would share the same debugged texture
+    std::shared_ptr<Shader> pDebugTexturePixelShader1 = std::make_shared<Shader>();
+    pDebugTexturePixelShader1->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
                                                    "PS_DebugTexture", "./resources/shaders", false,
                                                    shaderMacros);
-    m_pDebugTexturePixelShader->GetShaderParameterByName("LinearRepeatSampler")
+    pDebugTexturePixelShader1->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
-    m_pDebugTexturePipeline = std::make_shared<PipelineDebug>(m_pColorOnlyRenderTarget);
-    m_pDebugTexturePipeline->SetShader(Shader::VertexShader, m_pVertexShader);
-    m_pDebugTexturePipeline->SetShader(Shader::PixelShader, m_pDebugTexturePixelShader);
+
+    std::shared_ptr<Shader> pDebugTexturePixelShader2 = std::make_shared<Shader>();
+    pDebugTexturePixelShader2->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
+                                                    "PS_DebugTexture", "./resources/shaders", false,
+                                                    shaderMacros);
+    pDebugTexturePixelShader2->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(m_LinearRepeatSampler);
+
+    std::shared_ptr<Shader> pDebugTexturePixelShader3 = std::make_shared<Shader>();
+    pDebugTexturePixelShader3->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
+                                                    "PS_DebugTexture", "./resources/shaders", false,
+                                                    shaderMacros);
+    pDebugTexturePixelShader3->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(m_LinearRepeatSampler);
+
+    std::shared_ptr<PipelineDebug> pDebugTexturePipeline1 =
+        std::make_shared<PipelineDebug>(m_pColorOnlyRenderTarget);
+    pDebugTexturePipeline1->SetShader(Shader::VertexShader, m_pVertexShader);
+    pDebugTexturePipeline1->SetShader(Shader::PixelShader, pDebugTexturePixelShader1);
+    pDebugTexturePipeline1->SetDepthStencilState(DSStateDesc);
+
+    std::shared_ptr<PipelineDebug> pDebugTexturePipeline2 =
+        std::make_shared<PipelineDebug>(m_pColorOnlyRenderTarget);
+    pDebugTexturePipeline2->SetShader(Shader::VertexShader, m_pVertexShader);
+    pDebugTexturePipeline2->SetShader(Shader::PixelShader, pDebugTexturePixelShader2);
+    pDebugTexturePipeline2->SetDepthStencilState(DSStateDesc);
+
+    std::shared_ptr<PipelineDebug> pDebugTexturePipeline3 =
+        std::make_shared<PipelineDebug>(m_pColorOnlyRenderTarget);
+    pDebugTexturePipeline3->SetShader(Shader::VertexShader, m_pVertexShader);
+    pDebugTexturePipeline3->SetShader(Shader::PixelShader, pDebugTexturePixelShader3);
+    pDebugTexturePipeline3->SetDepthStencilState(DSStateDesc);
 
     m_pDebugDepthTexturePixelShader = std::make_shared<Shader>();
     m_pDebugDepthTexturePixelShader->LoadShaderFromFile(
@@ -264,12 +297,7 @@ void TechniqueDeferred::initDebug()
     m_pDebugDepthTexturePipeline = std::make_shared<PipelineDebug>(m_pColorOnlyRenderTarget);
     m_pDebugDepthTexturePipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pDebugDepthTexturePipeline->SetShader(Shader::PixelShader, m_pDebugDepthTexturePixelShader);
-
-    Diligent::DepthStencilStateDesc DSStateDesc;
-    DSStateDesc.DepthEnable = False;
-
     m_pDebugDepthTexturePipeline->SetDepthStencilState(DSStateDesc);
-    m_pDebugTexturePipeline->SetDepthStencilState(DSStateDesc);
 
 #if RIGHT_HANDED
     bool IsGL = true;
@@ -292,7 +320,7 @@ void TechniqueDeferred::initDebug()
         pgSceneAss::CreateScreenQuad(TRANS_SSX(20 / 1920.f), TRANS_SSX(475 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture0Pass = std::make_shared<PassPostprocess>(
-        this, debugTextureScene, m_pDebugTexturePipeline, orthographicProjection, diffuseTexture);
+        this, debugTextureScene, pDebugTexturePipeline1, orthographicProjection, diffuseTexture);
     m_DebugTexture0Pass->SetEnabled(false);    // Initially disabled. Enabled with the F1 key.
     AddPass(m_DebugTexture0Pass);
 
@@ -300,7 +328,7 @@ void TechniqueDeferred::initDebug()
         pgSceneAss::CreateScreenQuad(TRANS_SSX(495 / 1920.f), TRANS_SSX(950 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture1Pass = std::make_shared<PassPostprocess>(
-        this, debugTextureScene, m_pDebugTexturePipeline, orthographicProjection, specularTexture);
+        this, debugTextureScene, pDebugTexturePipeline2, orthographicProjection, specularTexture);
     m_DebugTexture1Pass->SetEnabled(false);    // Initial disabled. Enabled with the F2 key.
     AddPass(m_DebugTexture1Pass);
 
@@ -308,7 +336,7 @@ void TechniqueDeferred::initDebug()
         pgSceneAss::CreateScreenQuad(TRANS_SSX(970 / 1920.f), TRANS_SSX(1425 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture2Pass = std::make_shared<PassPostprocess>(
-        this, debugTextureScene, m_pDebugTexturePipeline, orthographicProjection, normalTexture);
+        this, debugTextureScene, pDebugTexturePipeline3, orthographicProjection, normalTexture);
     m_DebugTexture2Pass->SetEnabled(false);    // Initially disabled. Enabled with the F3 key.
     AddPass(m_DebugTexture2Pass);
 

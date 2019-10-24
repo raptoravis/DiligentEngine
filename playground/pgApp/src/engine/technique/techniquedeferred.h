@@ -25,7 +25,6 @@ class TechniqueDeferred : public pgTechnique
     std::shared_ptr<ConstantBuffer> m_LightParamsCB;
     std::shared_ptr<ConstantBuffer> m_ScreenToViewParamsCB;
 
-	std::shared_ptr<Shader> m_pDebugTexturePixelShader;
     std::shared_ptr<Shader> m_pDebugDepthTexturePixelShader;
 
     std::shared_ptr<Shader> m_pVertexShader;
@@ -33,7 +32,6 @@ class TechniqueDeferred : public pgTechnique
     std::shared_ptr<Shader> m_pGeometryPixelShader;
     std::shared_ptr<Shader> m_pDeferredLightingPixelShader;
 
-    std::shared_ptr<pgPipeline> m_pDebugTexturePipeline;
     std::shared_ptr<pgPipeline> m_pDebugDepthTexturePipeline;
 
     std::shared_ptr<pgPipeline> m_pGeometryPipeline;
