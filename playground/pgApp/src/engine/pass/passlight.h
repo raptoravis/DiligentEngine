@@ -4,8 +4,6 @@
 
 #include "../engine.h"
 
-#include "../utils/light.h"
-
 #include "passrender.h"
 
 #include "../pipeline/pipelinelightback.h"

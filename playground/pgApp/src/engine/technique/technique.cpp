@@ -1,4 +1,4 @@
-#include "engine.h"
+#include "../engine.h"
 
 pgTechnique::pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
     : m_pRenderTarget(rt), m_pBackBuffer(backBuffer)

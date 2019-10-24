@@ -5,7 +5,6 @@
 #include "../engine.h"
 
 #include "passrender.h"
-#include "../utils/light.h"
 
 using namespace Diligent;
 

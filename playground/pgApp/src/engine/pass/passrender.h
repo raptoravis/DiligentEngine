@@ -4,8 +4,6 @@
 
 #include "../engine.h"
 
-#include "../utils/light.h"
-
 using namespace Diligent;
 
 class pgPassRender : public pgPassPilpeline
