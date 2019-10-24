@@ -172,6 +172,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     m_pGeometryPixelShader->GetShaderParameterByName("LinearRepeatSampler")
         .Set(m_LinearRepeatSampler);
 
+	//////////////////////////////////////////////////////////////////////////
+	// gbuffer pass
     m_pGeometryPipeline = std::make_shared<PipelineDeferredGeometry>(m_pGBufferRT);
     m_pGeometryPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pGeometryPipeline->SetShader(Shader::PixelShader, m_pGeometryPixelShader);
@@ -182,6 +184,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         std::make_shared<PassOpaque>(this, scene, m_pGeometryPipeline, nullptr);
     AddPass(pPassOpaque);
 
+	//////////////////////////////////////////////////////////////////////////
     {
         auto srcTexture = m_depthStencilTexture;
         auto dstTexture =
@@ -192,6 +195,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         AddPass(pCopyTexPass);
     }
 
+	//////////////////////////////////////////////////////////////////////////
+	// light pass
     m_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
     m_pDepthOnlyRenderTarget->AttachTexture(
         pgRenderTarget::AttachmentPoint::DepthStencil,
@@ -218,6 +223,8 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
         std::make_shared<PassLight>(this, m_pGBufferRT, pFront, pBack, pDir, lights);
     AddPass(pLightPass);
 
+	//////////////////////////////////////////////////////////////////////////
+	//
     m_pTransparentPipeline = std::make_shared<PipelineTransparent>(m_pRenderTarget);
     m_pTransparentPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
     m_pTransparentPipeline->SetShader(Shader::PixelShader, m_pPixelShader);
@@ -321,7 +328,7 @@ void TechniqueDeferred::initDebug()
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture0Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline1, orthographicProjection, diffuseTexture);
-    m_DebugTexture0Pass->SetEnabled(false);    // Initially disabled. Enabled with the F1 key.
+    m_DebugTexture0Pass->SetEnabled(false);    // Initially disabled.
     AddPass(m_DebugTexture0Pass);
 
     debugTextureScene =
@@ -329,7 +336,7 @@ void TechniqueDeferred::initDebug()
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture1Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline2, orthographicProjection, specularTexture);
-    m_DebugTexture1Pass->SetEnabled(false);    // Initial disabled. Enabled with the F2 key.
+    m_DebugTexture1Pass->SetEnabled(false);    // Initial disabled. 
     AddPass(m_DebugTexture1Pass);
 
     debugTextureScene =
@@ -337,7 +344,7 @@ void TechniqueDeferred::initDebug()
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture2Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline3, orthographicProjection, normalTexture);
-    m_DebugTexture2Pass->SetEnabled(false);    // Initially disabled. Enabled with the F3 key.
+    m_DebugTexture2Pass->SetEnabled(false);    // Initially disabled.
     AddPass(m_DebugTexture2Pass);
 
     debugTextureScene =
@@ -346,7 +353,7 @@ void TechniqueDeferred::initDebug()
     m_DebugTexture3Pass =
         std::make_shared<PassPostprocess>(this, debugTextureScene, m_pDebugDepthTexturePipeline,
                                           orthographicProjection, depthStencilTexture);
-    m_DebugTexture3Pass->SetEnabled(false);    // Initially disabled. Enabled with the F4 key.
+    m_DebugTexture3Pass->SetEnabled(false);    // Initially disabled.
     AddPass(m_DebugTexture3Pass);
 }
 
