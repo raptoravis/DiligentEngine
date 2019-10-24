@@ -4,7 +4,7 @@
 namespace ade
 {
 
-PassDispatch::PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline)
+PassDispatch::PassDispatch(Technique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline)
     : base(parentTechnique, nullptr, pipeline)
 {
 }
@@ -17,7 +17,7 @@ void PassDispatch::PreRender()
 }
 
 
-void PassDispatch::Render(pgPipeline* pipeline)
+void PassDispatch::Render(Pipeline* pipeline)
 {
     base::Render(pipeline);
 
@@ -31,7 +31,7 @@ void PassDispatch::Render(pgPipeline* pipeline)
     DispatAttribs.ThreadGroupCountY = numGroups.y;
     DispatAttribs.ThreadGroupCountZ = numGroups.z;
 
-    pgApp::s_ctx->DispatchCompute(DispatAttribs);
+    App::s_ctx->DispatchCompute(DispatAttribs);
 }
 
 void PassDispatch::Dispatch()

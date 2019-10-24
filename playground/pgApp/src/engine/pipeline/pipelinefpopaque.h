@@ -13,7 +13,7 @@ class PipelineFPOpaque : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineFPOpaque(std::shared_ptr<pgRenderTarget> rt);
+    PipelineFPOpaque(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineFPOpaque();
 };
 

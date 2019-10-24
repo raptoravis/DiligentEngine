@@ -7,18 +7,18 @@
 namespace ade
 {
 
-class PassCopyTexture : public pgPass
+class PassCopyTexture : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
-    std::shared_ptr<pgTexture> m_srcTexture;
-    std::shared_ptr<pgTexture> m_dstTexture;
+    std::shared_ptr<Texture> m_srcTexture;
+    std::shared_ptr<Texture> m_dstTexture;
 
   public:
-    PassCopyTexture(pgTechnique* parentTechnique, std::shared_ptr<pgTexture> dstTexture,
-                    std::shared_ptr<pgTexture> srcTexture);
+    PassCopyTexture(Technique* parentTechnique, std::shared_ptr<Texture> dstTexture,
+                    std::shared_ptr<Texture> srcTexture);
     virtual ~PassCopyTexture();
 
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 }    // namespace ade

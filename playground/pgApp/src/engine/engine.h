@@ -80,17 +80,17 @@ inline std::string ConvertString(const std::wstring& wstring)
 }
 
 
-class pgApp;
-class pgTechnique;
-class pgPass;
-class pgPipeline;
-class pgScene;
-class pgSceneNode;
-class pgMaterial;
-class pgMesh;
+class App;
+class Technique;
+class Pass;
+class Pipeline;
+class Scene;
+class SceneNode;
+class Material;
+class Mesh;
 
 
-class pgObject
+class Object
 {
     static uint32_t s_uuid;
 
@@ -98,24 +98,24 @@ class pgObject
     uint32_t m_uuid;
 
   public:
-    pgObject();
-    virtual ~pgObject()
+    Object();
+    virtual ~Object()
     {
         //
     }
 };
 
 
-class Visitor : public pgObject
+class Visitor : public Object
 {
   public:
-    virtual void Visit(pgScene& scene, pgPipeline* pipeline) = 0;
-    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline) = 0;
-    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline) = 0;
+    virtual void Visit(Scene& scene, Pipeline* pipeline) = 0;
+    virtual void Visit(SceneNode& node, Pipeline* pipeline) = 0;
+    virtual void Visit(Mesh& mesh, Pipeline* pipeline) = 0;
 };
 
 
-class pgCamera : public pgObject
+class Camera : public Object
 {
     Diligent::MouseState m_LastMouseState;
 
@@ -132,9 +132,9 @@ class pgCamera : public pgObject
     const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
 
   public:
-    pgCamera(const Diligent::float3 pos, const Diligent::float3 dir);
+    Camera(const Diligent::float3 pos, const Diligent::float3 dir);
 
-    virtual ~pgCamera();
+    virtual ~Camera();
 
     void reset();
     void reset(const Diligent::float3& p, const Diligent::float3& dir);
@@ -162,33 +162,33 @@ enum CPUAccess {
 };
 
 
-class pgRenderEventArgs
+class RenderEventArgs
 {
   public:
     float CurrTime;
     float ElapsedTime;
 
-    pgApp* pApp;
-    pgCamera* pCamera;
+    App* pApp;
+    Camera* pCamera;
 
     Diligent::RefCntAutoPtr<Diligent::IDeviceContext> pDeviceContext;
 
   public:
-    pgRenderEventArgs();
+    RenderEventArgs();
 
-    void set(float currentTime, float elapsedTime, pgApp* caller, pgCamera* camera,
+    void set(float currentTime, float elapsedTime, App* caller, Camera* camera,
              Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx);
 };
 
 // Defines either a semantic (HLSL) or an input index (GLSL/HLSL)
 // to bind an input buffer.
-struct pgBufferBinding {
-    pgBufferBinding() : Index(0) {}
+struct BufferBinding {
+    BufferBinding() : Index(0) {}
 
-    pgBufferBinding(const std::string& name, unsigned int index) : Name(name), Index(index) {}
+    BufferBinding(const std::string& name, unsigned int index) : Name(name), Index(index) {}
 
     // Provide the < operator for STL containers.
-    bool operator<(const pgBufferBinding& rhs) const
+    bool operator<(const BufferBinding& rhs) const
     {
         if (Name < rhs.Name)
             return true;
@@ -209,16 +209,16 @@ struct pgBufferBinding {
 };
 
 
-class pgBuffer;
-class pgTexture;
+class Buffer;
+class Texture;
 class ConstantBuffer;
 class StructuredBuffer;
 class SamplerState;
 
-class ShaderParameter : public pgObject
+class ShaderParameter : public Object
 {
   public:
-    typedef pgObject base;
+    typedef Object base;
 
     enum class Type {
         Invalid,     // Invalid parameter. Doesn't store a type.
@@ -243,8 +243,8 @@ class ShaderParameter : public pgObject
     virtual void Bind();
     virtual void UnBind();
 
-    std::weak_ptr<pgObject> Get();
-    void Set(std::shared_ptr<pgObject> resource);
+    std::weak_ptr<Object> Get();
+    void Set(std::shared_ptr<Object> resource);
 
   private:
     std::string m_Name;
@@ -254,14 +254,14 @@ class ShaderParameter : public pgObject
     Type m_ParameterType;
 
     // Shader parameter does not take ownership of these types.
-    std::weak_ptr<pgObject> m_pResource;
+    std::weak_ptr<Object> m_pResource;
 };
 
 
-class Shader : public pgObject
+class Shader : public Object
 {
   public:
-    typedef pgObject base;
+    typedef Object base;
 
     enum ShaderType {
         UnknownShaderType = 0,
@@ -295,8 +295,8 @@ class Shader : public pgObject
     // virtual ConstantBuffer* GetConstantBufferByName( const std::string& name );
 
     // Check to see if this shader supports a given semantic.
-    bool HasSemantic(const pgBufferBinding& binding) const;
-    uint32_t GetSlotIDBySemantic(const pgBufferBinding& binding) const;
+    bool HasSemantic(const BufferBinding& binding) const;
+    uint32_t GetSlotIDBySemantic(const BufferBinding& binding) const;
 
     typedef std::vector<std::shared_ptr<ShaderParameter>> ParametersList;
     ParametersList GetStaticVariables();
@@ -318,7 +318,7 @@ class Shader : public pgObject
     ParameterMap m_ShaderParameters;
 
     // A map to convert a vertex attribute semantic to a slot.
-    typedef std::map<pgBufferBinding, uint32_t> SemanticMap;
+    typedef std::map<BufferBinding, uint32_t> SemanticMap;
     SemanticMap m_InputSemantics;
 
     // Parameters necessary to reload the shader at runtime if it is modified on disc.
@@ -328,12 +328,12 @@ class Shader : public pgObject
     std::string m_ShaderFileName;
 };
 
-class pgResource : public pgObject
+class Resource : public Object
 {
     //
 };
 
-class pgBuffer : public pgResource
+class Buffer : public Resource
 {
   protected:
     // The stride of the vertex buffer in bytes.
@@ -349,8 +349,8 @@ class pgBuffer : public pgResource
   public:
     enum BufferType { Unknown = 0, VertexBuffer, IndexBuffer, StructuredBuffer, ConstantBuffer };
 
-    pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer);
-    virtual ~pgBuffer();
+    Buffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer);
+    virtual ~Buffer();
 
     Diligent::IBuffer* GetBuffer();
 
@@ -369,7 +369,7 @@ class pgBuffer : public pgResource
 
     // Copy the contents of another buffer to this one.
     // Buffers must be the same size in bytes.
-    virtual void Copy(std::shared_ptr<pgBuffer> other);
+    virtual void Copy(std::shared_ptr<Buffer> other);
 
     // Is this an index buffer or an attribute/vertex buffer?
     BufferType GetType() const;
@@ -377,9 +377,9 @@ class pgBuffer : public pgResource
     unsigned int GetElementCount() const { return m_uiCount; }
 };
 
-class ConstantBuffer : public pgBuffer
+class ConstantBuffer : public Buffer
 {
-    typedef pgBuffer base;
+    typedef Buffer base;
 
   public:
     ConstantBuffer(uint32_t size, void* data = 0);
@@ -413,9 +413,9 @@ class ConstantBuffer : public pgBuffer
 };
 
 
-class StructuredBuffer : public pgBuffer
+class StructuredBuffer : public Buffer
 {
-    typedef pgBuffer base;
+    typedef Buffer base;
 
   public:
     StructuredBuffer(const void* data, uint32_t count, uint32_t stride,
@@ -452,9 +452,9 @@ class StructuredBuffer : public pgBuffer
     virtual void SetData(void* data, size_t elementSize, size_t offset, size_t numElements);
 };
 
-class SamplerState : public pgResource
+class SamplerState : public Resource
 {
-    typedef pgResource base;
+    typedef Resource base;
 
     Diligent::StaticSamplerDesc m_desc;
 
@@ -477,7 +477,7 @@ class SamplerState : public pgResource
 /**
  * Flags to specify which value should be cleared.
  */
-enum class pgClearFlags : uint8_t {
+enum class ClearFlags : uint8_t {
     Color = 1 << 0,
     Depth = 1 << 1,
     Stencil = 1 << 2,
@@ -486,14 +486,14 @@ enum class pgClearFlags : uint8_t {
 };
 
 
-class pgTexture : public pgResource
+class Texture : public Resource
 {
   protected:
     Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
 
   public:
-    pgTexture(Diligent::ITexture* texture);
-    virtual ~pgTexture();
+    Texture(Diligent::ITexture* texture);
+    virtual ~Texture();
 
     Diligent::ITexture* GetTexture();
 
@@ -516,18 +516,18 @@ class pgTexture : public pgResource
     Diligent::ITextureView* GetRenderTargetView();
     Diligent::ITextureView* GetUnorderedAccessView();
 
-    void Clear(pgClearFlags clearFlags, const Diligent::float4& color, float depth,
+    void Clear(ClearFlags clearFlags, const Diligent::float4& color, float depth,
                uint8_t stencil);
-    void Copy(pgTexture* dstTexture);
+    void Copy(Texture* dstTexture);
 
     void Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
     void UnBind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
 };
 
-class pgRenderTarget : public pgObject
+class RenderTarget : public Object
 {
-    typedef std::vector<std::shared_ptr<pgTexture>> TextureList;
-    typedef std::vector<std::shared_ptr<pgBuffer>> StructuredBufferList;
+    typedef std::vector<std::shared_ptr<Texture>> TextureList;
+    typedef std::vector<std::shared_ptr<Buffer>> StructuredBufferList;
 
     TextureList m_Textures;
 
@@ -556,8 +556,8 @@ class pgRenderTarget : public pgObject
         NumAttachmentPoints
     };
 
-    pgRenderTarget();
-    virtual ~pgRenderTarget();
+    RenderTarget();
+    virtual ~RenderTarget();
     /**
      * Attach a texture to the render target.
      * The dimension of all textures attached to a render target
@@ -565,8 +565,8 @@ class pgRenderTarget : public pgObject
      *
      * To remove a texture from an attachment point, just attach a NULL texture.
      */
-    void AttachTexture(AttachmentPoint attachment, std::shared_ptr<pgTexture> texture);
-    std::shared_ptr<pgTexture> GetTexture(AttachmentPoint attachment);
+    void AttachTexture(AttachmentPoint attachment, std::shared_ptr<Texture> texture);
+    std::shared_ptr<Texture> GetTexture(AttachmentPoint attachment);
 
     uint32_t GetNumRTVs() const;
 
@@ -578,7 +578,7 @@ class pgRenderTarget : public pgObject
      * @param depth The depth value to use for depth attachment points.
      * @param stencil The stencil value to use for stencil attachment points.
      */
-    void Clear(AttachmentPoint attachemnt, pgClearFlags clearFlags = pgClearFlags::All,
+    void Clear(AttachmentPoint attachemnt, ClearFlags clearFlags = ClearFlags::All,
                const Diligent::float4& color = Diligent::float4(0, 0, 0, 0), float depth = 1.0f,
                uint8_t stencil = 0);
 
@@ -589,7 +589,7 @@ class pgRenderTarget : public pgObject
      * @param depth The depth value to use for depth attachment points.
      * @param stencil The stencil value to use for stencil attachment points.
      */
-    void Clear(pgClearFlags clearFlags = pgClearFlags::All,
+    void Clear(ClearFlags clearFlags = ClearFlags::All,
                const Diligent::float4& color = Diligent::float4(0, 0, 0, 0), float depth = 1.0f,
                uint8_t stencil = 0);
 
@@ -605,8 +605,8 @@ class pgRenderTarget : public pgObject
      * are 8 - num color textures. So there can only be a total of 8 color textures
      * and RWbuffers attached to the render target at any time.
      */
-    void AttachStructuredBuffer(uint8_t slot, std::shared_ptr<pgBuffer> rwBuffer);
-    std::shared_ptr<pgBuffer> GetStructuredBuffer(uint8_t slot);
+    void AttachStructuredBuffer(uint8_t slot, std::shared_ptr<Buffer> rwBuffer);
+    std::shared_ptr<Buffer> GetStructuredBuffer(uint8_t slot);
 
     /**
      * Resize the color and depth/stencil textures that are associated to this render target view.
@@ -637,10 +637,10 @@ class pgRenderTarget : public pgObject
 
 // A material class is used to wrap the shaders and to
 // manage the shader parameters.
-class pgMaterial : public pgObject
+class Material : public Object
 {
   public:
-    typedef pgObject base;
+    typedef Object base;
 
     // These are the texture slots that will be used to bind the material's textures
     // to the shader. Make sure you use the same texture slots in your own shaders.
@@ -655,9 +655,9 @@ class pgMaterial : public pgObject
         Opacity = 7,
     };
 
-    pgMaterial();
+    Material();
 
-    virtual ~pgMaterial();
+    virtual ~Material();
 
     const Diligent::float4& GetDiffuseColor() const;
     void SetDiffuseColor(const Diligent::float4& diffuse);
@@ -692,8 +692,8 @@ class pgMaterial : public pgObject
     float GetBumpIntensity() const;
     void SetBumpIntensity(float bumpIntensity);
 
-    std::shared_ptr<pgTexture> GetTexture(TextureType ID) const;
-    void SetTexture(TextureType type, std::shared_ptr<pgTexture> texture);
+    std::shared_ptr<Texture> GetTexture(TextureType ID) const;
+    void SetTexture(TextureType type, std::shared_ptr<Texture> texture);
 
     void Bind(std::weak_ptr<Shader> wpShader);
 
@@ -754,7 +754,7 @@ class pgMaterial : public pgObject
 
     static uint32_t getConstantBufferSize() { return sizeof(MaterialProperties); }
 
-    pgMaterial::MaterialProperties* GetMaterialProperties() const { return m_pProperties; }
+    Material::MaterialProperties* GetMaterialProperties() const { return m_pProperties; }
 
   private:
     // Material properties have to be 16 byte aligned.
@@ -764,7 +764,7 @@ class pgMaterial : public pgObject
 
     // Textures are stored by which texture unit (or texture register)
     // they are bound to.
-    typedef std::map<TextureType, std::shared_ptr<pgTexture>> TextureMap;
+    typedef std::map<TextureType, std::shared_ptr<Texture>> TextureMap;
     TextureMap m_Textures;
 
     // Set to true if the contents of the constant buffer needs to be updated.
@@ -772,7 +772,7 @@ class pgMaterial : public pgObject
 };
 
 
-__declspec(align(16)) struct pgLight {
+__declspec(align(16)) struct Light {
     enum class LightType : uint32_t { Point = 0, Spot = 1, Directional = 2 };
 
     /**
@@ -832,7 +832,7 @@ __declspec(align(16)) struct pgLight {
     Diligent::float2 m_Padding;
     //--------------------------------------------------------------(16 bytes )
     //--------------------------------------------------------------( 16 * 7 = 112 bytes )
-    pgLight::pgLight()
+    Light::Light()
         : m_PositionWS(0, 0, 0, 1), m_DirectionWS(0, 0, -1, 0), m_PositionVS(0, 0, 0, 1),
           m_DirectionVS(0, 0, 1, 0), m_Color(1, 1, 1, 1), m_SpotlightAngle(45.0f), m_Range(100.0f),
           m_Intensity(1.0f), m_Enabled(true), m_Selected(false), m_Type(LightType::Point)
@@ -841,37 +841,37 @@ __declspec(align(16)) struct pgLight {
 };
 
 // A mesh contains the geometry and materials required to render this mesh.
-class pgMesh : public pgObject
+class Mesh : public Object
 {
   protected:
-    typedef std::map<pgBufferBinding, std::shared_ptr<pgBuffer>> BufferMap;
+    typedef std::map<BufferBinding, std::shared_ptr<Buffer>> BufferMap;
     BufferMap m_VertexBuffers;
 
-    std::shared_ptr<pgBuffer> m_pIndexBuffer;
-    std::shared_ptr<pgMaterial> m_pMaterial;
+    std::shared_ptr<Buffer> m_pIndexBuffer;
+    std::shared_ptr<Material> m_pMaterial;
 
   public:
-    pgMesh();
-    virtual ~pgMesh();
+    Mesh();
+    virtual ~Mesh();
 
     // Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
-    virtual void addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> buffer);
-    virtual void setIndexBuffer(std::shared_ptr<pgBuffer> buffer);
+    virtual void addVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> buffer);
+    virtual void setIndexBuffer(std::shared_ptr<Buffer> buffer);
 
-    virtual void setMaterial(std::shared_ptr<pgMaterial> material);
-    virtual std::shared_ptr<pgMaterial> getMaterial() const;
+    virtual void setMaterial(std::shared_ptr<Material> material);
+    virtual std::shared_ptr<Material> getMaterial() const;
 
-    virtual void Render(pgPipeline* pipeline);
-    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
+    virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 };
 
-class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgSceneNode>
+class SceneNode : public Object, public std::enable_shared_from_this<SceneNode>
 {
   public:
-    typedef pgObject base;
+    typedef Object base;
 
-    explicit pgSceneNode(const Diligent::float4x4& localTransform = Diligent::float4x4::Identity());
-    virtual ~pgSceneNode();
+    explicit SceneNode(const Diligent::float4x4& localTransform = Diligent::float4x4::Identity());
+    virtual ~SceneNode();
 
     /**
      * Assign a name to this scene node so that it can be searched for later.
@@ -887,22 +887,22 @@ class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgScene
 
     Diligent::float4x4 getInverseWorldTransform() const;
 
-    void addChild(std::shared_ptr<pgSceneNode> pNode);
-    void removeChild(std::shared_ptr<pgSceneNode> pNode);
-    void setParent(std::weak_ptr<pgSceneNode> pNode);
+    void addChild(std::shared_ptr<SceneNode> pNode);
+    void removeChild(std::shared_ptr<SceneNode> pNode);
+    void setParent(std::weak_ptr<SceneNode> pNode);
 
-    void addMesh(std::shared_ptr<pgMesh> mesh);
-    void RemoveMesh(std::shared_ptr<pgMesh> mesh);
+    void addMesh(std::shared_ptr<Mesh> mesh);
+    void RemoveMesh(std::shared_ptr<Mesh> mesh);
 
-    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
+    virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
   protected:
     Diligent::float4x4 GetParentWorldTransform() const;
 
   private:
-    typedef std::vector<std::shared_ptr<pgSceneNode>> NodeList;
-    typedef std::multimap<std::string, std::shared_ptr<pgSceneNode>> NodeNameMap;
-    typedef std::vector<std::shared_ptr<pgMesh>> MeshList;
+    typedef std::vector<std::shared_ptr<SceneNode>> NodeList;
+    typedef std::multimap<std::string, std::shared_ptr<SceneNode>> NodeNameMap;
+    typedef std::vector<std::shared_ptr<Mesh>> MeshList;
 
     std::string m_Name;
 
@@ -911,36 +911,36 @@ class pgSceneNode : public pgObject, public std::enable_shared_from_this<pgScene
     // This is the inverse of the local -> world transform.
     Diligent::float4x4 m_InverseTransform;
 
-    std::weak_ptr<pgSceneNode> m_pParentNode;
+    std::weak_ptr<SceneNode> m_pParentNode;
     NodeList m_Children;
     NodeNameMap m_ChildrenByName;
     MeshList m_Meshes;
 };
 
-class pgScene : public pgObject
+class Scene : public Object
 {
-    typedef pgObject base;
+    typedef Object base;
 
   protected:
-    std::shared_ptr<pgSceneNode> m_pRootNode;
+    std::shared_ptr<SceneNode> m_pRootNode;
 
   public:
-    pgScene();
-    virtual ~pgScene();
+    Scene();
+    virtual ~Scene();
 
-    std::shared_ptr<pgSceneNode> getRootNode() const { return m_pRootNode; }
-    void setRootNode(std::shared_ptr<pgSceneNode> root) { m_pRootNode = root; }
+    std::shared_ptr<SceneNode> getRootNode() const { return m_pRootNode; }
+    void setRootNode(std::shared_ptr<SceneNode> root) { m_pRootNode = root; }
 
-    virtual void Accept(Visitor& visitor, pgPipeline* pipeline);
+    virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
-    static std::shared_ptr<pgTexture> CreateTexture2D(uint16_t width, uint16_t height,
+    static std::shared_ptr<Texture> CreateTexture2D(uint16_t width, uint16_t height,
                                                       uint16_t slices,
                                                       Diligent::TEXTURE_FORMAT format,
                                                       CPUAccess cpuAccess, bool gpuWrite,
                                                       bool bGenerateMipmaps = false);
 };
 
-class pgPipeline : public pgObject
+class Pipeline : public Object
 {
     typedef std::map<Shader::ShaderType, std::shared_ptr<Shader>> ShaderMap;
 
@@ -954,7 +954,7 @@ class pgPipeline : public pgObject
     Diligent::PipelineStateDesc m_PSODesc;
     ShaderMap m_Shaders;
 
-    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
+    std::shared_ptr<RenderTarget> m_pRenderTarget;
     bool m_bDirty;
 
     virtual void InitPSODesc();
@@ -967,10 +967,10 @@ class pgPipeline : public pgObject
     std::vector<Diligent::StaticSamplerDesc> GetStaticSamplers() const;
 
   public:
-    pgPipeline(std::shared_ptr<pgRenderTarget> rt);
-    virtual ~pgPipeline();
+    Pipeline(std::shared_ptr<RenderTarget> rt);
+    virtual ~Pipeline();
 
-    std::shared_ptr<pgRenderTarget> getRenderTarget() { return m_pRenderTarget; }
+    std::shared_ptr<RenderTarget> getRenderTarget() { return m_pRenderTarget; }
 
     //
     void SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader);
@@ -988,26 +988,26 @@ class pgPipeline : public pgObject
 
     void SetStencilRef(uint32_t ref);
 
-    // void SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget);
-    std::shared_ptr<pgRenderTarget> GetRenderTarget() const;
+    // void SetRenderTarget(std::shared_ptr<RenderTarget> renderTarget);
+    std::shared_ptr<RenderTarget> GetRenderTarget() const;
 
     virtual void Bind();
     virtual void UnBind();
 };
 
-class pgPass : public Visitor
+class Pass : public Visitor
 {
     bool m_bEnabled;
 
-    friend class pgMesh;
-    friend class pgMaterial;
+    friend class Mesh;
+    friend class Material;
 
   protected:
-    pgTechnique* m_parentTechnique;
+    Technique* m_parentTechnique;
 
   public:
-    pgPass(pgTechnique* parentTechnique);
-    virtual ~pgPass();
+    Pass(Technique* parentTechnique);
+    virtual ~Pass();
 
     // Enable or disable the pass. If a pass is disabled, the technique will skip it.
     virtual void SetEnabled(bool enabled) { m_bEnabled = enabled; }
@@ -1015,82 +1015,82 @@ class pgPass : public Visitor
     virtual bool IsEnabled() const { return m_bEnabled; }
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
     virtual void PostRender();
 
-    virtual void Visit(pgScene& scene, pgPipeline* pipeline);
-    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
-    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
+    virtual void Visit(Scene& scene, Pipeline* pipeline);
+    virtual void Visit(SceneNode& node, Pipeline* pipeline);
+    virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 };
 
 
-class pgPassPilpeline : public pgPass
+class PassPilpeline : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
   protected:
-    std::shared_ptr<pgScene> m_pScene;
-    std::shared_ptr<pgPipeline> m_pPipeline;
+    std::shared_ptr<Scene> m_pScene;
+    std::shared_ptr<Pipeline> m_pPipeline;
 
   public:
-    pgPassPilpeline(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                    std::shared_ptr<pgPipeline> pipeline);
-    virtual ~pgPassPilpeline();
+    PassPilpeline(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                    std::shared_ptr<Pipeline> pipeline);
+    virtual ~PassPilpeline();
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 
 class RenderPass;
 
-class pgTechnique : public pgObject
+class Technique : public Object
 {
   private:
-    typedef std::vector<std::shared_ptr<pgPass>> RenderPassList;
+    typedef std::vector<std::shared_ptr<Pass>> RenderPassList;
     RenderPassList m_Passes;
 
-    using ResourceMap = std::map<std::string, std::shared_ptr<pgObject>>;
+    using ResourceMap = std::map<std::string, std::shared_ptr<Object>>;
     ResourceMap m_resourceMap;
 
   protected:
-    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
-    std::shared_ptr<pgTexture> m_pBackBuffer;
+    std::shared_ptr<RenderTarget> m_pRenderTarget;
+    std::shared_ptr<Texture> m_pBackBuffer;
 
   public:
-    pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
-    virtual ~pgTechnique();
+    Technique(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
+    virtual ~Technique();
 
     // Add a pass to the technique. The ID of the added pass is returned
     // and can be used to retrieve the pass later.
-    unsigned int AddPass(std::shared_ptr<pgPass> pass);
-    std::shared_ptr<pgPass> GetPass(unsigned int ID) const;
+    unsigned int AddPass(std::shared_ptr<Pass> pass);
+    std::shared_ptr<Pass> GetPass(unsigned int ID) const;
 
-    void Set(const std::string& name, std::shared_ptr<pgObject> res);
-    std::shared_ptr<pgObject> Get(const std::string& name);
+    void Set(const std::string& name, std::shared_ptr<Object> res);
+    std::shared_ptr<Object> Get(const std::string& name);
 
     virtual void Render();
     virtual void Update();
 };
 
-class pgApp : public Diligent::SampleBase
+class App : public Diligent::SampleBase
 {
   public:
     static Diligent::RefCntAutoPtr<Diligent::IRenderDevice> s_device;
     static Diligent::RefCntAutoPtr<Diligent::IDeviceContext> s_ctx;
     static Diligent::RefCntAutoPtr<Diligent::ISwapChain> s_swapChain;
     static Diligent::RefCntAutoPtr<Diligent::IEngineFactory> s_engineFactory;
-    static std::shared_ptr<pgRenderTarget> s_rt;
-    static std::shared_ptr<pgTexture> s_backBuffer;
+    static std::shared_ptr<RenderTarget> s_rt;
+    static std::shared_ptr<Texture> s_backBuffer;
 
     static Diligent::SwapChainDesc s_desc;
-    static pgRenderEventArgs s_eventArgs;
+    static RenderEventArgs s_eventArgs;
 
   protected:
-    std::shared_ptr<pgCamera> m_pCamera;
+    std::shared_ptr<Camera> m_pCamera;
 
   public:
-    pgApp();
-    virtual ~pgApp();
+    App();
+    virtual ~App();
 
     virtual void Initialize(Diligent::IEngineFactory* pEngineFactory,
                             Diligent::IRenderDevice* pDevice, Diligent::IDeviceContext** ppContexts,
@@ -1099,6 +1099,6 @@ class pgApp : public Diligent::SampleBase
 
     virtual void Render() override;
     virtual void Update(double CurrTime, double ElapsedTime) override;
-    virtual const Diligent::Char* GetSampleName() const override { return "pgApp"; }
+    virtual const Diligent::Char* GetSampleName() const override { return "App"; }
 };
 }    // namespace ade

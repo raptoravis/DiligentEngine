@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineDebug::PipelineDebug(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
+PipelineDebug::PipelineDebug(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
 PipelineDebug::~PipelineDebug() {}
 

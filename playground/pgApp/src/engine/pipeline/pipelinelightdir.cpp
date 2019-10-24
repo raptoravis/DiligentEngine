@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineLightDir::PipelineLightDir(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
+PipelineLightDir::PipelineLightDir(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
 PipelineLightDir::~PipelineLightDir() {}
 
@@ -15,12 +15,12 @@ void PipelineLightDir::InitPSODesc()
 
     m_PSODesc.Name = "PipelineLightDir PSO";
 
-    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
     auto color0Format =
         color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
-    auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
-    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : pgApp::s_desc.DepthBufferFormat;
+    auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
+    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : App::s_desc.DepthBufferFormat;
 
     // This tutorial will render to a single render target
     m_PSODesc.GraphicsPipeline.NumRenderTargets = 1;

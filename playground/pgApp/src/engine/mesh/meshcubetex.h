@@ -7,7 +7,7 @@
 namespace ade
 {
 
-class MeshCubeTex : public pgMesh
+class MeshCubeTex : public Mesh
 {
     void CreateVertexBuffer();
     void CreateIndexBuffer();

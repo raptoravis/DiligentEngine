@@ -8,8 +8,8 @@ namespace ade
 
 const char* PassLight::kLightIndexBuffer = "LightIndexBuffer";
 
-static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
-                             std::shared_ptr<pgRenderTarget> GbufferRT)
+static void InitShaderParams(Technique* parentTechnique, Pipeline* pipeline,
+                             std::shared_ptr<RenderTarget> GbufferRT)
 {
     std::shared_ptr<Shader> pixelShader = pipeline->GetShader(Shader::PixelShader);
     bool bInitGBuffer = !!GbufferRT;
@@ -17,22 +17,22 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
         auto lightIndexCB = std::dynamic_pointer_cast<ConstantBuffer>(
             parentTechnique->Get(PassLight::kLightIndexBuffer));
         auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            parentTechnique->Get(pgPassRender::kScreenToViewParams));
+            parentTechnique->Get(PassRender::kScreenToViewParams));
 
         pixelShader->GetShaderParameterByName(PassLight::kLightIndexBuffer).Set(lightIndexCB);
-        pixelShader->GetShaderParameterByName(pgPassRender::kScreenToViewParams)
+        pixelShader->GetShaderParameterByName(PassRender::kScreenToViewParams)
             .Set(screenToViewParamsCB);
 
         auto lightsSB = std::dynamic_pointer_cast<StructuredBuffer>(
-            parentTechnique->Get(pgPassRender::kLightsName));
+            parentTechnique->Get(PassRender::kLightsName));
 
-        pixelShader->GetShaderParameterByName(pgPassRender::kLightsName).Set(lightsSB);
+        pixelShader->GetShaderParameterByName(PassRender::kLightsName).Set(lightsSB);
 
         if (bInitGBuffer) {
-            auto diffuseTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
-            auto specularTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
-            auto normalTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
-            auto depthTex = GbufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+            auto diffuseTex = GbufferRT->GetTexture(RenderTarget::AttachmentPoint::Color1);
+            auto specularTex = GbufferRT->GetTexture(RenderTarget::AttachmentPoint::Color2);
+            auto normalTex = GbufferRT->GetTexture(RenderTarget::AttachmentPoint::Color3);
+            auto depthTex = GbufferRT->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
 
             pixelShader->GetShaderParameterByName("DiffuseTextureVS").Set(diffuseTex);
             pixelShader->GetShaderParameterByName("SpecularTextureVS").Set(specularTex);
@@ -44,36 +44,36 @@ static void InitShaderParams(pgTechnique* parentTechnique, pgPipeline* pipeline,
 }
 
 
-PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> pGBufferRT,
+PassLight::PassLight(Technique* parentTechnique, std::shared_ptr<RenderTarget> pGBufferRT,
                      std::shared_ptr<PipelineLightFront> front,
                      std::shared_ptr<PipelineLightBack> back, std::shared_ptr<PipelineLightDir> dir,
-                     std::vector<pgLight>* Lights)
+                     std::vector<Light>* Lights)
     : base(parentTechnique), m_pGBufferRT(pGBufferRT), m_pLights(Lights), m_LightPipeline0(front),
       m_LightPipeline1(back), m_DirectionalLightPipeline(dir)
 {
-    m_pPointLightScene = pgSceneAss::CreateSphere(1.0f);
-    m_pSpotLightScene = pgSceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
+    m_pPointLightScene = SceneAss::CreateSphere(1.0f);
+    m_pSpotLightScene = SceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
 #if RIGHT_HANDED
-    m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
+    m_pDirectionalLightScene = SceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
 #else
-    m_pDirectionalLightScene = pgSceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
+    m_pDirectionalLightScene = SceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
 #endif
 
-    m_pTechniqueSphere = std::make_shared<pgTechnique>(nullptr, nullptr);
-    m_pTechniqueSpot = std::make_shared<pgTechnique>(nullptr, nullptr);
-    m_pTechniqueDir = std::make_shared<pgTechnique>(nullptr, nullptr);
+    m_pTechniqueSphere = std::make_shared<Technique>(nullptr, nullptr);
+    m_pTechniqueSpot = std::make_shared<Technique>(nullptr, nullptr);
+    m_pTechniqueDir = std::make_shared<Technique>(nullptr, nullptr);
 
-    m_pSubPassSphere0 = std::make_shared<pgPassPilpeline>(m_pTechniqueSphere.get(),
+    m_pSubPassSphere0 = std::make_shared<PassPilpeline>(m_pTechniqueSphere.get(),
                                                           m_pPointLightScene, m_LightPipeline0);
-    m_pSubPassSphere1 = std::make_shared<pgPassPilpeline>(m_pTechniqueSphere.get(),
+    m_pSubPassSphere1 = std::make_shared<PassPilpeline>(m_pTechniqueSphere.get(),
                                                           m_pPointLightScene, m_LightPipeline1);
 
-    m_pSubPassSpot0 = std::make_shared<pgPassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
+    m_pSubPassSpot0 = std::make_shared<PassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
                                                         m_LightPipeline0);
-    m_pSubPassSpot1 = std::make_shared<pgPassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
+    m_pSubPassSpot1 = std::make_shared<PassPilpeline>(m_pTechniqueSpot.get(), m_pSpotLightScene,
                                                         m_LightPipeline1);
 
-    m_pSubPassDir = std::make_shared<pgPassPilpeline>(
+    m_pSubPassDir = std::make_shared<PassPilpeline>(
         m_pTechniqueDir.get(), m_pDirectionalLightScene, m_DirectionalLightPipeline);
 
     m_pTechniqueSphere->AddPass(m_pSubPassSphere0);
@@ -91,9 +91,9 @@ PassLight::PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarge
 
 PassLight::~PassLight() {}
 
-void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& light)
+void PassLight::updateLightParams(const LightParams& lightParam, const Light& light)
 {
-    pgRenderEventArgs& e = pgApp::s_eventArgs;
+    RenderEventArgs& e = App::s_eventArgs;
 
     {
         auto lightIndexCB =
@@ -107,14 +107,14 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
 
     {
         auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->Get(pgPassRender::kPerObjectName));
+            m_parentTechnique->Get(PassRender::kPerObjectName));
 
-        pgPassRender::PerObject perObjectData;
+        PassRender::PerObject perObjectData;
 
-        if (light.m_Type == pgLight::LightType::Directional) {
+        if (light.m_Type == Light::LightType::Directional) {
 // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
 // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
-// bool IsGL = pgApp::s_device->GetDeviceCaps().IsGLDevice();
+// bool IsGL = App::s_device->GetDeviceCaps().IsGLDevice();
 #if RIGHT_HANDED
             bool IsGL = true;
 #else
@@ -141,7 +141,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
             float scaleX, scaleY, scaleZ;
             // For point lights, we want to scale the geometry by the range of the light.
             scaleX = scaleY = scaleZ = light.m_Range;
-            if (light.m_Type == pgLight::LightType::Spot) {
+            if (light.m_Type == Light::LightType::Spot) {
                 // For spotlights, we want to scale the base of the cone by the spotlight angle.
                 scaleX = scaleY =
                     std::tan((PI_F / 180.0f) * (light.m_SpotlightAngle)) * light.m_Range;
@@ -162,11 +162,11 @@ void PassLight::updateLightParams(const LightParams& lightParam, const pgLight& 
 
 void PassLight::updateScreenToViewParams()
 {
-    pgRenderEventArgs& e = pgApp::s_eventArgs;
+    RenderEventArgs& e = App::s_eventArgs;
 
     {
         auto screenToViewParamsCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->Get(pgPassRender::kScreenToViewParams));
+            m_parentTechnique->Get(PassRender::kScreenToViewParams));
 
         ScreenToViewParams screenToViewParamsData;
 
@@ -175,14 +175,14 @@ void PassLight::updateScreenToViewParams()
         // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
         screenToViewParamsData.m_InverseProjectionMatrix = Proj.Inverse();
         screenToViewParamsData.m_ScreenDimensions =
-            float2((float)pgApp::s_desc.Width, (float)pgApp::s_desc.Height);
+            float2((float)App::s_desc.Width, (float)App::s_desc.Height);
 
         screenToViewParamsCB->Set(screenToViewParamsData);
     }
 }
 
 // Render a frame
-void PassLight::Render(pgPipeline* pipeline)
+void PassLight::Render(Pipeline* pipeline)
 {
     updateScreenToViewParams();
 
@@ -191,25 +191,25 @@ void PassLight::Render(pgPipeline* pipeline)
 
         lightParams.m_LightIndex = 0;
 
-        for (const pgLight& light : *m_pLights) {
+        for (const Light& light : *m_pLights) {
             if (light.m_Enabled) {
                 // Update the constant buffer for the per-light data.
                 updateLightParams(lightParams, light);
 
                 // Clear the stencil buffer for the next light
-                m_LightPipeline0->getRenderTarget()->Clear(pgClearFlags::Stencil,
+                m_LightPipeline0->getRenderTarget()->Clear(ClearFlags::Stencil,
                                                            Diligent::float4(0, 0, 0, 0), 1.0f, 1);
                 // The other pipelines should have the same render target.. so no need to clear it 3
                 // times.
 
                 switch (light.m_Type) {
-                case pgLight::LightType::Point:
+                case Light::LightType::Point:
                     m_pTechniqueSphere->Render();
                     break;
-                case pgLight::LightType::Spot:
+                case Light::LightType::Spot:
                     m_pTechniqueSpot->Render();
                     break;
-                case pgLight::LightType::Directional:
+                case Light::LightType::Directional:
                     m_pTechniqueDir->Render();
                     break;
                 }
@@ -235,12 +235,12 @@ void PassLight::PostRender()
     base::PostRender();
 }
 
-void PassLight::Visit(pgScene& scene, pgPipeline* pipeline)
+void PassLight::Visit(Scene& scene, Pipeline* pipeline)
 {
     //
 }
 
-void PassLight::Visit(pgSceneNode& node, pgPipeline* pipeline)
+void PassLight::Visit(SceneNode& node, Pipeline* pipeline)
 {
     base::Visit(node, pipeline);
 }

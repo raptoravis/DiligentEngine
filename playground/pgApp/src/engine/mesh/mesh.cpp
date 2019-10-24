@@ -4,37 +4,37 @@ using namespace Diligent;
 namespace ade
 {
 
-pgMesh::pgMesh()
+Mesh::Mesh()
 {
     //
 }
 
-pgMesh::~pgMesh()
+Mesh::~Mesh()
 {
     //
 }
 
-void pgMesh::addVertexBuffer(const pgBufferBinding& binding, std::shared_ptr<pgBuffer> pgBuffer)
+void Mesh::addVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> Buffer)
 {
-    m_VertexBuffers[binding] = pgBuffer;
+    m_VertexBuffers[binding] = Buffer;
 }
 
-void pgMesh::setIndexBuffer(std::shared_ptr<pgBuffer> pgBuffer)
+void Mesh::setIndexBuffer(std::shared_ptr<Buffer> Buffer)
 {
-    m_pIndexBuffer = pgBuffer;
+    m_pIndexBuffer = Buffer;
 }
 
-void pgMesh::setMaterial(std::shared_ptr<pgMaterial> pgMaterial)
+void Mesh::setMaterial(std::shared_ptr<Material> Material)
 {
-    m_pMaterial = pgMaterial;
+    m_pMaterial = Material;
 }
 
-std::shared_ptr<pgMaterial> pgMesh::getMaterial() const
+std::shared_ptr<Material> Mesh::getMaterial() const
 {
     return m_pMaterial;
 }
 
-static uint32_t getSlot(const pgBufferBinding& binding)
+static uint32_t getSlot(const BufferBinding& binding)
 {
     if (binding.Name == "POSITION") {
         return 0;
@@ -55,7 +55,7 @@ static uint32_t getSlot(const pgBufferBinding& binding)
     return 0;
 }
 
-void pgMesh::Render(pgPipeline* pipeline)
+void Mesh::Render(Pipeline* pipeline)
 {
     std::shared_ptr<Shader> pVS;
 
@@ -68,7 +68,7 @@ void pgMesh::Render(pgPipeline* pipeline)
 
         if (pVS) {
             for (BufferMap::value_type buffer : m_VertexBuffers) {
-                pgBufferBinding binding = buffer.first;
+                BufferBinding binding = buffer.first;
                 // if (pVS->HasSemantic(binding))
                 //{
                 //	uint32_t slotID = pVS->GetSlotIDBySemantic(binding);
@@ -81,7 +81,7 @@ void pgMesh::Render(pgPipeline* pipeline)
                 buffer.second->Bind(slot, Shader::VertexShader, ShaderParameter::Type::Buffer);
             }
 
-            pgApp::s_ctx->SetIndexBuffer(m_pIndexBuffer->GetBuffer(), 0,
+            App::s_ctx->SetIndexBuffer(m_pIndexBuffer->GetBuffer(), 0,
                                          RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
 
@@ -99,13 +99,13 @@ void pgMesh::Render(pgPipeline* pipeline)
         // Verify the state of vertex and index buffers
         DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 
-        pgApp::s_ctx->DrawIndexed(DrawAttrs);
+        App::s_ctx->DrawIndexed(DrawAttrs);
     } else {
-        CHECK_ERR(false, "inavlid pipeline in pgMesh::Render");
+        CHECK_ERR(false, "inavlid pipeline in Mesh::Render");
     }
 }
 
-void pgMesh::Accept(Visitor& visitor, pgPipeline* pipeline)
+void Mesh::Accept(Visitor& visitor, Pipeline* pipeline)
 {
     visitor.Visit(*this, pipeline);
 }

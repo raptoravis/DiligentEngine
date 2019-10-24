@@ -3,71 +3,71 @@
 namespace ade
 {
 
-pgSceneNode::pgSceneNode(const Diligent::float4x4& localTransform)
+SceneNode::SceneNode(const Diligent::float4x4& localTransform)
     : m_LocalTransform(localTransform), m_Name("SceneNode")
 {
     m_InverseTransform = m_LocalTransform.Inverse();
 }
 
-pgSceneNode::~pgSceneNode()
+SceneNode::~SceneNode()
 {
     // Delete children.
     m_Children.clear();
 }
 
-const std::string& pgSceneNode::getName() const
+const std::string& SceneNode::getName() const
 {
     return m_Name;
 }
 
-void pgSceneNode::setName(const std::string& name)
+void SceneNode::setName(const std::string& name)
 {
     m_Name = name;
 }
 
-Diligent::float4x4 pgSceneNode::getLocalTransform() const
+Diligent::float4x4 SceneNode::getLocalTransform() const
 {
     return m_LocalTransform;
 }
 
-void pgSceneNode::setLocalTransform(const Diligent::float4x4& localTransform)
+void SceneNode::setLocalTransform(const Diligent::float4x4& localTransform)
 {
     m_LocalTransform = localTransform;
     m_InverseTransform = localTransform.Inverse();
 }
 
-Diligent::float4x4 pgSceneNode::getInverseLocalTransform() const
+Diligent::float4x4 SceneNode::getInverseLocalTransform() const
 {
     return m_InverseTransform;
 }
 
-Diligent::float4x4 pgSceneNode::getWorldTransfom() const
+Diligent::float4x4 SceneNode::getWorldTransfom() const
 {
     return GetParentWorldTransform() * m_LocalTransform;
 }
 
-void pgSceneNode::setWorldTransform(const Diligent::float4x4& worldTransform)
+void SceneNode::setWorldTransform(const Diligent::float4x4& worldTransform)
 {
     Diligent::float4x4 inverseParentTransform = GetParentWorldTransform().Inverse();
     setLocalTransform(inverseParentTransform * worldTransform);
 }
 
-Diligent::float4x4 pgSceneNode::getInverseWorldTransform() const
+Diligent::float4x4 SceneNode::getInverseWorldTransform() const
 {
     return getWorldTransfom().Inverse();
 }
 
-Diligent::float4x4 pgSceneNode::GetParentWorldTransform() const
+Diligent::float4x4 SceneNode::GetParentWorldTransform() const
 {
     Diligent::float4x4 parentTransform = Diligent::float4x4::Identity();
-    if (std::shared_ptr<pgSceneNode> parent = m_pParentNode.lock()) {
+    if (std::shared_ptr<SceneNode> parent = m_pParentNode.lock()) {
         parentTransform = parent->getWorldTransfom();
     }
 
     return parentTransform;
 }
 
-void pgSceneNode::addChild(std::shared_ptr<pgSceneNode> pNode)
+void SceneNode::addChild(std::shared_ptr<SceneNode> pNode)
 {
     if (pNode) {
         NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
@@ -84,12 +84,12 @@ void pgSceneNode::addChild(std::shared_ptr<pgSceneNode> pNode)
     }
 }
 
-void pgSceneNode::removeChild(std::shared_ptr<pgSceneNode> pNode)
+void SceneNode::removeChild(std::shared_ptr<SceneNode> pNode)
 {
     if (pNode) {
         NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
         if (iter != m_Children.end()) {
-            pNode->setParent(std::weak_ptr<pgSceneNode>());
+            pNode->setParent(std::weak_ptr<SceneNode>());
 
             m_Children.erase(iter);
 
@@ -107,11 +107,11 @@ void pgSceneNode::removeChild(std::shared_ptr<pgSceneNode> pNode)
     }
 }
 
-void pgSceneNode::setParent(std::weak_ptr<pgSceneNode> wpNode)
+void SceneNode::setParent(std::weak_ptr<SceneNode> wpNode)
 {
-    std::shared_ptr<pgSceneNode> me = shared_from_this();
+    std::shared_ptr<SceneNode> me = shared_from_this();
 
-    if (std::shared_ptr<pgSceneNode> parent = wpNode.lock()) {
+    if (std::shared_ptr<SceneNode> parent = wpNode.lock()) {
         parent->addChild(shared_from_this());
     } else if (parent = m_pParentNode.lock()) {
         // Setting parent to NULL.. remove from current parent and reset parent node.
@@ -122,7 +122,7 @@ void pgSceneNode::setParent(std::weak_ptr<pgSceneNode> wpNode)
     }
 }
 
-void pgSceneNode::addMesh(std::shared_ptr<pgMesh> mesh)
+void SceneNode::addMesh(std::shared_ptr<Mesh> mesh)
 {
     assert(mesh);
     MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);
@@ -131,7 +131,7 @@ void pgSceneNode::addMesh(std::shared_ptr<pgMesh> mesh)
     }
 }
 
-void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
+void SceneNode::RemoveMesh(std::shared_ptr<Mesh> mesh)
 {
     assert(mesh);
     MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);
@@ -141,7 +141,7 @@ void pgSceneNode::RemoveMesh(std::shared_ptr<pgMesh> mesh)
 }
 
 
-void pgSceneNode::Accept(Visitor& visitor, pgPipeline* pipeline)
+void SceneNode::Accept(Visitor& visitor, Pipeline* pipeline)
 {
     visitor.Visit(*this, pipeline);
 
@@ -156,17 +156,17 @@ void pgSceneNode::Accept(Visitor& visitor, pgPipeline* pipeline)
     }
 }
 
-pgScene::pgScene()
+Scene::Scene()
 {
     //
 }
 
-pgScene::~pgScene()
+Scene::~Scene()
 {
     //
 }
 
-void pgScene::Accept(Visitor& visitor, pgPipeline* pipeline)
+void Scene::Accept(Visitor& visitor, Pipeline* pipeline)
 {
     visitor.Visit(*this, pipeline);
     if (m_pRootNode) {
@@ -174,7 +174,7 @@ void pgScene::Accept(Visitor& visitor, pgPipeline* pipeline)
     }
 }
 
-std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t height,
+std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
                                                     uint16_t slices,
                                                     Diligent::TEXTURE_FORMAT format,
                                                     CPUAccess cpuAccess, bool gpuWrite,
@@ -183,7 +183,7 @@ std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t hei
     Diligent::ITexture* texture = 0;
 
     Diligent::TextureDesc TexDesc;
-    TexDesc.Name = "pgScene Texture";
+    TexDesc.Name = "Scene Texture";
     TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
     // TexDesc.Usage = Diligent::USAGE_DEFAULT;
     TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
@@ -224,9 +224,9 @@ std::shared_ptr<pgTexture> pgScene::CreateTexture2D(uint16_t width, uint16_t hei
         TexDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
     }
 
-    pgApp::s_device->CreateTexture(TexDesc, nullptr, &texture);
+    App::s_device->CreateTexture(TexDesc, nullptr, &texture);
 
-    std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
+    std::shared_ptr<Texture> tex = std::make_shared<Texture>(texture);
 
     return tex;
 }

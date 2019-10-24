@@ -3,8 +3,8 @@
 namespace ade
 {
 
-TestPass::TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                   std::shared_ptr<pgPipeline> pipeline)
+TestPass::TestPass(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                   std::shared_ptr<Pipeline> pipeline)
     : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
 {
 }
@@ -37,7 +37,7 @@ void TestPass::PreRender()
     }
 }
 
-void TestPass::Render(pgPipeline* pipeline)
+void TestPass::Render(Pipeline* pipeline)
 {
     if (m_pScene) {
         m_pScene->Accept(*this, m_pPipeline.get());
@@ -52,11 +52,11 @@ void TestPass::PostRender()
 }
 
 // Inherited from Visitor
-void TestPass::Visit(pgScene& scene, pgPipeline* pipeline) {}
+void TestPass::Visit(Scene& scene, Pipeline* pipeline) {}
 
-void TestPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
+void TestPass::Visit(SceneNode& node, Pipeline* pipeline)
 {
-    pgCamera* camera = pgApp::s_eventArgs.pCamera;
+    Camera* camera = App::s_eventArgs.pCamera;
     if (camera) {
         PerObject perObjectData;
 
@@ -79,7 +79,7 @@ void TestPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
     }
 }
 
-void TestPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
+void TestPass::Visit(Mesh& mesh, Pipeline* pipeline)
 {
     mesh.Render(pipeline);
 }

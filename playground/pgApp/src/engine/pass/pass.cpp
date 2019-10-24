@@ -2,41 +2,41 @@
 
 namespace ade
 {
-pgPass::pgPass(pgTechnique* parentTechnique) : m_bEnabled(true), m_parentTechnique(parentTechnique)
+Pass::Pass(Technique* parentTechnique) : m_bEnabled(true), m_parentTechnique(parentTechnique)
 {
 }
 
-pgPass::~pgPass()
-{
-    //
-}
-
-void pgPass::PreRender()
+Pass::~Pass()
 {
     //
 }
 
-void pgPass::Render(pgPipeline* pipeline)
+void Pass::PreRender()
 {
     //
 }
 
-void pgPass::PostRender()
+void Pass::Render(Pipeline* pipeline)
 {
     //
 }
 
-void pgPass::Visit(pgScene& scene, pgPipeline* pipeline)
+void Pass::PostRender()
 {
     //
 }
 
-void pgPass::Visit(pgSceneNode& node, pgPipeline* pipeline)
+void Pass::Visit(Scene& scene, Pipeline* pipeline)
 {
     //
 }
 
-void pgPass::Visit(pgMesh& mesh, pgPipeline* pipeline)
+void Pass::Visit(SceneNode& node, Pipeline* pipeline)
+{
+    //
+}
+
+void Pass::Visit(Mesh& mesh, Pipeline* pipeline)
 {
     mesh.Render(pipeline);
 }

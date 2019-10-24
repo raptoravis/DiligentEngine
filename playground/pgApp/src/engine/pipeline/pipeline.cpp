@@ -5,26 +5,26 @@ using namespace Diligent;
 namespace ade
 {
 
-pgPipeline::pgPipeline(std::shared_ptr<pgRenderTarget> rt) : m_pRenderTarget(rt), m_bDirty(true) {}
+Pipeline::Pipeline(std::shared_ptr<RenderTarget> rt) : m_pRenderTarget(rt), m_bDirty(true) {}
 
-pgPipeline::~pgPipeline()
+Pipeline::~Pipeline()
 {
     // virtual function can not be called in the constructor
     // InitPSODesc();
 }
 
-void pgPipeline::InitPSODesc()
+void Pipeline::InitPSODesc()
 {
-    m_PSODesc.Name = "pgPipeline PSO";
+    m_PSODesc.Name = "Pipeline PSO";
 
     // This is a graphics pipeline
     m_PSODesc.IsComputePipeline = false;
 
-    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
     auto color0Format =
-        color0 ? color0->GetTexture()->GetDesc().Format : pgApp::s_desc.ColorBufferFormat;
+        color0 ? color0->GetTexture()->GetDesc().Format : App::s_desc.ColorBufferFormat;
 
-    auto ds = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+    auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
     auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     // This tutorial will render to a single render target
@@ -54,7 +54,7 @@ void pgPipeline::InitPSODesc()
 }
 
 
-void pgPipeline::SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader)
+void Pipeline::SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pShader)
 {
     if (!m_bInited) {
         m_bInited = true;
@@ -78,7 +78,7 @@ void pgPipeline::SetShader(Shader::ShaderType type, std::shared_ptr<Shader> pSha
     m_bDirty = true;
 }
 
-std::shared_ptr<Shader> pgPipeline::GetShader(Shader::ShaderType type) const
+std::shared_ptr<Shader> Pipeline::GetShader(Shader::ShaderType type) const
 {
     ShaderMap::const_iterator iter = m_Shaders.find(type);
     if (iter != m_Shaders.end()) {
@@ -88,12 +88,12 @@ std::shared_ptr<Shader> pgPipeline::GetShader(Shader::ShaderType type) const
     return nullptr;
 }
 
-const pgPipeline::ShaderMap& pgPipeline::GetShaders() const
+const Pipeline::ShaderMap& Pipeline::GetShaders() const
 {
     return m_Shaders;
 }
 
-void pgPipeline::SetBlendState(const Diligent::BlendStateDesc& blendState)
+void Pipeline::SetBlendState(const Diligent::BlendStateDesc& blendState)
 {
     if (!m_bInited) {
         m_bInited = true;
@@ -104,12 +104,12 @@ void pgPipeline::SetBlendState(const Diligent::BlendStateDesc& blendState)
     m_bDirty = true;
 }
 
-Diligent::BlendStateDesc& pgPipeline::GetBlendState()
+Diligent::BlendStateDesc& Pipeline::GetBlendState()
 {
     return m_PSODesc.GraphicsPipeline.BlendDesc;
 }
 
-void pgPipeline::SetRasterizerState(const Diligent::RasterizerStateDesc& rasterizerState)
+void Pipeline::SetRasterizerState(const Diligent::RasterizerStateDesc& rasterizerState)
 {
     if (!m_bInited) {
         m_bInited = true;
@@ -120,12 +120,12 @@ void pgPipeline::SetRasterizerState(const Diligent::RasterizerStateDesc& rasteri
     m_bDirty = true;
 }
 
-Diligent::RasterizerStateDesc& pgPipeline::GetRasterizerState()
+Diligent::RasterizerStateDesc& Pipeline::GetRasterizerState()
 {
     return m_PSODesc.GraphicsPipeline.RasterizerDesc;
 }
 
-void pgPipeline::SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState)
+void Pipeline::SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState)
 {
     if (!m_bInited) {
         m_bInited = true;
@@ -136,17 +136,17 @@ void pgPipeline::SetDepthStencilState(const Diligent::DepthStencilStateDesc& dep
     m_bDirty = true;
 }
 
-Diligent::DepthStencilStateDesc& pgPipeline::GetDepthStencilState()
+Diligent::DepthStencilStateDesc& Pipeline::GetDepthStencilState()
 {
     return m_PSODesc.GraphicsPipeline.DepthStencilDesc;
 }
 
-void pgPipeline::SetStencilRef(uint32_t ref)
+void Pipeline::SetStencilRef(uint32_t ref)
 {
     m_stencilRef = ref;
 }
 
-// void pgPipeline::SetRenderTarget(std::shared_ptr<pgRenderTarget> renderTarget)
+// void Pipeline::SetRenderTarget(std::shared_ptr<RenderTarget> renderTarget)
 //{
 //    if (!m_bInited) {
 //        m_bInited = true;
@@ -157,12 +157,12 @@ void pgPipeline::SetStencilRef(uint32_t ref)
 //    m_bDirty = true;
 //}
 
-std::shared_ptr<pgRenderTarget> pgPipeline::GetRenderTarget() const
+std::shared_ptr<RenderTarget> Pipeline::GetRenderTarget() const
 {
     return m_pRenderTarget;
 }
 
-void pgPipeline::Bind()
+void Pipeline::Bind()
 {
     if (m_bDirty) {
         auto vars = GetDynamicVariables();
@@ -174,7 +174,7 @@ void pgPipeline::Bind()
         m_PSODesc.ResourceLayout.StaticSamplers = samplers.data();
         m_PSODesc.ResourceLayout.NumStaticSamplers = (Diligent::Uint32)samplers.size();
 
-        pgApp::s_device->CreatePipelineState(m_PSODesc, &m_pPSO);
+        App::s_device->CreatePipelineState(m_PSODesc, &m_pPSO);
 
         SetStaticVariables();
 
@@ -191,9 +191,9 @@ void pgPipeline::Bind()
     }
 
     // Set the pipeline state
-    pgApp::s_ctx->SetPipelineState(m_pPSO);
+    App::s_ctx->SetPipelineState(m_pPSO);
 
-    pgApp::s_ctx->SetStencilRef(m_stencilRef);
+    App::s_ctx->SetStencilRef(m_stencilRef);
 
     // for (auto shader : m_Shaders) {
     //    std::shared_ptr<Shader> pShader = shader.second;
@@ -204,11 +204,11 @@ void pgPipeline::Bind()
 
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
-    pgApp::s_ctx->CommitShaderResources(m_pSRB,
+    App::s_ctx->CommitShaderResources(m_pSRB,
                                         Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
-void pgPipeline::UnBind()
+void Pipeline::UnBind()
 {
     if (m_pRenderTarget) {
         m_pRenderTarget->UnBind();
@@ -222,7 +222,7 @@ void pgPipeline::UnBind()
     //}
 }
 
-void pgPipeline::SetStaticVariables()
+void Pipeline::SetStaticVariables()
 {
     // Static variables never change and are bound directly through the pipeline state object.
     // m_pPSO->GetStaticVariableByName(SHADER_TYPE_VERTEX, "Constants")->Set(m_VSConstants)
@@ -244,7 +244,7 @@ void pgPipeline::SetStaticVariables()
 
             if (cbs.size() > 0) {
                 for (auto p : cbs) {
-                    if (std::shared_ptr<pgObject> pResource = p->Get().lock()) {
+                    if (std::shared_ptr<Object> pResource = p->Get().lock()) {
                         if (p->GetType() == ShaderParameter::Type::CBuffer) {
                             std::shared_ptr<ConstantBuffer> cb =
                                 std::dynamic_pointer_cast<ConstantBuffer>(pResource);
@@ -264,14 +264,14 @@ void pgPipeline::SetStaticVariables()
                             m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
                                 ->Set(res->GetUnorderedAccessView());
                         } else if (p->GetType() == ShaderParameter::Type::Texture) {
-                            std::shared_ptr<pgTexture> res =
-                                std::dynamic_pointer_cast<pgTexture>(pResource);
+                            std::shared_ptr<Texture> res =
+                                std::dynamic_pointer_cast<Texture>(pResource);
 
                             m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
                                 ->Set(res->GetShaderResourceView());
                         } else if (p->GetType() == ShaderParameter::Type::RWTexture) {
-                            std::shared_ptr<pgTexture> res =
-                                std::dynamic_pointer_cast<pgTexture>(pResource);
+                            std::shared_ptr<Texture> res =
+                                std::dynamic_pointer_cast<Texture>(pResource);
 
                             m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
                                 ->Set(res->GetUnorderedAccessView());
@@ -285,7 +285,7 @@ void pgPipeline::SetStaticVariables()
     }
 }
 
-std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetDynamicVariables() const
+std::vector<Diligent::ShaderResourceVariableDesc> Pipeline::GetDynamicVariables() const
 {
     std::vector<Diligent::ShaderResourceVariableDesc> vars;
 
@@ -325,7 +325,7 @@ std::vector<Diligent::ShaderResourceVariableDesc> pgPipeline::GetDynamicVariable
     return vars;
 }
 
-std::vector<Diligent::StaticSamplerDesc> pgPipeline::GetStaticSamplers() const
+std::vector<Diligent::StaticSamplerDesc> Pipeline::GetStaticSamplers() const
 {
     std::vector<Diligent::StaticSamplerDesc> samplers;
 
@@ -348,7 +348,7 @@ std::vector<Diligent::StaticSamplerDesc> pgPipeline::GetStaticSamplers() const
             if (sams.size() > 0) {
                 for (auto p : sams) {
                     if (p->GetType() == ShaderParameter::Type::Sampler) {
-                        if (std::shared_ptr<pgObject> pResource = p->Get().lock()) {
+                        if (std::shared_ptr<Object> pResource = p->Get().lock()) {
                             std::shared_ptr<SamplerState> s =
                                 std::dynamic_pointer_cast<SamplerState>(pResource);
 
@@ -366,7 +366,7 @@ std::vector<Diligent::StaticSamplerDesc> pgPipeline::GetStaticSamplers() const
 }
 
 
-void pgPipeline::SetDynamicVariables()
+void Pipeline::SetDynamicVariables()
 {
     // m_pSRB->GetVariableByName(SHADER_TYPE_PIXEL, "g_Texture")->Set(m_TextureSRV);
     for (auto shader : m_Shaders) {
@@ -387,28 +387,28 @@ void pgPipeline::SetDynamicVariables()
 
             if (ncbs.size() > 0) {
                 for (auto p : ncbs) {
-                    if (std::shared_ptr<pgObject> pResource = p->Get().lock()) {
+                    if (std::shared_ptr<Object> pResource = p->Get().lock()) {
                         if (p->GetType() == ShaderParameter::Type::Texture) {
-                            std::shared_ptr<pgTexture> tex =
-                                std::dynamic_pointer_cast<pgTexture>(pResource);
+                            std::shared_ptr<Texture> tex =
+                                std::dynamic_pointer_cast<Texture>(pResource);
 
                             m_pSRB->GetVariableByName(st, p->GetName().c_str())
                                 ->Set(tex->GetShaderResourceView());
                         } else if (p->GetType() == ShaderParameter::Type::RWTexture) {
-                            std::shared_ptr<pgTexture> tex =
-                                std::dynamic_pointer_cast<pgTexture>(pResource);
+                            std::shared_ptr<Texture> tex =
+                                std::dynamic_pointer_cast<Texture>(pResource);
 
                             m_pSRB->GetVariableByName(st, p->GetName().c_str())
                                 ->Set(tex->GetUnorderedAccessView());
                         } else if (p->GetType() == ShaderParameter::Type::Buffer) {
-                            std::shared_ptr<pgBuffer> tex =
-                                std::dynamic_pointer_cast<pgBuffer>(pResource);
+                            std::shared_ptr<Buffer> tex =
+                                std::dynamic_pointer_cast<Buffer>(pResource);
 
                             m_pSRB->GetVariableByName(st, p->GetName().c_str())
                                 ->Set(tex->GetShaderResourceView());
                         } else if (p->GetType() == ShaderParameter::Type::RWBuffer) {
-                            std::shared_ptr<pgBuffer> tex =
-                                std::dynamic_pointer_cast<pgBuffer>(pResource);
+                            std::shared_ptr<Buffer> tex =
+                                std::dynamic_pointer_cast<Buffer>(pResource);
 
                             m_pSRB->GetVariableByName(st, p->GetName().c_str())
                                 ->Set(tex->GetUnorderedAccessView());

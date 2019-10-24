@@ -3,21 +3,21 @@
 namespace ade
 {
 
-const char* pgPassRender::kPerObjectName = "PerObject";
-const char* pgPassRender::kMaterialName = "Material";
-const char* pgPassRender::kLightsName = "Lights";
-const char* pgPassRender::kScreenToViewParams = "ScreenToViewParams";
+const char* PassRender::kPerObjectName = "PerObject";
+const char* PassRender::kMaterialName = "Material";
+const char* PassRender::kLightsName = "Lights";
+const char* PassRender::kScreenToViewParams = "ScreenToViewParams";
 
 
-pgPassRender::pgPassRender(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                           std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
+PassRender::PassRender(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                           std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights)
     : base(parentTechnique, scene, pipeline), m_pLights(lights)
 {
 }
 
-pgPassRender::~pgPassRender() {}
+PassRender::~PassRender() {}
 
-void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
+void PassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
     auto perObjectCB =
         std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kPerObjectName));
@@ -25,7 +25,7 @@ void pgPassRender::SetPerObjectConstantBufferData(PerObject& perObjectData)
     perObjectCB->Set(perObjectData);
 }
 
-void pgPassRender::SetMaterialData(pgMaterial* mat)
+void PassRender::SetMaterialData(Material* mat)
 {
     auto materialCB =
         std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kMaterialName));
@@ -34,7 +34,7 @@ void pgPassRender::SetMaterialData(pgMaterial* mat)
     materialCB->Set(*matProperites);
 }
 
-void pgPassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
+void PassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto perObjectCB =
@@ -44,7 +44,7 @@ void pgPassRender::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
     }
 }
 
-void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
+void PassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto materialCB =
@@ -54,14 +54,14 @@ void pgPassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
     }
 }
 
-void pgPassRender::SetLightsBufferData(std::vector<pgLight>& lights)
+void PassRender::SetLightsBufferData(std::vector<Light>& lights)
 {
-    const float4x4 viewMatrix = pgApp::s_eventArgs.pCamera->getViewMatrix();
+    const float4x4 viewMatrix = App::s_eventArgs.pCamera->getViewMatrix();
 
     // Update the viewspace vectors of the light.
     for (uint32_t i = 0; i < lights.size(); i++) {
         // Update the lights so that their position and direction are in view space.
-        pgLight& light = lights[i];
+        Light& light = lights[i];
         light.m_PositionVS = float4(light.m_PositionWS, 1) * viewMatrix;
         light.m_DirectionVS = normalize(float4(light.m_DirectionWS, 0) * viewMatrix);
     }
@@ -69,10 +69,10 @@ void pgPassRender::SetLightsBufferData(std::vector<pgLight>& lights)
     auto lightsBuffer =
         std::dynamic_pointer_cast<StructuredBuffer>(m_parentTechnique->Get(kLightsName));
 
-    lightsBuffer->Set((const std::vector<pgLight>&)lights);
+    lightsBuffer->Set((const std::vector<Light>&)lights);
 }
 
-void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
+void PassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
         auto lightsBuffer =
@@ -83,7 +83,7 @@ void pgPassRender::BindLightsBuffer(std::shared_ptr<Shader> shader)
 }
 
 
-void pgPassRender::PreRender()
+void PassRender::PreRender()
 {
     // base::PreRender();
 
@@ -105,14 +105,14 @@ void pgPassRender::PreRender()
     }
 }
 
-void pgPassRender::Render(pgPipeline* pipeline)
+void PassRender::Render(Pipeline* pipeline)
 {
     if (m_pScene) {
         m_pScene->Accept(*this, m_pPipeline.get());
     }
 }
 
-void pgPassRender::PostRender()
+void PassRender::PostRender()
 {
     if (m_pPipeline) {
         m_pPipeline->UnBind();
@@ -120,14 +120,14 @@ void pgPassRender::PostRender()
 }
 
 // Inherited from Visitor
-void pgPassRender::Visit(pgScene& scene, pgPipeline* pipeline)
+void PassRender::Visit(Scene& scene, Pipeline* pipeline)
 {
     //
 }
 
-void pgPassRender::Visit(pgSceneNode& node, pgPipeline* pipeline)
+void PassRender::Visit(SceneNode& node, Pipeline* pipeline)
 {
-    pgRenderEventArgs& e = pgApp::s_eventArgs;
+    RenderEventArgs& e = App::s_eventArgs;
 
     const float4x4 view = e.pCamera->getViewMatrix();
     // TODO: change to use world
@@ -149,7 +149,7 @@ void pgPassRender::Visit(pgSceneNode& node, pgPipeline* pipeline)
     SetPerObjectConstantBufferData(perObjectData);
 }
 
-void pgPassRender::Visit(pgMesh& mesh, pgPipeline* pipeline)
+void PassRender::Visit(Mesh& mesh, Pipeline* pipeline)
 {
     mesh.Render(m_pPipeline.get());
 }

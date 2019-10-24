@@ -13,7 +13,7 @@ class PipelineDebug : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineDebug(std::shared_ptr<pgRenderTarget> rt);
+    PipelineDebug(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineDebug();
 };
 

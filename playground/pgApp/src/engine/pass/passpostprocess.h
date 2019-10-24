@@ -8,23 +8,23 @@
 namespace ade
 {
 
-class PassPostprocess : public pgPassRender
+class PassPostprocess : public PassRender
 {
   public:
-    typedef pgPassRender base;
+    typedef PassRender base;
 
-    PassPostprocess(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                    std::shared_ptr<pgPipeline> pipeline,
-                    const Diligent::float4x4& projectionMatrix, std::shared_ptr<pgTexture> texture);
+    PassPostprocess(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                    std::shared_ptr<Pipeline> pipeline,
+                    const Diligent::float4x4& projectionMatrix, std::shared_ptr<Texture> texture);
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 
-    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
+    virtual void Visit(SceneNode& node, Pipeline* pipeline);
 
   protected:
   private:
     Diligent::float4x4 m_ProjectionMatrix;
-    std::shared_ptr<pgTexture> m_Texture;
+    std::shared_ptr<Texture> m_Texture;
 };
 }    // namespace ade

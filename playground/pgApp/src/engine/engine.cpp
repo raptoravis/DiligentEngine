@@ -29,10 +29,10 @@ void ReportErrorAndThrow(const std::string& file, int line, const std::string& f
     throw new std::exception(message.c_str());
 }
 //////////////////////////////////////////////////////////////////////////
-pgRenderEventArgs::pgRenderEventArgs() : pApp(0), pDeviceContext(0), pCamera(0) {}
+RenderEventArgs::RenderEventArgs() : pApp(0), pDeviceContext(0), pCamera(0) {}
 
 
-void pgRenderEventArgs::set(float currentTime, float elapsedTime, pgApp* caller, pgCamera* camera,
+void RenderEventArgs::set(float currentTime, float elapsedTime, App* caller, Camera* camera,
                             Diligent::RefCntAutoPtr<Diligent::IDeviceContext> ctx)
 {
     pApp = caller;
@@ -42,46 +42,46 @@ void pgRenderEventArgs::set(float currentTime, float elapsedTime, pgApp* caller,
     ElapsedTime = elapsedTime;
 }
 
-uint32_t pgObject::s_uuid = 0;
+uint32_t Object::s_uuid = 0;
 
-pgObject::pgObject() : m_uuid(++pgObject::s_uuid) {}
+Object::Object() : m_uuid(++Object::s_uuid) {}
 //////////////////////////////////////////////////////////////////////////
 
-Diligent::RefCntAutoPtr<Diligent::IRenderDevice> pgApp::s_device;
-Diligent::RefCntAutoPtr<Diligent::IDeviceContext> pgApp::s_ctx;
-Diligent::RefCntAutoPtr<Diligent::ISwapChain> pgApp::s_swapChain;
-Diligent::RefCntAutoPtr<Diligent::IEngineFactory> pgApp::s_engineFactory;
-std::shared_ptr<pgRenderTarget> pgApp::s_rt;
-std::shared_ptr<pgTexture> pgApp::s_backBuffer;
+Diligent::RefCntAutoPtr<Diligent::IRenderDevice> App::s_device;
+Diligent::RefCntAutoPtr<Diligent::IDeviceContext> App::s_ctx;
+Diligent::RefCntAutoPtr<Diligent::ISwapChain> App::s_swapChain;
+Diligent::RefCntAutoPtr<Diligent::IEngineFactory> App::s_engineFactory;
+std::shared_ptr<RenderTarget> App::s_rt;
+std::shared_ptr<Texture> App::s_backBuffer;
 
-Diligent::SwapChainDesc pgApp::s_desc;
-pgRenderEventArgs pgApp::s_eventArgs;
+Diligent::SwapChainDesc App::s_desc;
+RenderEventArgs App::s_eventArgs;
 
 
-pgApp::pgApp()
+App::App()
 {
     //
 }
 
 
-pgApp::~pgApp()
+App::~App()
 {
     //
 }
 
-void pgApp::Initialize(Diligent::IEngineFactory* pEngineFactory, Diligent::IRenderDevice* pDevice,
+void App::Initialize(Diligent::IEngineFactory* pEngineFactory, Diligent::IRenderDevice* pDevice,
                        Diligent::IDeviceContext** ppContexts, Diligent::Uint32 NumDeferredCtx,
                        Diligent::ISwapChain* pSwapChain)
 {
     //
 }
 
-void pgApp::Render()
+void App::Render()
 {
     //
 }
 
-void pgApp::Update(double CurrTime, double ElapsedTime)
+void App::Update(double CurrTime, double ElapsedTime)
 {
     //
 }

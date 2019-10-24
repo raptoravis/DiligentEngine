@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineColorVertex::PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt) : base(rt)
+PipelineColorVertex::PipelineColorVertex(std::shared_ptr<RenderTarget> rt) : base(rt)
 {
     // CreatePipelineState();
     m_pVS = std::make_shared<Shader>();

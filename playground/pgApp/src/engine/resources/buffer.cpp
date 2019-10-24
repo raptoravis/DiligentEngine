@@ -3,7 +3,7 @@
 namespace ade
 {
 
-pgBuffer::pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer)
+Buffer::Buffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer)
     : m_uiCount(count), m_uiStride(stride), m_BindFlags(0), m_bIsBound(false)
 {
     if (buffer) {
@@ -12,35 +12,35 @@ pgBuffer::pgBuffer(uint32_t stride, uint32_t count, Diligent::IBuffer* buffer)
     }
 }
 
-pgBuffer::~pgBuffer()
+Buffer::~Buffer()
 {
     m_pBuffer.Release();
     m_pBuffer.Detach();
 }
 
-Diligent::IBuffer* pgBuffer::GetBuffer()
+Diligent::IBuffer* Buffer::GetBuffer()
 {
     return m_pBuffer;
 }
 
 
-uint32_t pgBuffer::GetCount() const
+uint32_t Buffer::GetCount() const
 {
     return m_uiCount;
 }
 
-uint32_t pgBuffer::GetSize() const
+uint32_t Buffer::GetSize() const
 {
     return m_uiCount * m_uiStride;
 }
 
 
-pgBuffer::BufferType pgBuffer::GetType() const
+Buffer::BufferType Buffer::GetType() const
 {
-    return pgBuffer::Unknown;
+    return Buffer::Unknown;
 }
 
-Diligent::IBufferView* pgBuffer::GetUnorderedAccessView()
+Diligent::IBufferView* Buffer::GetUnorderedAccessView()
 {
     auto buffer = m_pBuffer;
 
@@ -48,7 +48,7 @@ Diligent::IBufferView* pgBuffer::GetUnorderedAccessView()
     return uav;
 }
 
-Diligent::IBufferView* pgBuffer::GetShaderResourceView()
+Diligent::IBufferView* Buffer::GetShaderResourceView()
 {
     auto buffer = m_pBuffer;
 
@@ -57,7 +57,7 @@ Diligent::IBufferView* pgBuffer::GetShaderResourceView()
 }
 
 // Bind the buffer for rendering.
-bool pgBuffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
+bool Buffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
                     ShaderParameter::Type parameterType)
 {
     auto buffer = m_pBuffer;
@@ -66,7 +66,7 @@ bool pgBuffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
     Diligent::IBuffer* pBuffs[] = { buffer };
     const uint32_t buffs = 1;
 
-    pgApp::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset,
+    App::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset,
                                    Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
                                    Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
 
@@ -74,13 +74,13 @@ bool pgBuffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
 }
 
 // Unbind the buffer for rendering.
-void pgBuffer::UnBind(unsigned int id, Shader::ShaderType shaderType,
+void Buffer::UnBind(unsigned int id, Shader::ShaderType shaderType,
                       ShaderParameter::Type parameterType)
 {
     //
 }
 
-void pgBuffer::Copy(std::shared_ptr<pgBuffer> other)
+void Buffer::Copy(std::shared_ptr<Buffer> other)
 {
     //
 }

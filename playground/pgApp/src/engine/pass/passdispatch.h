@@ -9,17 +9,17 @@ namespace ade
 
 class PipelineDispatch;
 
-class PassDispatch : public pgPassPilpeline
+class PassDispatch : public PassPilpeline
 {
-    typedef pgPassPilpeline base;
+    typedef PassPilpeline base;
 
   public:
-    PassDispatch(pgTechnique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline);
+    PassDispatch(Technique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline);
     virtual ~PassDispatch();
 
     virtual void Dispatch();
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 }    // namespace ade

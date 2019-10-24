@@ -5,15 +5,15 @@
 namespace ade
 {
 
-class PipelineBase : public pgPipeline
+class PipelineBase : public Pipeline
 {
-    typedef pgPipeline base;
+    typedef Pipeline base;
 
   protected:
     virtual void InitPSODesc();
 
   public:
-    PipelineBase(std::shared_ptr<pgRenderTarget> rt);
+    PipelineBase(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineBase();
 };
 

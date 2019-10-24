@@ -20,7 +20,7 @@ namespace ade
 class ProgressHandler : public Assimp::ProgressHandler
 {
   public:
-    ProgressHandler(pgSceneAss& scene, const std::wstring& fileName)
+    ProgressHandler(SceneAss& scene, const std::wstring& fileName)
         : m_Scene(scene), m_FileName(fileName)
     {
     }
@@ -28,18 +28,18 @@ class ProgressHandler : public Assimp::ProgressHandler
     virtual bool Update(float percentage) { return false; }
 
   private:
-    pgSceneAss& m_Scene;
+    SceneAss& m_Scene;
     std::wstring m_FileName;
 };
 
-pgSceneAss::pgSceneAss() : base()
+SceneAss::SceneAss() : base()
 {
     //
 }
 
-pgSceneAss::~pgSceneAss() {}
+SceneAss::~SceneAss() {}
 
-bool pgSceneAss::LoadFromString(const std::string& sceneStr, const std::string& format)
+bool SceneAss::LoadFromString(const std::string& sceneStr, const std::string& format)
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
@@ -79,7 +79,7 @@ bool pgSceneAss::LoadFromString(const std::string& sceneStr, const std::string& 
     return true;
 }
 
-bool pgSceneAss::LoadFromFile(const std::wstring& fileName)
+bool SceneAss::LoadFromFile(const std::wstring& fileName)
 {
     fs::path filePath(fileName);
     fs::path parentPath;
@@ -155,7 +155,7 @@ bool pgSceneAss::LoadFromFile(const std::wstring& fileName)
     return true;
 }
 
-void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
+void SceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
 {
     aiString materialName;
     aiString aiTexturePath;
@@ -182,7 +182,7 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
     //    }
     //}
 
-    std::shared_ptr<pgMaterial> pMaterial = CreateMaterial();
+    std::shared_ptr<Material> pMaterial = CreateMaterial();
 
     if (material.Get(AI_MATKEY_COLOR_AMBIENT, ambientColor) == aiReturn_SUCCESS) {
         pMaterial->SetAmbientColor(
@@ -222,8 +222,8 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         material.GetTexture(aiTextureType_AMBIENT, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Ambient, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Ambient, pTexture);
     }
 
     // Load emissive textures.
@@ -231,8 +231,8 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         material.GetTexture(aiTextureType_EMISSIVE, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Emissive, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Emissive, pTexture);
     }
 
     // Load diffuse textures.
@@ -240,8 +240,8 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         material.GetTexture(aiTextureType_DIFFUSE, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Diffuse, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Diffuse, pTexture);
     }
 
     // Load specular texture.
@@ -249,8 +249,8 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         material.GetTexture(aiTextureType_SPECULAR, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Specular, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Specular, pTexture);
     }
 
 
@@ -259,39 +259,39 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         material.GetTexture(aiTextureType_SHININESS, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::SpecularPower, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::SpecularPower, pTexture);
     }
 
     if (material.GetTextureCount(aiTextureType_OPACITY) > 0 &&
         material.GetTexture(aiTextureType_OPACITY, 0, &aiTexturePath, nullptr, nullptr,
                             &blendFactor, &aiBlendOperation) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Opacity, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Opacity, pTexture);
     }
 
     // Load normal map texture.
     if (material.GetTextureCount(aiTextureType_NORMALS) > 0 &&
         material.GetTexture(aiTextureType_NORMALS, 0, &aiTexturePath) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
-        pMaterial->SetTexture(pgMaterial::TextureType::Normal, pTexture);
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        pMaterial->SetTexture(Material::TextureType::Normal, pTexture);
     }
     // Load bump map (only if there is no normal map).
     else if (material.GetTextureCount(aiTextureType_HEIGHT) > 0 &&
              material.GetTexture(aiTextureType_HEIGHT, 0, &aiTexturePath, nullptr, nullptr,
                                  &blendFactor) == aiReturn_SUCCESS) {
         fs::path texturePath(aiTexturePath.C_Str());
-        std::shared_ptr<pgTexture> pTexture = CreateTexture((parentPath / texturePath).wstring());
+        std::shared_ptr<Texture> pTexture = CreateTexture((parentPath / texturePath).wstring());
 
         // Some materials actually store normal maps in the bump map slot. Assimp can't tell the
         // difference between these two texture types, so we try to make an assumption about whether
         // the texture is a normal map or a bump map based on its pixel depth. Bump maps are usually
         // 8 BPP (grayscale) and normal maps are usually 24 BPP or higher.
-        pgMaterial::TextureType textureType = (pTexture->GetBPP() >= 24)
-                                                  ? pgMaterial::TextureType::Normal
-                                                  : pgMaterial::TextureType::Bump;
+        Material::TextureType textureType = (pTexture->GetBPP() >= 24)
+                                                  ? Material::TextureType::Normal
+                                                  : Material::TextureType::Bump;
 
         pMaterial->SetTexture(textureType, pTexture);
     }
@@ -300,39 +300,39 @@ void pgSceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
     m_Materials.push_back(pMaterial);
 }
 
-void pgSceneAss::ImportMesh(const aiMesh& mesh)
+void SceneAss::ImportMesh(const aiMesh& mesh)
 {
-    std::shared_ptr<pgMesh> pMesh = CreateMesh();
+    std::shared_ptr<Mesh> pMesh = CreateMesh();
 
     assert(mesh.mMaterialIndex < m_Materials.size());
     pMesh->setMaterial(m_Materials[mesh.mMaterialIndex]);
 
     if (mesh.HasPositions()) {
-        std::shared_ptr<pgBuffer> positions =
+        std::shared_ptr<Buffer> positions =
             CreateFloatVertexBuffer(&(mesh.mVertices[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(pgBufferBinding("POSITION", 0), positions);
+        pMesh->addVertexBuffer(BufferBinding("POSITION", 0), positions);
     }
 
     if (mesh.HasNormals()) {
-        std::shared_ptr<pgBuffer> normals =
+        std::shared_ptr<Buffer> normals =
             CreateFloatVertexBuffer(&(mesh.mNormals[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(pgBufferBinding("NORMAL", 0), normals);
+        pMesh->addVertexBuffer(BufferBinding("NORMAL", 0), normals);
     }
 
     if (mesh.HasTangentsAndBitangents()) {
-        std::shared_ptr<pgBuffer> tangents =
+        std::shared_ptr<Buffer> tangents =
             CreateFloatVertexBuffer(&(mesh.mTangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(pgBufferBinding("TANGENT", 0), tangents);
+        pMesh->addVertexBuffer(BufferBinding("TANGENT", 0), tangents);
 
-        std::shared_ptr<pgBuffer> bitangents = CreateFloatVertexBuffer(
+        std::shared_ptr<Buffer> bitangents = CreateFloatVertexBuffer(
             &(mesh.mBitangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(pgBufferBinding("BINORMAL", 0), bitangents);
+        pMesh->addVertexBuffer(BufferBinding("BINORMAL", 0), bitangents);
     }
 
     for (uint32_t i = 0; mesh.HasVertexColors(i); ++i) {
-        std::shared_ptr<pgBuffer> colors =
+        std::shared_ptr<Buffer> colors =
             CreateFloatVertexBuffer(&(mesh.mColors[i][0].r), mesh.mNumVertices, sizeof(aiColor4D));
-        pMesh->addVertexBuffer(pgBufferBinding("COLOR", i), colors);
+        pMesh->addVertexBuffer(BufferBinding("COLOR", i), colors);
     }
 
     for (uint32_t i = 0; mesh.HasTextureCoords(i); ++i) {
@@ -343,9 +343,9 @@ void pgSceneAss::ImportMesh(const aiMesh& mesh)
             for (uint32_t j = 0; j < mesh.mNumVertices; ++j) {
                 texcoods1D[j] = mesh.mTextureCoords[i][j].x;
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 texcoods1D.data(), (uint32_t)texcoods1D.size(), sizeof(float));
-            pMesh->addVertexBuffer(pgBufferBinding("TEXCOORD", i), texcoords);
+            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         case 2:    // 2-component texture coordinates (U,V)
         {
@@ -354,9 +354,9 @@ void pgSceneAss::ImportMesh(const aiMesh& mesh)
                 texcoods2D[j] =
                     aiVector2D(mesh.mTextureCoords[i][j].x, mesh.mTextureCoords[i][j].y);
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 &(texcoods2D[0].x), (uint32_t)texcoods2D.size(), sizeof(aiVector2D));
-            pMesh->addVertexBuffer(pgBufferBinding("TEXCOORD", i), texcoords);
+            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         case 3:    // 3-component texture coordinates (U,V,W)
         {
@@ -364,9 +364,9 @@ void pgSceneAss::ImportMesh(const aiMesh& mesh)
             for (uint32_t j = 0; j < mesh.mNumVertices; ++j) {
                 texcoods3D[j] = mesh.mTextureCoords[i][j];
             }
-            std::shared_ptr<pgBuffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 &(texcoods3D[0].x), (uint32_t)texcoods3D.size(), sizeof(aiVector3D));
-            pMesh->addVertexBuffer(pgBufferBinding("TEXCOORD", i), texcoords);
+            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         }
     }
@@ -384,7 +384,7 @@ void pgSceneAss::ImportMesh(const aiMesh& mesh)
             }
         }
         if (indices.size() > 0) {
-            std::shared_ptr<pgBuffer> indexBuffer =
+            std::shared_ptr<Buffer> indexBuffer =
                 CreateUIntIndexBuffer(indices.data(), (uint32_t)indices.size());
             pMesh->setIndexBuffer(indexBuffer);
         }
@@ -394,7 +394,7 @@ void pgSceneAss::ImportMesh(const aiMesh& mesh)
     m_Meshes.push_back(pMesh);
 }
 
-std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode(std::shared_ptr<pgSceneNode> parent,
+std::shared_ptr<SceneNode> SceneAss::ImportSceneNode(std::shared_ptr<SceneNode> parent,
                                                          aiNode* aiNode)
 {
     if (!aiNode) {
@@ -408,7 +408,7 @@ std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode(std::shared_ptr<pgScene
                                       mat.d2, mat.a3, mat.b3, mat.c3, mat.d3, mat.a4, mat.b4,
                                       mat.c4, mat.d4);
 
-    std::shared_ptr<pgSceneNode> pNode = std::make_shared<pgSceneNode>(localTransform);
+    std::shared_ptr<SceneNode> pNode = std::make_shared<SceneNode>(localTransform);
     pNode->setParent(parent);
 
     std::string nodeName(aiNode->mName.C_Str());
@@ -420,25 +420,25 @@ std::shared_ptr<pgSceneNode> pgSceneAss::ImportSceneNode(std::shared_ptr<pgScene
     for (uint32_t i = 0; i < aiNode->mNumMeshes; ++i) {
         assert(aiNode->mMeshes[i] < m_Meshes.size());
 
-        std::shared_ptr<pgMesh> pMesh = m_Meshes[aiNode->mMeshes[i]];
+        std::shared_ptr<Mesh> pMesh = m_Meshes[aiNode->mMeshes[i]];
         pNode->addMesh(pMesh);
     }
 
     // Recursively Import children
     for (uint32_t i = 0; i < aiNode->mNumChildren; ++i) {
-        std::shared_ptr<pgSceneNode> pChild = ImportSceneNode(pNode, aiNode->mChildren[i]);
+        std::shared_ptr<SceneNode> pChild = ImportSceneNode(pNode, aiNode->mChildren[i]);
         pNode->addChild(pChild);
     }
 
     return pNode;
 }
 
-std::shared_ptr<pgSceneNode> pgSceneAss::getRootNode() const
+std::shared_ptr<SceneNode> SceneAss::getRootNode() const
 {
     return m_pRootNode;
 }
 
-std::shared_ptr<pgBuffer> pgSceneAss::createFloatVertexBuffer(Diligent::IRenderDevice* device,
+std::shared_ptr<Buffer> SceneAss::createFloatVertexBuffer(Diligent::IRenderDevice* device,
                                                               const float* data, uint32_t count,
                                                               uint32_t stride)
 {
@@ -457,12 +457,12 @@ std::shared_ptr<pgBuffer> pgSceneAss::createFloatVertexBuffer(Diligent::IRenderD
 
     device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
 
-    std::shared_ptr<pgBuffer> buffer = std::make_shared<pgBuffer>(stride, count, pBuffer);
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
 
     return buffer;
 }
 
-std::shared_ptr<pgBuffer> pgSceneAss::createUIntIndexBuffer(Diligent::IRenderDevice* device,
+std::shared_ptr<Buffer> SceneAss::createUIntIndexBuffer(Diligent::IRenderDevice* device,
                                                             const uint32_t* data, uint32_t count)
 {
     Diligent::BufferDesc IndBuffDesc;
@@ -478,64 +478,64 @@ std::shared_ptr<pgBuffer> pgSceneAss::createUIntIndexBuffer(Diligent::IRenderDev
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
     device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
 
-    std::shared_ptr<pgBuffer> buffer =
-        std::make_shared<pgBuffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
+    std::shared_ptr<Buffer> buffer =
+        std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
 
     return buffer;
 }
 
-std::shared_ptr<pgMesh> pgSceneAss::CreateMesh()
+std::shared_ptr<Mesh> SceneAss::CreateMesh()
 {
-    std::shared_ptr<pgMesh> mesh = std::make_shared<pgMesh>();
+    std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
 
     return mesh;
 }
 
-std::shared_ptr<pgMaterial> pgSceneAss::CreateMaterial()
+std::shared_ptr<Material> SceneAss::CreateMaterial()
 {
-    std::shared_ptr<pgMaterial> mat = std::make_shared<pgMaterial>();
+    std::shared_ptr<Material> mat = std::make_shared<Material>();
 
     return mat;
 }
 
-std::shared_ptr<pgTexture> pgSceneAss::CreateTexture(const std::wstring& fileName)
+std::shared_ptr<Texture> SceneAss::CreateTexture(const std::wstring& fileName)
 {
     assert(0);
     Diligent::ITexture* texture = 0;
-    std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
+    std::shared_ptr<Texture> tex = std::make_shared<Texture>(texture);
 
     return tex;
 }
 
-std::shared_ptr<pgTexture> pgSceneAss::CreateTexture2D(uint16_t width, uint16_t height)
+std::shared_ptr<Texture> SceneAss::CreateTexture2D(uint16_t width, uint16_t height)
 {
     assert(0);
     Diligent::ITexture* texture = 0;
 
-    std::shared_ptr<pgTexture> tex = std::make_shared<pgTexture>(texture);
+    std::shared_ptr<Texture> tex = std::make_shared<Texture>(texture);
 
     return tex;
 }
 
-std::shared_ptr<pgBuffer> pgSceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count,
+std::shared_ptr<Buffer> SceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count,
                                                               uint32_t stride)
 {
-    return createFloatVertexBuffer(pgApp::s_device, data, count, stride);
+    return createFloatVertexBuffer(App::s_device, data, count, stride);
 }
 
-std::shared_ptr<pgBuffer> pgSceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
+std::shared_ptr<Buffer> SceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
 {
-    return createUIntIndexBuffer(pgApp::s_device, data, count);
+    return createUIntIndexBuffer(App::s_device, data, count);
 }
 
-std::shared_ptr<pgSceneAss> pgSceneAss::CreateScene()
+std::shared_ptr<SceneAss> SceneAss::CreateScene()
 {
-    std::shared_ptr<pgSceneAss> pScene = std::make_shared<pgSceneAss>();
+    std::shared_ptr<SceneAss> pScene = std::make_shared<SceneAss>();
 
     return pScene;
 }
 
-void pgSceneAss::DestroyScene(std::shared_ptr<pgScene> scene)
+void SceneAss::DestroyScene(std::shared_ptr<Scene> scene)
 {
     // SceneList::iterator iter = std::find(m_Scenes.begin(), m_Scenes.end(), scene);
     // if (iter != m_Scenes.end())
@@ -568,7 +568,7 @@ Diligent::Quaternion RotationFromTwoVectors(const Diligent::float3& u, const Dil
 }
 
 
-std::shared_ptr<pgScene> pgSceneAss::CreatePlane(float size, const Diligent::float3& N)
+std::shared_ptr<Scene> SceneAss::CreatePlane(float size, const Diligent::float3& N)
 {
     float halfSize = size * 0.5f;
     Diligent::float3 p[4];
@@ -589,7 +589,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreatePlane(float size, const Diligent::flo
     }
 
     // Now create the plane polygon from the transformed vertices.
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
 
     std::stringstream ss;
 
@@ -612,7 +612,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreatePlane(float size, const Diligent::flo
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(float left, float right, float bottom,
+std::shared_ptr<Scene> SceneAss::CreateScreenQuad(float left, float right, float bottom,
                                                       float top, float z)
 {
     Diligent::float3 p[4];    // Vertex position
@@ -636,7 +636,7 @@ std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(float left, float right, f
     t[3] = Diligent::float2(1, 1);
 
     // Now create the quad.
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
 
     std::stringstream ss;
 
@@ -661,9 +661,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateScreenQuad(float left, float right, f
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateSphere(float radius, float tesselation)
+std::shared_ptr<Scene> SceneAss::CreateSphere(float radius, float tesselation)
 {
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
     // Create a white diffuse material for the sphere.
     // f red green blue Kd Ks Shine transmittance indexOfRefraction
@@ -683,9 +683,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateSphere(float radius, float tesselatio
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateCube(float size)
+std::shared_ptr<Scene> SceneAss::CreateCube(float size)
 {
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
 
     // Create a white diffuse material for the cube.
@@ -704,10 +704,10 @@ std::shared_ptr<pgScene> pgSceneAss::CreateCube(float size)
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(float baseRadius, float apexRadius,
+std::shared_ptr<Scene> SceneAss::CreateCylinder(float baseRadius, float apexRadius,
                                                     float height, const Diligent::float3& axis)
 {
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
 
     // Create a white diffuse material for the cylinder.
@@ -731,16 +731,16 @@ std::shared_ptr<pgScene> pgSceneAss::CreateCylinder(float baseRadius, float apex
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateCone(float baseRadius, float height)
+std::shared_ptr<Scene> SceneAss::CreateCone(float baseRadius, float height)
 {
     // A cone is just a cylinder with a 0 size apex.
     return CreateCylinder(baseRadius, 0, height);
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const Diligent::float3& tail,
+std::shared_ptr<Scene> SceneAss::CreateArrow(const Diligent::float3& tail,
                                                  const Diligent::float3& head, float radius)
 {
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
 
     Diligent::float3 dir = head - tail;
@@ -774,9 +774,9 @@ std::shared_ptr<pgScene> pgSceneAss::CreateArrow(const Diligent::float3& tail,
     return nullptr;
 }
 
-std::shared_ptr<pgScene> pgSceneAss::CreateAxis(float radius, float length)
+std::shared_ptr<Scene> SceneAss::CreateAxis(float radius, float length)
 {
-    std::shared_ptr<pgSceneAss> scene = CreateScene();
+    std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
 
     // Create a red material for the +X axis.

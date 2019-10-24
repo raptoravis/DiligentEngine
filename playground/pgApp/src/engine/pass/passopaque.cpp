@@ -3,17 +3,17 @@
 namespace ade
 {
 
-PassOpaque::PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                       std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights)
+PassOpaque::PassOpaque(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                       std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights)
     : base(parentTechnique, scene, pipeline, lights)
 {
 }
 
 PassOpaque::~PassOpaque() {}
 
-void PassOpaque::Visit(pgMesh& mesh, pgPipeline* pipeline)
+void PassOpaque::Visit(Mesh& mesh, Pipeline* pipeline)
 {
-    std::shared_ptr<pgMaterial> pMaterial = mesh.getMaterial();
+    std::shared_ptr<Material> pMaterial = mesh.getMaterial();
     if (pMaterial && !pMaterial->IsTransparent()) {
         SetMaterialData(pMaterial.get());
 
@@ -26,7 +26,7 @@ void PassOpaque::PreRender()
     base::PreRender();
 }
 
-void PassOpaque::Render(pgPipeline* pipeline)
+void PassOpaque::Render(Pipeline* pipeline)
 {
     base::Render(pipeline);
 }

@@ -11,22 +11,22 @@ using namespace Diligent;
 namespace ade
 {
 
-class PassOpaque : public pgPassRender
+class PassOpaque : public PassRender
 {
-    typedef pgPassRender base;
+    typedef PassRender base;
 
   protected:
-    // void CreatePipelineState(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture>
+    // void CreatePipelineState(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture>
     // backBuffer);
   public:
-    PassOpaque(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-               std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights);
+    PassOpaque(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+               std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights);
 
     virtual ~PassOpaque();
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 
-    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
+    virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 };
 }    // namespace ade

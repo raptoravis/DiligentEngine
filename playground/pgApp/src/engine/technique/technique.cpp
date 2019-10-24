@@ -3,24 +3,24 @@
 namespace ade
 {
 
-pgTechnique::pgTechnique(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer)
+Technique::Technique(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : m_pRenderTarget(rt), m_pBackBuffer(backBuffer)
 {
 }
 
-pgTechnique::~pgTechnique()
+Technique::~Technique()
 {
     m_Passes.clear();
 }
 
-unsigned int pgTechnique::AddPass(std::shared_ptr<pgPass> pass)
+unsigned int Technique::AddPass(std::shared_ptr<Pass> pass)
 {
     // No check for duplicate passes (it may be intended to render the same pass multiple times?)
     m_Passes.push_back(pass);
     return static_cast<unsigned int>(m_Passes.size()) - 1;
 }
 
-std::shared_ptr<pgPass> pgTechnique::GetPass(unsigned int ID) const
+std::shared_ptr<Pass> Technique::GetPass(unsigned int ID) const
 {
     if (ID < m_Passes.size()) {
         return m_Passes[ID];
@@ -30,13 +30,13 @@ std::shared_ptr<pgPass> pgTechnique::GetPass(unsigned int ID) const
 }
 
 
-void pgTechnique::Set(const std::string& name, std::shared_ptr<pgObject> res)
+void Technique::Set(const std::string& name, std::shared_ptr<Object> res)
 {
     m_resourceMap[name] = res;
 }
 
 
-std::shared_ptr<pgObject> pgTechnique::Get(const std::string& name)
+std::shared_ptr<Object> Technique::Get(const std::string& name)
 {
     ResourceMap::iterator it = m_resourceMap.find(name);
 
@@ -47,12 +47,12 @@ std::shared_ptr<pgObject> pgTechnique::Get(const std::string& name)
     return nullptr;
 }
 
-void pgTechnique::Update()
+void Technique::Update()
 {
     //
 }
 
-void pgTechnique::Render()
+void Technique::Render()
 {
     uint32_t passIndex = 0;
 

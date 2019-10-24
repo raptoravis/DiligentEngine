@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineLightBack::PipelineLightBack(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
+PipelineLightBack::PipelineLightBack(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
 PipelineLightBack::~PipelineLightBack() {}
 

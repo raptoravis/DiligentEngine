@@ -5,10 +5,10 @@
 namespace ade
 {
 
-PassPostprocess::PassPostprocess(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                                 std::shared_ptr<pgPipeline> pipeline,
+PassPostprocess::PassPostprocess(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                                 std::shared_ptr<Pipeline> pipeline,
                                  const Diligent::float4x4& projectionMatrix,
-                                 std::shared_ptr<pgTexture> texture)
+                                 std::shared_ptr<Texture> texture)
     : base(parentTechnique, scene, pipeline, nullptr), m_ProjectionMatrix(projectionMatrix),
       m_Texture(texture)
 {
@@ -25,7 +25,7 @@ void PassPostprocess::PreRender()
     base::PreRender();
 }
 
-void PassPostprocess::Render(pgPipeline* pipeline)
+void PassPostprocess::Render(Pipeline* pipeline)
 {
     PerObject perObjectData;
     perObjectData.ModelView = Diligent::float4x4::Identity();
@@ -36,7 +36,7 @@ void PassPostprocess::Render(pgPipeline* pipeline)
     base::Render(pipeline);
 }
 
-void PassPostprocess::Visit(pgSceneNode& node, pgPipeline* pipeline)
+void PassPostprocess::Visit(SceneNode& node, Pipeline* pipeline)
 {
     // Do nothing in this case
 }

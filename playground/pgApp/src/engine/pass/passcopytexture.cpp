@@ -3,16 +3,16 @@
 namespace ade
 {
 
-PassCopyTexture::PassCopyTexture(pgTechnique* parentTechnique,
-                                 std::shared_ptr<pgTexture> dstTexture,
-                                 std::shared_ptr<pgTexture> srcTexture)
+PassCopyTexture::PassCopyTexture(Technique* parentTechnique,
+                                 std::shared_ptr<Texture> dstTexture,
+                                 std::shared_ptr<Texture> srcTexture)
     : base(parentTechnique), m_dstTexture(dstTexture), m_srcTexture(srcTexture)
 {
 }
 
 PassCopyTexture::~PassCopyTexture() {}
 
-void PassCopyTexture::Render(pgPipeline* pipeline)
+void PassCopyTexture::Render(Pipeline* pipeline)
 {
     Diligent::CopyTextureAttribs CopyAttribs(
         m_srcTexture->GetTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
@@ -21,6 +21,6 @@ void PassCopyTexture::Render(pgPipeline* pipeline)
     CopyAttribs.DstMipLevel = 0;
     CopyAttribs.DstSlice = 0;
 
-    pgApp::s_ctx->CopyTexture(CopyAttribs);
+    App::s_ctx->CopyTexture(CopyAttribs);
 }
 }    // namespace ade

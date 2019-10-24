@@ -19,8 +19,8 @@
 namespace ade
 {
 
-TechniqueDeferred::TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt,
-                                     std::shared_ptr<pgTexture> backBuffer)
+TechniqueDeferred::TechniqueDeferred(std::shared_ptr<RenderTarget> rt,
+                                     std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer), m_bDepth(false), m_bDiffuse(false), m_bSpecular(false), m_bNormal(false)
 
 {
@@ -36,8 +36,8 @@ void TechniqueDeferred::createGBuffers()
     TextureDesc RTColorDesc;
     RTColorDesc.Name = "GBuffer diffuse";
     RTColorDesc.Type = RESOURCE_DIM_TEX_2D;
-    RTColorDesc.Width = pgApp::s_desc.Width;
-    RTColorDesc.Height = pgApp::s_desc.Height;
+    RTColorDesc.Width = App::s_desc.Width;
+    RTColorDesc.Height = App::s_desc.Height;
     RTColorDesc.MipLevels = 1;
     RTColorDesc.Format = TEX_FORMAT_RGBA8_UNORM;
     // The render target can be bound as a shader resource and as a render target
@@ -50,52 +50,52 @@ void TechniqueDeferred::createGBuffers()
     RTColorDesc.ClearValue.Color[3] = 1.f;
 
     RefCntAutoPtr<ITexture> pDiffuseTex;
-    pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pDiffuseTex);
+    App::s_device->CreateTexture(RTColorDesc, nullptr, &pDiffuseTex);
 
-    std::shared_ptr<pgTexture> diffuseTexture = std::make_shared<pgTexture>(pDiffuseTex);
+    std::shared_ptr<Texture> diffuseTexture = std::make_shared<Texture>(pDiffuseTex);
 
     RTColorDesc.Name = "GBuffer specular";
     RefCntAutoPtr<ITexture> pSpecularTex;
-    pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pSpecularTex);
-    std::shared_ptr<pgTexture> specularTexture = std::make_shared<pgTexture>(pSpecularTex);
+    App::s_device->CreateTexture(RTColorDesc, nullptr, &pSpecularTex);
+    std::shared_ptr<Texture> specularTexture = std::make_shared<Texture>(pSpecularTex);
 
     RTColorDesc.Name = "GBuffer normal";
     RTColorDesc.Format = TEX_FORMAT_RGBA32_FLOAT;
 
     RefCntAutoPtr<ITexture> pNormalTex;
-    pgApp::s_device->CreateTexture(RTColorDesc, nullptr, &pNormalTex);
+    App::s_device->CreateTexture(RTColorDesc, nullptr, &pNormalTex);
 
-    std::shared_ptr<pgTexture> normalTexture = std::make_shared<pgTexture>(pNormalTex);
+    std::shared_ptr<Texture> normalTexture = std::make_shared<Texture>(pNormalTex);
 
     // Create depth buffer
     TextureDesc DepthBufferDesc;
     DepthBufferDesc.Name = "GBuffer depth";
     DepthBufferDesc.Type = RESOURCE_DIM_TEX_2D;
-    DepthBufferDesc.Width = pgApp::s_desc.Width;
-    DepthBufferDesc.Height = pgApp::s_desc.Height;
+    DepthBufferDesc.Width = App::s_desc.Width;
+    DepthBufferDesc.Height = App::s_desc.Height;
     DepthBufferDesc.MipLevels = 1;
     DepthBufferDesc.ArraySize = 1;
     DepthBufferDesc.Format = TEX_FORMAT_D24_UNORM_S8_UINT;
-    DepthBufferDesc.SampleCount = pgApp::s_desc.SamplesCount;
+    DepthBufferDesc.SampleCount = App::s_desc.SamplesCount;
     DepthBufferDesc.Usage = USAGE_DEFAULT;
     DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
     DepthBufferDesc.CPUAccessFlags = CPU_ACCESS_NONE;
     DepthBufferDesc.MiscFlags = MISC_TEXTURE_FLAG_NONE;
 
     RefCntAutoPtr<ITexture> pDepthStencilTexture;
-    pgApp::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
-    m_depthStencilTexture = std::make_shared<pgTexture>(pDepthStencilTexture);
+    App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+    m_depthStencilTexture = std::make_shared<Texture>(pDepthStencilTexture);
 
     //
-    m_pGBufferRT = std::make_shared<pgRenderTarget>();
+    m_pGBufferRT = std::make_shared<RenderTarget>();
 
-    auto color0 = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
 
-    m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color0, color0);
-    m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color1, diffuseTexture);
-    m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color2, specularTexture);
-    m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::Color3, normalTexture);
-    m_pGBufferRT->AttachTexture(pgRenderTarget::AttachmentPoint::DepthStencil,
+    m_pGBufferRT->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
+    m_pGBufferRT->AttachTexture(RenderTarget::AttachmentPoint::Color1, diffuseTexture);
+    m_pGBufferRT->AttachTexture(RenderTarget::AttachmentPoint::Color2, specularTexture);
+    m_pGBufferRT->AttachTexture(RenderTarget::AttachmentPoint::Color3, normalTexture);
+    m_pGBufferRT->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil,
                                 m_depthStencilTexture);
 }
 
@@ -114,9 +114,9 @@ void TechniqueDeferred::createBuffers()
     }
 }
 
-void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
+void TechniqueDeferred::init(const std::shared_ptr<Scene> scene, std::vector<Light>* lights)
 {
-    this->Set(pgPassRender::kScreenToViewParams, m_ScreenToViewParamsCB);
+    this->Set(PassRender::kScreenToViewParams, m_ScreenToViewParamsCB);
     this->Set(PassLight::kLightIndexBuffer, m_LightParamsCB);
 
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pGBufferRT);
@@ -191,7 +191,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     {
         auto srcTexture = m_depthStencilTexture;
         auto dstTexture =
-            m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+            m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
             std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
@@ -200,15 +200,15 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
 
     //////////////////////////////////////////////////////////////////////////
     // light pass
-    m_pDepthOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    m_pDepthOnlyRenderTarget = std::make_shared<RenderTarget>();
     m_pDepthOnlyRenderTarget->AttachTexture(
-        pgRenderTarget::AttachmentPoint::DepthStencil,
-        m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil));
+        RenderTarget::AttachmentPoint::DepthStencil,
+        m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil));
 
-    m_pColorOnlyRenderTarget = std::make_shared<pgRenderTarget>();
+    m_pColorOnlyRenderTarget = std::make_shared<RenderTarget>();
     m_pColorOnlyRenderTarget->AttachTexture(
-        pgRenderTarget::AttachmentPoint::Color0,
-        m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0));
+        RenderTarget::AttachmentPoint::Color0,
+        m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0));
 
     std::shared_ptr<PipelineLightFront> pFront =
         std::make_shared<PipelineLightFront>(m_pDepthOnlyRenderTarget);
@@ -241,7 +241,7 @@ void TechniqueDeferred::init(const std::shared_ptr<pgScene> scene, std::vector<p
     initDebug();
 
     {
-        auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+        auto srcTexture = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =
@@ -317,17 +317,17 @@ void TechniqueDeferred::initDebug()
 
     Diligent::float4x4 orthographicProjection = Diligent::float4x4::Ortho(2.f, 2, 0.f, 1.f, IsGL);
 
-    auto diffuseTexture = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color1);
-    auto specularTexture = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color2);
-    auto normalTexture = m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::Color3);
+    auto diffuseTexture = m_pGBufferRT->GetTexture(RenderTarget::AttachmentPoint::Color1);
+    auto specularTexture = m_pGBufferRT->GetTexture(RenderTarget::AttachmentPoint::Color2);
+    auto normalTexture = m_pGBufferRT->GetTexture(RenderTarget::AttachmentPoint::Color3);
     auto depthStencilTexture =
-        m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
+        m_pGBufferRT->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
 
 #define TRANS_SSX(x) (2 * (x)-1.0f)
 #define TRANS_SSY(x) (1.0f - (2 * (x)))
 
-    std::shared_ptr<pgScene> debugTextureScene =
-        pgSceneAss::CreateScreenQuad(TRANS_SSX(20 / 1920.f), TRANS_SSX(475 / 1920.f),
+    std::shared_ptr<Scene> debugTextureScene =
+        SceneAss::CreateScreenQuad(TRANS_SSX(20 / 1920.f), TRANS_SSX(475 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture0Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline1, orthographicProjection, diffuseTexture);
@@ -335,7 +335,7 @@ void TechniqueDeferred::initDebug()
     AddPass(m_DebugTexture0Pass);
 
     debugTextureScene =
-        pgSceneAss::CreateScreenQuad(TRANS_SSX(495 / 1920.f), TRANS_SSX(950 / 1920.f),
+        SceneAss::CreateScreenQuad(TRANS_SSX(495 / 1920.f), TRANS_SSX(950 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture1Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline2, orthographicProjection, specularTexture);
@@ -343,7 +343,7 @@ void TechniqueDeferred::initDebug()
     AddPass(m_DebugTexture1Pass);
 
     debugTextureScene =
-        pgSceneAss::CreateScreenQuad(TRANS_SSX(970 / 1920.f), TRANS_SSX(1425 / 1920.f),
+        SceneAss::CreateScreenQuad(TRANS_SSX(970 / 1920.f), TRANS_SSX(1425 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture2Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, pDebugTexturePipeline3, orthographicProjection, normalTexture);
@@ -351,7 +351,7 @@ void TechniqueDeferred::initDebug()
     AddPass(m_DebugTexture2Pass);
 
     debugTextureScene =
-        pgSceneAss::CreateScreenQuad(TRANS_SSX(1445 / 1920.f), TRANS_SSX(1900 / 1920.f),
+        SceneAss::CreateScreenQuad(TRANS_SSX(1445 / 1920.f), TRANS_SSX(1900 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     m_DebugTexture3Pass =
         std::make_shared<PassPostprocess>(this, debugTextureScene, m_pDebugDepthTexturePipeline,

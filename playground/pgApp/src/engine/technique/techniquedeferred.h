@@ -11,18 +11,18 @@ using namespace Diligent;
 namespace ade
 {
 
-class TechniqueDeferred : public pgTechnique
+class TechniqueDeferred : public Technique
 {
-    typedef pgTechnique base;
+    typedef Technique base;
 
     void createGBuffers();
     void createBuffers();
     void initDebug();
 
-    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRenderTarget;
-    std::shared_ptr<pgRenderTarget> m_pColorOnlyRenderTarget;
-    std::shared_ptr<pgTexture> m_depthStencilTexture;
+    std::shared_ptr<RenderTarget> m_pGBufferRT;
+    std::shared_ptr<RenderTarget> m_pDepthOnlyRenderTarget;
+    std::shared_ptr<RenderTarget> m_pColorOnlyRenderTarget;
+    std::shared_ptr<Texture> m_depthStencilTexture;
 
     std::shared_ptr<ConstantBuffer> m_LightParamsCB;
     std::shared_ptr<ConstantBuffer> m_ScreenToViewParamsCB;
@@ -34,11 +34,11 @@ class TechniqueDeferred : public pgTechnique
     std::shared_ptr<Shader> m_pGeometryPixelShader;
     std::shared_ptr<Shader> m_pDeferredLightingPixelShader;
 
-    std::shared_ptr<pgPipeline> m_pDebugDepthTexturePipeline;
+    std::shared_ptr<Pipeline> m_pDebugDepthTexturePipeline;
 
-    std::shared_ptr<pgPipeline> m_pGeometryPipeline;
-    std::shared_ptr<pgPipeline> m_pOpaquePipeline;
-    std::shared_ptr<pgPipeline> m_pTransparentPipeline;
+    std::shared_ptr<Pipeline> m_pGeometryPipeline;
+    std::shared_ptr<Pipeline> m_pOpaquePipeline;
+    std::shared_ptr<Pipeline> m_pTransparentPipeline;
 
     std::shared_ptr<SamplerState> m_LinearRepeatSampler;
     std::shared_ptr<SamplerState> m_LinearClampSampler;
@@ -54,10 +54,10 @@ class TechniqueDeferred : public pgTechnique
     bool m_bNormal;
 
   public:
-    TechniqueDeferred(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    TechniqueDeferred(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueDeferred();
 
-    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
+    void init(const std::shared_ptr<Scene> scene, std::vector<Light>* lights);
 
     virtual void Update();
 };

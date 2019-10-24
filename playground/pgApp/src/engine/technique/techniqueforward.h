@@ -10,9 +10,9 @@ using namespace Diligent;
 namespace ade
 {
 
-class TechniqueForward : public pgTechnique
+class TechniqueForward : public Technique
 {
-    typedef pgTechnique base;
+    typedef Technique base;
 
     std::shared_ptr<Shader> m_pVertexShader;
     std::shared_ptr<Shader> m_pPixelShader;
@@ -20,14 +20,14 @@ class TechniqueForward : public pgTechnique
     std::shared_ptr<SamplerState> m_LinearRepeatSampler;
     std::shared_ptr<SamplerState> m_LinearClampSampler;
 
-    std::shared_ptr<pgPipeline> m_pOpaquePipeline;
-    std::shared_ptr<pgPipeline> m_pTransparentPipeline;
+    std::shared_ptr<Pipeline> m_pOpaquePipeline;
+    std::shared_ptr<Pipeline> m_pTransparentPipeline;
 
   public:
-    TechniqueForward(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    TechniqueForward(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueForward();
 
-    void init(std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights);
+    void init(std::shared_ptr<Scene> scene, std::vector<Light>* lights);
 };
 
 }    // namespace ade

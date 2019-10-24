@@ -8,7 +8,7 @@
 
 using namespace Diligent;
 
-class AppTest final : public ade::pgApp
+class AppTest final : public ade::App
 {
     enum class RenderingTechnique : int {
         Test,
@@ -37,22 +37,22 @@ class AppTest final : public ade::pgApp
     void createRT();
 
   private:
-    std::vector<ade::pgLight> m_Lights;
+    std::vector<ade::Light> m_Lights;
 
     std::shared_ptr<ade::ConstantBuffer> m_PerObjectConstants;
     std::shared_ptr<ade::ConstantBuffer> m_MaterialConstants;
     std::shared_ptr<ade::StructuredBuffer> m_LightsStructuredBuffer;
 
-    std::shared_ptr<ade::pgRenderTarget> m_pRenderTarget;
-    std::shared_ptr<ade::pgTexture> m_pBackBuffer;
-    std::shared_ptr<ade::pgTexture> m_pDepthStencilBuffer;
+    std::shared_ptr<ade::RenderTarget> m_pRenderTarget;
+    std::shared_ptr<ade::Texture> m_pBackBuffer;
+    std::shared_ptr<ade::Texture> m_pDepthStencilBuffer;
 
     //
-    std::shared_ptr<ade::pgTechnique> m_pTechnique;
+    std::shared_ptr<ade::Technique> m_pTechnique;
 
-    std::shared_ptr<ade::pgTechnique> m_pForwardTechnique;
-    std::shared_ptr<ade::pgTechnique> m_pDeferredTechnique;
-    std::shared_ptr<ade::pgTechnique> m_pForwardPlusTechnique;
+    std::shared_ptr<ade::Technique> m_pForwardTechnique;
+    std::shared_ptr<ade::Technique> m_pDeferredTechnique;
+    std::shared_ptr<ade::Technique> m_pForwardPlusTechnique;
 
     RenderingTechnique m_renderingTechnique = RenderingTechnique::Test;
 };

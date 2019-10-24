@@ -3,14 +3,14 @@
 namespace ade
 {
 
-PassInvokeFunction::PassInvokeFunction(pgTechnique* parentTechnique, std::function<void(void)> func)
+PassInvokeFunction::PassInvokeFunction(Technique* parentTechnique, std::function<void(void)> func)
     : base(parentTechnique), m_Func(func)
 {
 }
 
 PassInvokeFunction::~PassInvokeFunction() {}
 
-void PassInvokeFunction::Render(pgPipeline* pipeline)
+void PassInvokeFunction::Render(Pipeline* pipeline)
 {
     if (m_Func) {
         m_Func();

@@ -5,7 +5,7 @@ namespace ade
 
 ConstantBuffer::ConstantBuffer(uint32_t size, void* data) : base(size, 1, nullptr)
 {
-    CreateUniformBuffer(pgApp::s_device, size, "VS constants CB", &m_pBuffer,
+    CreateUniformBuffer(App::s_device, size, "VS constants CB", &m_pBuffer,
                         Diligent::USAGE_DYNAMIC, Diligent::BIND_UNIFORM_BUFFER,
                         Diligent::CPU_ACCESS_WRITE, data);
 }
@@ -13,9 +13,9 @@ ConstantBuffer::ConstantBuffer(uint32_t size, void* data) : base(size, 1, nullpt
 ConstantBuffer::~ConstantBuffer() {}
 
 
-pgBuffer::BufferType ConstantBuffer::GetType() const
+Buffer::BufferType ConstantBuffer::GetType() const
 {
-    return pgBuffer::ConstantBuffer;
+    return Buffer::ConstantBuffer;
 }
 
 unsigned int ConstantBuffer::GetElementCount() const
@@ -47,7 +47,7 @@ void ConstantBuffer::Set(const void* data, size_t size)
         struct dummy_t {
             char m;
         };
-        Diligent::MapHelper<dummy_t> CBConstants(pgApp::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
+        Diligent::MapHelper<dummy_t> CBConstants(App::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
                                                  Diligent::MAP_FLAG_DISCARD);
         auto p = &CBConstants->m;
         memcpy((char*)p, data, size);

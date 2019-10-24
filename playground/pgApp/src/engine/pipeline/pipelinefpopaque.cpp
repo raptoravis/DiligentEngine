@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineFPOpaque::PipelineFPOpaque(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
+PipelineFPOpaque::PipelineFPOpaque(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
 PipelineFPOpaque::~PipelineFPOpaque() {}
 

@@ -13,7 +13,7 @@ class PipelineDeferredGeometry : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineDeferredGeometry(std::shared_ptr<pgRenderTarget> rt);
+    PipelineDeferredGeometry(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineDeferredGeometry();
 };
 

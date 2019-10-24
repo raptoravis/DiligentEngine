@@ -13,7 +13,7 @@ class PipelineLightFront : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineLightFront(std::shared_ptr<pgRenderTarget> rt);
+    PipelineLightFront(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineLightFront();
 };
 

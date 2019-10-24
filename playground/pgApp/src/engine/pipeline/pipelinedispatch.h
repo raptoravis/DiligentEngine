@@ -5,9 +5,9 @@
 namespace ade
 {
 
-class PipelineDispatch : public pgPipeline
+class PipelineDispatch : public Pipeline
 {
-    typedef pgPipeline base;
+    typedef Pipeline base;
 
   private:
     std::shared_ptr<Shader> m_pComputeShader;

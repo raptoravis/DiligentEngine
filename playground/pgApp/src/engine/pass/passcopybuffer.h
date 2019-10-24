@@ -7,17 +7,17 @@
 namespace ade
 {
 
-class PassCopyBuffer : public pgPass
+class PassCopyBuffer : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
-    std::shared_ptr<pgBuffer> m_srcBuffer;
-    std::shared_ptr<pgBuffer> m_dstBuffer;
+    std::shared_ptr<Buffer> m_srcBuffer;
+    std::shared_ptr<Buffer> m_dstBuffer;
 
   public:
-    PassCopyBuffer(std::shared_ptr<pgBuffer> dstBuffer, std::shared_ptr<pgBuffer> srcBuffer);
+    PassCopyBuffer(std::shared_ptr<Buffer> dstBuffer, std::shared_ptr<Buffer> srcBuffer);
     virtual ~PassCopyBuffer();
 
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 }    // namespace ade

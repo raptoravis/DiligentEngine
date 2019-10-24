@@ -12,15 +12,15 @@
 namespace ade
 {
 
-TechniqueForward::TechniqueForward(std::shared_ptr<pgRenderTarget> rt,
-                                   std::shared_ptr<pgTexture> backBuffer)
+TechniqueForward::TechniqueForward(std::shared_ptr<RenderTarget> rt,
+                                   std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
 {
 }
 
 TechniqueForward::~TechniqueForward() {}
 
-void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights)
+void TechniqueForward::init(std::shared_ptr<Scene> scene, std::vector<Light>* lights)
 {
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
     AddPass(pSetRTPass);
@@ -87,7 +87,7 @@ void TechniqueForward::init(std::shared_ptr<pgScene> scene, std::vector<pgLight>
 
     //////////////////////////////////////////////////////////////////////////
     {
-        auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+        auto srcTexture = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
 
         std::shared_ptr<PassCopyTexture> pCopyTexPass =

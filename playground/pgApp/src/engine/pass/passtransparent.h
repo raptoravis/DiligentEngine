@@ -11,17 +11,17 @@ using namespace Diligent;
 namespace ade
 {
 
-class PassTransparent : public pgPassRender
+class PassTransparent : public PassRender
 {
-    typedef pgPassRender base;
+    typedef PassRender base;
 
   public:
-    PassTransparent(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-                    std::shared_ptr<pgPipeline> pipeline, std::vector<pgLight>* lights);
+    PassTransparent(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+                    std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights);
 
     virtual ~PassTransparent();
 
-    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
+    virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 };
 
 }    // namespace ade

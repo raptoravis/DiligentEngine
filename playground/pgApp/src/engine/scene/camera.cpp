@@ -9,7 +9,7 @@
 namespace ade
 {
 
-pgCamera::pgCamera(const Diligent::float3 pos, const Diligent::float3 dir) : _pos(pos), _look(dir)
+Camera::Camera(const Diligent::float3 pos, const Diligent::float3 dir) : _pos(pos), _look(dir)
 {
     reset(_pos, _look);
 
@@ -21,18 +21,18 @@ pgCamera::pgCamera(const Diligent::float3 pos, const Diligent::float3 dir) : _po
     setProjectionMatrix(0.1f, 1000.f, bIsGL);
 }
 
-pgCamera::~pgCamera()
+Camera::~Camera()
 {
     //
 }
 
 
-void pgCamera::reset()
+void Camera::reset()
 {
     reset(_pos, _look);
 }
 
-void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
+void Camera::reset(const Diligent::float3& p, const Diligent::float3& dir)
 {
     // pos = { 0.0f, 0.0f, 0.0f };
     setPos(p);
@@ -46,17 +46,17 @@ void pgCamera::reset(const Diligent::float3& p, const Diligent::float3& dir)
     m_viewMatrix = Diligent::float4x4::Identity();
 }
 
-void pgCamera::setLook(const Diligent::float3& dir)
+void Camera::setLook(const Diligent::float3& dir)
 {
     look = dir;
 }
 
-Diligent::float3 pgCamera::getLook() const
+Diligent::float3 Camera::getLook() const
 {
     return Diligent::float3(m_viewMatrix._31, m_viewMatrix._32, m_viewMatrix._33);
 }
 
-void pgCamera::setPos(const Diligent::float3& p)
+void Camera::setPos(const Diligent::float3& p)
 {
     pos = p;
 }
@@ -99,10 +99,10 @@ static Diligent::float4x4 _setProjectionMatrix(float fov, float aspectRatio, flo
     return mOut;
 }
 
-void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL)
+void Camera::setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL)
 {
     float aspectRatio =
-        static_cast<float>(pgApp::s_desc.Width) / static_cast<float>(pgApp::s_desc.Height);
+        static_cast<float>(App::s_desc.Width) / static_cast<float>(App::s_desc.Height);
 
     if (bIsGL) {
         m_projectionMatrix =
@@ -114,7 +114,7 @@ void pgCamera::setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL)
     }
 }
 
-void pgCamera::update(Diligent::InputController* pInputController, float ElapsedTime)
+void Camera::update(Diligent::InputController* pInputController, float ElapsedTime)
 {
     const auto& mouseState = pInputController->GetMouseState();
     float MouseDeltaX = 0;

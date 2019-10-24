@@ -3,10 +3,10 @@
 #include "engine/engine.h"
 #include "engine/scene/sceneass.h"
 
-class SceneTest : public ade::pgSceneAss
+class SceneTest : public ade::SceneAss
 {
   public:
-    SceneTest() : ade::pgSceneAss() {}
+    SceneTest() : ade::SceneAss() {}
 
     void customMesh();
 };

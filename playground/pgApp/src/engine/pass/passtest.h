@@ -5,30 +5,30 @@
 namespace ade
 {
 
-class TestPass : public pgPass
+class TestPass : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
   protected:
-    std::shared_ptr<pgScene> m_pScene;
-    std::shared_ptr<pgPipeline> m_pPipeline;
+    std::shared_ptr<Scene> m_pScene;
+    std::shared_ptr<Pipeline> m_pPipeline;
 
   public:
     const char* kPerObjectName = "Constants";
 
-    TestPass(pgTechnique* parentTechnique, std::shared_ptr<pgScene> scene,
-             std::shared_ptr<pgPipeline> pipeline);
+    TestPass(Technique* parentTechnique, std::shared_ptr<Scene> scene,
+             std::shared_ptr<Pipeline> pipeline);
     virtual ~TestPass();
 
     // Render the pass. This should only be called by the RenderTechnique.
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
     virtual void PostRender();
 
     // Inherited from Visitor
-    virtual void Visit(pgScene& scene, pgPipeline* pipeline);
-    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
-    virtual void Visit(pgMesh& mesh, pgPipeline* pipeline);
+    virtual void Visit(Scene& scene, Pipeline* pipeline);
+    virtual void Visit(SceneNode& node, Pipeline* pipeline);
+    virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 
   protected:
     // PerObject constant buffer data.

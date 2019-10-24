@@ -11,17 +11,17 @@ using namespace Diligent;
 namespace ade
 {
 
-class PassInvokeFunction : public pgPass
+class PassInvokeFunction : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
     std::function<void(void)> m_Func;
 
   public:
-    PassInvokeFunction(pgTechnique* parentTechnique, std::function<void(void)> func);
+    PassInvokeFunction(Technique* parentTechnique, std::function<void(void)> func);
 
     virtual ~PassInvokeFunction();
 
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 }    // namespace ade

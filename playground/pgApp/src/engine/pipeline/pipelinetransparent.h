@@ -13,7 +13,7 @@ class PipelineTransparent : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineTransparent(std::shared_ptr<pgRenderTarget> rt);
+    PipelineTransparent(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineTransparent();
 };
 

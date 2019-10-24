@@ -7,18 +7,18 @@
 namespace ade
 {
 
-class PassSetRT : public pgPass
+class PassSetRT : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
-    std::shared_ptr<pgRenderTarget> m_pRenderTarget;
+    std::shared_ptr<RenderTarget> m_pRenderTarget;
 
   public:
-    PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt);
+    PassSetRT(Technique* parentTechnique, std::shared_ptr<RenderTarget> rt);
     virtual ~PassSetRT();
 
 
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 };
 
 }    // namespace ade

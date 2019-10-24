@@ -15,8 +15,8 @@
 namespace ade
 {
 
-TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
-                             std::shared_ptr<pgTexture> backBuffer)
+TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt,
+                             std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
 {
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
@@ -42,9 +42,9 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
         float z = 8.0f;
 #endif
         float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
-        std::shared_ptr<pgSceneNode> root1 = std::make_shared<pgSceneNode>(trans1);
+        std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
         root1->addMesh(meshCube);
-        m_pSceneCube = std::make_shared<pgScene>();
+        m_pSceneCube = std::make_shared<Scene>();
         m_pSceneCube->setRootNode(root1);
 
 #if RIGHT_HANDED
@@ -55,9 +55,9 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
 
         float4x4 trans2 = float4x4::Scale(0.6f) * float4x4::RotationX(-PI_F * 0.1f) *
                           float4x4::Translation(0.f, 0.0f, z);
-        std::shared_ptr<pgSceneNode> root2 = std::make_shared<pgSceneNode>(trans2);
+        std::shared_ptr<SceneNode> root2 = std::make_shared<SceneNode>(trans2);
         root2->addMesh(meshCubeTex);
-        m_pSceneCubeTex = std::make_shared<pgScene>();
+        m_pSceneCubeTex = std::make_shared<Scene>();
         m_pSceneCubeTex->setRootNode(root2);
 
         //
@@ -79,7 +79,7 @@ TechniqueTest::TechniqueTest(std::shared_ptr<pgRenderTarget> rt,
 
         //
         {
-            auto srcTexture = m_pRenderTarget->GetTexture(pgRenderTarget::AttachmentPoint::Color0);
+            auto srcTexture = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
             auto dstTexture = m_pBackBuffer;
 
             std::shared_ptr<PassCopyTexture> pCopyTexPass =
@@ -102,14 +102,14 @@ void TechniqueTest::Render()
         auto rootCube = m_pSceneCube->getRootNode();
         auto local = rootCube->getLocalTransform();
         auto localNew =
-            Diligent::float4x4::RotationY(rotSpeed * pgApp::s_eventArgs.ElapsedTime) * local;
+            Diligent::float4x4::RotationY(rotSpeed * App::s_eventArgs.ElapsedTime) * local;
         rootCube->setLocalTransform(localNew);
     }
     {
         auto rootCube = m_pSceneCubeTex->getRootNode();
         auto local = rootCube->getLocalTransform();
         auto localNew =
-            Diligent::float4x4::RotationY(-rotSpeed * pgApp::s_eventArgs.ElapsedTime) * local;
+            Diligent::float4x4::RotationY(-rotSpeed * App::s_eventArgs.ElapsedTime) * local;
         rootCube->setLocalTransform(localNew);
     }
 

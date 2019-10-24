@@ -26,53 +26,53 @@ __declspec(align(16)) struct LightParams {
     uint32_t padding[3];
 };
 
-class PassLight : public pgPass
+class PassLight : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
   public:
     static const char* kLightIndexBuffer;
 
   protected:
-    std::shared_ptr<pgRenderTarget> m_pGBufferRT;
-    std::vector<pgLight>* m_pLights;
+    std::shared_ptr<RenderTarget> m_pGBufferRT;
+    std::vector<Light>* m_pLights;
 
     std::shared_ptr<PipelineLightFront> m_LightPipeline0;
     std::shared_ptr<PipelineLightBack> m_LightPipeline1;
     std::shared_ptr<PipelineLightDir> m_DirectionalLightPipeline;
 
-    std::shared_ptr<pgScene> m_pPointLightScene;
-    std::shared_ptr<pgScene> m_pSpotLightScene;
-    std::shared_ptr<pgScene> m_pDirectionalLightScene;
+    std::shared_ptr<Scene> m_pPointLightScene;
+    std::shared_ptr<Scene> m_pSpotLightScene;
+    std::shared_ptr<Scene> m_pDirectionalLightScene;
 
-    std::shared_ptr<pgPassPilpeline> m_pSubPassSphere0;
-    std::shared_ptr<pgPassPilpeline> m_pSubPassSphere1;
-    std::shared_ptr<pgPassPilpeline> m_pSubPassSpot0;
-    std::shared_ptr<pgPassPilpeline> m_pSubPassSpot1;
-    std::shared_ptr<pgPassPilpeline> m_pSubPassDir;
+    std::shared_ptr<PassPilpeline> m_pSubPassSphere0;
+    std::shared_ptr<PassPilpeline> m_pSubPassSphere1;
+    std::shared_ptr<PassPilpeline> m_pSubPassSpot0;
+    std::shared_ptr<PassPilpeline> m_pSubPassSpot1;
+    std::shared_ptr<PassPilpeline> m_pSubPassDir;
 
-    std::shared_ptr<pgTechnique> m_pTechniqueSphere;
-    std::shared_ptr<pgTechnique> m_pTechniqueSpot;
-    std::shared_ptr<pgTechnique> m_pTechniqueDir;
+    std::shared_ptr<Technique> m_pTechniqueSphere;
+    std::shared_ptr<Technique> m_pTechniqueSpot;
+    std::shared_ptr<Technique> m_pTechniqueDir;
 
     void createBuffers();
 
-    void updateLightParams(const LightParams& lightParam, const pgLight& light);
+    void updateLightParams(const LightParams& lightParam, const Light& light);
     void updateScreenToViewParams();
 
   public:
-    PassLight(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> pGBufferRT,
+    PassLight(Technique* parentTechnique, std::shared_ptr<RenderTarget> pGBufferRT,
               std::shared_ptr<PipelineLightFront> front, std::shared_ptr<PipelineLightBack> back,
-              std::shared_ptr<PipelineLightDir> dir, std::vector<pgLight>* Lights);
+              std::shared_ptr<PipelineLightDir> dir, std::vector<Light>* Lights);
 
     virtual ~PassLight();
 
     virtual void PreRender();
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
     virtual void PostRender();
 
     // Inherited from Visitor
-    virtual void Visit(pgScene& scene, pgPipeline* pipeline);
-    virtual void Visit(pgSceneNode& node, pgPipeline* pipeline);
+    virtual void Visit(Scene& scene, Pipeline* pipeline);
+    virtual void Visit(SceneNode& node, Pipeline* pipeline);
 };
 }    // namespace ade

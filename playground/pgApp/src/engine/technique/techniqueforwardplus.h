@@ -32,9 +32,9 @@ __declspec(align(16)) struct Frustum {
 };
 
 
-class TechniqueForwardPlus : public pgTechnique
+class TechniqueForwardPlus : public Technique
 {
-    typedef pgTechnique base;
+    typedef Technique base;
 
     std::shared_ptr<Shader> m_pVertexShader;
     // For light culling in compute shader
@@ -43,12 +43,12 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<Shader> m_pComputeFrustumsComputeShader;
     std::shared_ptr<Shader> m_pForwardPlusPixelShader;
 
-    std::shared_ptr<pgRenderTarget> m_pDepthOnlyRenderTarget;
-    std::shared_ptr<pgRenderTarget> m_pColorOnlyRenderTarget;
+    std::shared_ptr<RenderTarget> m_pDepthOnlyRenderTarget;
+    std::shared_ptr<RenderTarget> m_pColorOnlyRenderTarget;
 
-    std::shared_ptr<pgPipeline> m_pDepthPrepassPipeline;
-    std::shared_ptr<pgPipeline> m_pForwardPlusOpaquePipeline;
-    std::shared_ptr<pgPipeline> m_pForwardPlusTransparentPipeline;
+    std::shared_ptr<Pipeline> m_pDepthPrepassPipeline;
+    std::shared_ptr<Pipeline> m_pForwardPlusOpaquePipeline;
+    std::shared_ptr<Pipeline> m_pForwardPlusTransparentPipeline;
 
     std::shared_ptr<ConstantBuffer> m_pDispatchParamsConstantBuffer;
     std::shared_ptr<ConstantBuffer> m_pScreenToViewParamsConstantBuffer;
@@ -65,27 +65,27 @@ class TechniqueForwardPlus : public pgTechnique
     std::shared_ptr<StructuredBuffer> m_pLightListIndexCounterOpaque;
     std::shared_ptr<StructuredBuffer> m_pLightListIndexCounterTransparent;
 
-    std::shared_ptr<pgTexture> m_pLightGridOpaque;
-    std::shared_ptr<pgTexture> m_pLightGridTransparent;
+    std::shared_ptr<Texture> m_pLightGridOpaque;
+    std::shared_ptr<Texture> m_pLightGridTransparent;
 
     // For debugging of the light culling shader.
-    std::shared_ptr<pgTexture> m_pLightCullingDebugTexture;
+    std::shared_ptr<Texture> m_pLightCullingDebugTexture;
     // Heatmap texture for light culling debug.
-    std::shared_ptr<pgTexture> m_pLightCullingHeatMap;
+    std::shared_ptr<Texture> m_pLightCullingHeatMap;
 
     std::shared_ptr<SamplerState> m_LinearRepeatSampler;
     std::shared_ptr<SamplerState> m_LinearClampSampler;
 
 
-    void UpdateGridFrustums(std::shared_ptr<pgCamera> pCamera);
-    std::shared_ptr<pgTexture> LoadTexture(const std::string& path);
+    void UpdateGridFrustums(std::shared_ptr<Camera> pCamera);
+    std::shared_ptr<Texture> LoadTexture(const std::string& path);
 
   public:
-    TechniqueForwardPlus(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    TechniqueForwardPlus(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueForwardPlus();
 
-    void init(const std::shared_ptr<pgScene> scene, std::vector<pgLight>* lights,
-              std::shared_ptr<pgCamera> pCamera);
+    void init(const std::shared_ptr<Scene> scene, std::vector<Light>* lights,
+              std::shared_ptr<Camera> pCamera);
 };
 
 }    // namespace ade

@@ -11,9 +11,9 @@ using namespace Diligent;
 namespace ade
 {
 
-class PassGltf : public pgPass
+class PassGltf : public Pass
 {
-    typedef pgPass base;
+    typedef Pass base;
 
     Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_EnvMapPSO;
     Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_EnvMapSRB;
@@ -61,7 +61,7 @@ class PassGltf : public pgPass
 
     virtual void PreRender();
 
-    virtual void Render(pgPipeline* pipeline);
+    virtual void Render(Pipeline* pipeline);
 
     void UpdateUI();
 };

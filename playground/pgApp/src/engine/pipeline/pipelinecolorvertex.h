@@ -5,16 +5,16 @@
 namespace ade
 {
 
-class PipelineColorVertex : public pgPipeline
+class PipelineColorVertex : public Pipeline
 {
-    typedef pgPipeline base;
+    typedef Pipeline base;
 
   private:
     std::shared_ptr<Shader> m_pVS;
     std::shared_ptr<Shader> m_pPS;
 
   public:
-    PipelineColorVertex(std::shared_ptr<pgRenderTarget> rt);
+    PipelineColorVertex(std::shared_ptr<RenderTarget> rt);
     virtual ~PipelineColorVertex();
 };
 

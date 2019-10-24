@@ -42,7 +42,7 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
 
     // Create a shader source stream factory to load shaders from files.
     Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> pShaderSourceFactory;
-    pgApp::s_engineFactory->CreateDefaultShaderSourceStreamFactory(searchPaths.c_str(),
+    App::s_engineFactory->CreateDefaultShaderSourceStreamFactory(searchPaths.c_str(),
                                                                    &pShaderSourceFactory);
     ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
 
@@ -59,21 +59,21 @@ bool Shader::LoadShaderFromFile(ShaderType shaderType, const std::string& fileNa
         ShaderCI.EntryPoint = entryPoint.c_str();
         ShaderCI.Desc.Name = entryPoint.c_str();
         ShaderCI.FilePath = fileName.c_str();
-        pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+        App::s_device->CreateShader(ShaderCI, &m_pShader);
         shaderTypeStr = "vs";
     } else if (shaderType == ShaderType::PixelShader) {
         ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
         ShaderCI.EntryPoint = entryPoint.c_str();
         ShaderCI.Desc.Name = entryPoint.c_str();
         ShaderCI.FilePath = fileName.c_str();
-        pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+        App::s_device->CreateShader(ShaderCI, &m_pShader);
         shaderTypeStr = "ps";
     } else if (shaderType == ShaderType::ComputeShader) {
         ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_COMPUTE;
         ShaderCI.EntryPoint = entryPoint.c_str();
         ShaderCI.Desc.Name = entryPoint.c_str();
         ShaderCI.FilePath = fileName.c_str();
-        pgApp::s_device->CreateShader(ShaderCI, &m_pShader);
+        App::s_device->CreateShader(ShaderCI, &m_pShader);
         shaderTypeStr = "cs";
     } else {
         assert(0);
@@ -177,13 +177,13 @@ ShaderParameter& Shader::GetShaderParameterByName(const std::string& name) const
 }
 
 
-bool Shader::HasSemantic(const pgBufferBinding& binding) const
+bool Shader::HasSemantic(const BufferBinding& binding) const
 {
     SemanticMap::const_iterator iter = m_InputSemantics.find(binding);
     return iter != m_InputSemantics.end();
 }
 
-uint32_t Shader::GetSlotIDBySemantic(const pgBufferBinding& binding) const
+uint32_t Shader::GetSlotIDBySemantic(const BufferBinding& binding) const
 {
     SemanticMap::const_iterator iter = m_InputSemantics.find(binding);
     if (iter != m_InputSemantics.end()) {

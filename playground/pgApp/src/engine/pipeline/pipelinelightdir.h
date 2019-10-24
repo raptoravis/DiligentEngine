@@ -13,7 +13,7 @@ class PipelineLightDir : public PipelineBase
     virtual void InitPSODesc();
 
   public:
-    PipelineLightDir(std::shared_ptr<pgRenderTarget> rt);
+    PipelineLightDir(std::shared_ptr<RenderTarget> rt);
 
     virtual ~PipelineLightDir();
 };

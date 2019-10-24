@@ -6,7 +6,7 @@ namespace ade
 {
 
 
-PipelineTransparent::PipelineTransparent(std::shared_ptr<pgRenderTarget> rt) : base(rt) {}
+PipelineTransparent::PipelineTransparent(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
 PipelineTransparent::~PipelineTransparent() {}
 

@@ -35,7 +35,7 @@ StructuredBuffer::StructuredBuffer(const void* data, uint32_t count, uint32_t st
     VBData.pData = data;
     VBData.DataSize = stride * count;
 
-    pgApp::s_device->CreateBuffer(BuffDesc, &VBData, &m_pBuffer);
+    App::s_device->CreateBuffer(BuffDesc, &VBData, &m_pBuffer);
 }
 
 StructuredBuffer::~StructuredBuffer()
@@ -62,7 +62,7 @@ void StructuredBuffer::SetData(void* data, size_t elementSize, size_t offset, si
 
     size_t size = elementSize * numElements;
 
-    Diligent::MapHelper<dummy_t> buffer(pgApp::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
+    Diligent::MapHelper<dummy_t> buffer(App::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
                                         Diligent::MAP_FLAG_DISCARD);
     auto p = (&buffer->m + offset);
     memcpy((char*)p, data, size);
@@ -72,9 +72,9 @@ void StructuredBuffer::Copy(std::shared_ptr<StructuredBuffer> other) {}
 
 void StructuredBuffer::Clear() {}
 
-pgBuffer::BufferType StructuredBuffer::GetType() const
+Buffer::BufferType StructuredBuffer::GetType() const
 {
-    return pgBuffer::StructuredBuffer;
+    return Buffer::StructuredBuffer;
 }
 
 unsigned int StructuredBuffer::GetElementCount() const

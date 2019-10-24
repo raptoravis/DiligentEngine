@@ -3,14 +3,14 @@
 namespace ade
 {
 
-PassSetRT::PassSetRT(pgTechnique* parentTechnique, std::shared_ptr<pgRenderTarget> rt)
+PassSetRT::PassSetRT(Technique* parentTechnique, std::shared_ptr<RenderTarget> rt)
     : base(parentTechnique), m_pRenderTarget(rt)
 {
 }
 
 PassSetRT::~PassSetRT() {}
 
-void PassSetRT::Render(pgPipeline* pipeline)
+void PassSetRT::Render(Pipeline* pipeline)
 {
     if (m_pRenderTarget) {
         m_pRenderTarget->Bind();

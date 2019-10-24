@@ -9,17 +9,17 @@ using namespace Diligent;
 namespace ade
 {
 
-class TechniqueTest : public pgTechnique
+class TechniqueTest : public Technique
 {
-    typedef pgTechnique base;
+    typedef Technique base;
 
     std::shared_ptr<ConstantBuffer> m_VSConstants;
 
-    std::shared_ptr<pgScene> m_pSceneCube;
-    std::shared_ptr<pgScene> m_pSceneCubeTex;
+    std::shared_ptr<Scene> m_pSceneCube;
+    std::shared_ptr<Scene> m_pSceneCubeTex;
 
   public:
-    TechniqueTest(std::shared_ptr<pgRenderTarget> rt, std::shared_ptr<pgTexture> backBuffer);
+    TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueTest();
 
     virtual void Render();

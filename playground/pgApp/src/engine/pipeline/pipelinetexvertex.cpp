@@ -5,7 +5,7 @@ using namespace Diligent;
 namespace ade
 {
 
-PipelineTexVertex::PipelineTexVertex(std::shared_ptr<pgRenderTarget> rt) : base(rt)
+PipelineTexVertex::PipelineTexVertex(std::shared_ptr<RenderTarget> rt) : base(rt)
 {
     LoadTexture();
 
@@ -42,7 +42,7 @@ void PipelineTexVertex::InitPSODesc()
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
 
-    // Variables will be assigned automatically by pgPipeline::Bind
+    // Variables will be assigned automatically by Pipeline::Bind
     //// Shader variables should typically be mutable, which means they are expected
     //// to change on a per-instance basis
     // static ShaderResourceVariableDesc Vars[] =
@@ -80,10 +80,10 @@ void PipelineTexVertex::LoadTexture()
     TextureLoadInfo loadInfo;
     loadInfo.IsSRGB = false;
     RefCntAutoPtr<ITexture> Tex;
-    // CreateTextureFromFile("DGLogo.png", loadInfo, pgApp::s_device, &Tex);
-    CreateTextureFromFile("apple-logo.png", loadInfo, pgApp::s_device, &Tex);
+    // CreateTextureFromFile("DGLogo.png", loadInfo, App::s_device, &Tex);
+    CreateTextureFromFile("apple-logo.png", loadInfo, App::s_device, &Tex);
 
-    m_Texture = std::make_shared<pgTexture>(Tex);
+    m_Texture = std::make_shared<Texture>(Tex);
 }
 
 }    // namespace ade

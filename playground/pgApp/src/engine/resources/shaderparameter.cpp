@@ -12,12 +12,12 @@ ShaderParameter::ShaderParameter(const std::string& name, const std::string& sha
 {
 }
 
-std::weak_ptr<pgObject> ShaderParameter::Get()
+std::weak_ptr<Object> ShaderParameter::Get()
 {
     return m_pResource;
 }
 
-void ShaderParameter::Set(std::shared_ptr<pgObject> resource)
+void ShaderParameter::Set(std::shared_ptr<Object> resource)
 {
     m_pResource = resource;
 }
@@ -57,14 +57,14 @@ void ShaderParameter::Bind()
 {
     Shader::ShaderType shaderType = getShaderType(m_ShaderType);
 
-    if (std::shared_ptr<pgObject> pResource = m_pResource.lock()) {
+    if (std::shared_ptr<Object> pResource = m_pResource.lock()) {
 
         if (m_ParameterType == Type::CBuffer) {
             std::shared_ptr<ConstantBuffer> constantBuffer =
                 std::dynamic_pointer_cast<ConstantBuffer>(pResource);
             constantBuffer->Bind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Texture || m_ParameterType == Type::RWTexture) {
-            std::shared_ptr<pgTexture> texture = std::dynamic_pointer_cast<pgTexture>(pResource);
+            std::shared_ptr<Texture> texture = std::dynamic_pointer_cast<Texture>(pResource);
 
             texture->Bind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Sampler) {
@@ -73,7 +73,7 @@ void ShaderParameter::Bind()
 
             samplerState->Bind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Buffer || m_ParameterType == Type::RWBuffer) {
-            std::shared_ptr<pgBuffer> buffer = std::dynamic_pointer_cast<pgBuffer>(pResource);
+            std::shared_ptr<Buffer> buffer = std::dynamic_pointer_cast<Buffer>(pResource);
 
             buffer->Bind(m_uiSlotID, shaderType, m_ParameterType);
         } else {
@@ -86,14 +86,14 @@ void ShaderParameter::UnBind()
 {
     Shader::ShaderType shaderType = getShaderType(m_ShaderType);
 
-    if (std::shared_ptr<pgObject> pResource = m_pResource.lock()) {
+    if (std::shared_ptr<Object> pResource = m_pResource.lock()) {
 
         if (m_ParameterType == Type::CBuffer) {
             std::shared_ptr<ConstantBuffer> constantBuffer =
                 std::dynamic_pointer_cast<ConstantBuffer>(pResource);
             constantBuffer->UnBind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Texture || m_ParameterType == Type::RWTexture) {
-            std::shared_ptr<pgTexture> texture = std::dynamic_pointer_cast<pgTexture>(pResource);
+            std::shared_ptr<Texture> texture = std::dynamic_pointer_cast<Texture>(pResource);
 
             texture->UnBind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Sampler) {
@@ -102,7 +102,7 @@ void ShaderParameter::UnBind()
 
             samplerState->UnBind(m_uiSlotID, shaderType, m_ParameterType);
         } else if (m_ParameterType == Type::Buffer || m_ParameterType == Type::RWBuffer) {
-            std::shared_ptr<pgBuffer> buffer = std::dynamic_pointer_cast<pgBuffer>(pResource);
+            std::shared_ptr<Buffer> buffer = std::dynamic_pointer_cast<Buffer>(pResource);
 
             buffer->UnBind(m_uiSlotID, shaderType, m_ParameterType);
         } else {
