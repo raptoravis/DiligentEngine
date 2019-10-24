@@ -337,7 +337,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 
-		    if (m_renderingTechnique == RenderingTechnique::Test) {
+        if (m_renderingTechnique == RenderingTechnique::Test) {
             m_pTechnique->Update();
         }
 

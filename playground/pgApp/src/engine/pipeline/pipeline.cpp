@@ -349,7 +349,7 @@ std::vector<Diligent::StaticSamplerDesc> pgPipeline::GetStaticSamplers() const
                             std::shared_ptr<SamplerState> s =
                                 std::dynamic_pointer_cast<SamplerState>(pResource);
 
-							auto desc = s->Get();
+                            auto desc = s->Get();
 
                             samplers.push_back(desc);
                         }
@@ -385,7 +385,13 @@ void pgPipeline::SetDynamicVariables()
             if (ncbs.size() > 0) {
                 for (auto p : ncbs) {
                     if (std::shared_ptr<pgObject> pResource = p->Get().lock()) {
-                        if (p->GetType() == ShaderParameter::Type::RWTexture) {
+                        if (p->GetType() == ShaderParameter::Type::Texture) {
+                            std::shared_ptr<pgTexture> tex =
+                                std::dynamic_pointer_cast<pgTexture>(pResource);
+
+                            m_pSRB->GetVariableByName(st, p->GetName().c_str())
+                                ->Set(tex->GetShaderResourceView());
+                        } else if (p->GetType() == ShaderParameter::Type::RWTexture) {
                             std::shared_ptr<pgTexture> tex =
                                 std::dynamic_pointer_cast<pgTexture>(pResource);
 

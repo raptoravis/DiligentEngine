@@ -259,6 +259,8 @@ void TechniqueDeferred::initDebug()
     g_pDebugDepthTexturePixelShader->LoadShaderFromFile(
         Shader::PixelShader, "DeferredRendering.hlsl", "PS_DebugDepthTexture",
         "./resources/shaders", false, shaderMacros);
+    g_pDebugDepthTexturePixelShader->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(g_LinearRepeatSampler);
     g_pDebugDepthTexturePipeline = std::make_shared<PipelineDebug>(g_pColorOnlyRenderTarget);
     g_pDebugDepthTexturePipeline->SetShader(Shader::VertexShader, g_pVertexShader);
     g_pDebugDepthTexturePipeline->SetShader(Shader::PixelShader, g_pDebugDepthTexturePixelShader);
@@ -283,31 +285,35 @@ void TechniqueDeferred::initDebug()
     auto depthStencilTexture =
         m_pGBufferRT->GetTexture(pgRenderTarget::AttachmentPoint::DepthStencil);
 
-#define TRANS_SSX(x) (2 * (x) - 1.0f)
+#define TRANS_SSX(x) (2 * (x)-1.0f)
 #define TRANS_SSY(x) (1.0f - (2 * (x)))
 
-    std::shared_ptr<pgScene> debugTextureScene = pgSceneAss::CreateScreenQuad(TRANS_SSX(20 / 1920.f), TRANS_SSX(475 / 1920.f),
+    std::shared_ptr<pgScene> debugTextureScene =
+        pgSceneAss::CreateScreenQuad(TRANS_SSX(20 / 1920.f), TRANS_SSX(475 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     g_DebugTexture0Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, g_pDebugTexturePipeline, orthographicProjection, diffuseTexture);
     g_DebugTexture0Pass->SetEnabled(false);    // Initially disabled. Enabled with the F1 key.
     AddPass(g_DebugTexture0Pass);
 
-    debugTextureScene = pgSceneAss::CreateScreenQuad(TRANS_SSX(495 / 1920.f), TRANS_SSX(950 / 1920.f),
+    debugTextureScene =
+        pgSceneAss::CreateScreenQuad(TRANS_SSX(495 / 1920.f), TRANS_SSX(950 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     g_DebugTexture1Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, g_pDebugTexturePipeline, orthographicProjection, specularTexture);
     g_DebugTexture1Pass->SetEnabled(false);    // Initial disabled. Enabled with the F2 key.
     AddPass(g_DebugTexture1Pass);
 
-    debugTextureScene = pgSceneAss::CreateScreenQuad(TRANS_SSX(970 / 1920.f), TRANS_SSX(1425 / 1920.f),
+    debugTextureScene =
+        pgSceneAss::CreateScreenQuad(TRANS_SSX(970 / 1920.f), TRANS_SSX(1425 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     g_DebugTexture2Pass = std::make_shared<PassPostprocess>(
         this, debugTextureScene, g_pDebugTexturePipeline, orthographicProjection, normalTexture);
     g_DebugTexture2Pass->SetEnabled(false);    // Initially disabled. Enabled with the F3 key.
     AddPass(g_DebugTexture2Pass);
 
-    debugTextureScene = pgSceneAss::CreateScreenQuad(TRANS_SSX(1445 / 1920.f), TRANS_SSX(1900 / 1920.f),
+    debugTextureScene =
+        pgSceneAss::CreateScreenQuad(TRANS_SSX(1445 / 1920.f), TRANS_SSX(1900 / 1920.f),
                                      TRANS_SSY(1060 / 1280.f), TRANS_SSY(815 / 1280.f), 1);
     g_DebugTexture3Pass =
         std::make_shared<PassPostprocess>(this, debugTextureScene, g_pDebugDepthTexturePipeline,

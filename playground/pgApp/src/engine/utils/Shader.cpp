@@ -195,9 +195,7 @@ static bool isStaticType(ShaderParameter* p)
 {
     ShaderParameter::Type type = p->GetType();
 
-    return (type == ShaderParameter::Type::CBuffer || type == ShaderParameter::Type::Buffer ||
-            type == ShaderParameter::Type::RWBuffer || type == ShaderParameter::Type::Texture ||
-            type == ShaderParameter::Type::RWTexture);
+    return (type == ShaderParameter::Type::CBuffer);
 }
 
 
