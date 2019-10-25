@@ -1,9 +1,7 @@
 #include "pipelinelightback.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 PipelineLightBack::PipelineLightBack(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
@@ -44,4 +42,3 @@ void PipelineLightBack::InitPSODesc()
     SetStencilRef(1);
 }
 
-}    // namespace ade

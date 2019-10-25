@@ -2,19 +2,16 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
-namespace ade
-{
 
-class PipelineLightFront : public PipelineBase
+class PipelineLightFront : public ade::PipelineBase
 {
-    typedef PipelineBase base;
+    typedef ade::PipelineBase base;
 
   private:
     virtual void InitPSODesc();
 
   public:
-    PipelineLightFront(std::shared_ptr<RenderTarget> rt);
+    PipelineLightFront(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineLightFront();
 };
 
-}    // namespace ade

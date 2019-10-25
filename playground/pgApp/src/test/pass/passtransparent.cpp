@@ -1,7 +1,5 @@
 #include "passtransparent.h"
 
-namespace ade
-{
 
 PassTransparent::PassTransparent(Technique* parentTechnique, std::shared_ptr<Scene> scene,
                                  std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights)
@@ -21,4 +19,3 @@ void PassTransparent::Visit(Mesh& mesh, Pipeline* pipeline)
     }
 }
 
-}    // namespace ade

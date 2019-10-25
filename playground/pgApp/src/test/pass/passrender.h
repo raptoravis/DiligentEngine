@@ -5,9 +5,7 @@
 #include "engine/engine.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class PassRender : public PassPilpeline
 {
@@ -57,4 +55,3 @@ class PassRender : public PassPilpeline
     virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 };
 
-}    // namespace ade

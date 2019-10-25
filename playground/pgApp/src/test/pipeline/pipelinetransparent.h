@@ -2,19 +2,15 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
-namespace ade
+class PipelineTransparent : public ade::PipelineBase
 {
-
-class PipelineTransparent : public PipelineBase
-{
-    typedef PipelineBase base;
+    typedef ade::PipelineBase base;
 
   protected:
     virtual void InitPSODesc();
 
   public:
-    PipelineTransparent(std::shared_ptr<RenderTarget> rt);
+    PipelineTransparent(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineTransparent();
 };
 
-}    // namespace ade

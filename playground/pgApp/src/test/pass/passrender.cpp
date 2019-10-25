@@ -1,8 +1,5 @@
 #include "passrender.h"
 
-namespace ade
-{
-
 const char* PassRender::kPerObjectName = "PerObject";
 const char* PassRender::kMaterialName = "Material";
 const char* PassRender::kLightsName = "Lights";
@@ -154,4 +151,3 @@ void PassRender::Visit(Mesh& mesh, Pipeline* pipeline)
     mesh.Render(m_pPipeline.get());
 }
 
-}    // namespace ade

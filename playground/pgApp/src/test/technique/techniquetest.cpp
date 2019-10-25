@@ -13,8 +13,6 @@
 
 #include "../pass/passtest.h"
 
-namespace ade
-{
 
 TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer), m_bGltfEnabled(false)
@@ -134,4 +132,3 @@ void TechniqueTest::Update()
     m_pGLTFPass->UpdateUI();
 }
 
-}    // namespace ade

@@ -1,9 +1,8 @@
 #include "pipelinedeferredgeometry.h"
 
 using namespace Diligent;
+using namespace ade;
 
-namespace ade
-{
 
 PipelineDeferredGeometry::PipelineDeferredGeometry(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
@@ -33,4 +32,3 @@ void PipelineDeferredGeometry::InitPSODesc()
     m_PSODesc.GraphicsPipeline.RTVFormats[3] = TEX_FORMAT_RGBA32_FLOAT;
 }
 
-}    // namespace ade

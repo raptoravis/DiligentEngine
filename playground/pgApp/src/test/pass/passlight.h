@@ -11,9 +11,8 @@
 #include "../pipeline/pipelinelightfront.h"
 
 using namespace Diligent;
+using namespace ade;
 
-namespace ade
-{
 
 __declspec(align(16)) struct ScreenToViewParams {
     float4x4 m_InverseProjectionMatrix;
@@ -75,4 +74,3 @@ class PassLight : public Pass
     virtual void Visit(Scene& scene, Pipeline* pipeline);
     virtual void Visit(SceneNode& node, Pipeline* pipeline);
 };
-}    // namespace ade

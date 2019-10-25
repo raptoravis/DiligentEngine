@@ -7,9 +7,7 @@
 #include "test/pass/passrender.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class PassTransparent : public PassRender
 {
@@ -24,4 +22,3 @@ class PassTransparent : public PassRender
     virtual void Visit(Mesh& mesh, Pipeline* pipeline);
 };
 
-}    // namespace ade

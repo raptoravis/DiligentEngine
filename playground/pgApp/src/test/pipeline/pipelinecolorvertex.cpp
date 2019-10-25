@@ -1,21 +1,19 @@
 #include "pipelinecolorvertex.h"
 
 using namespace Diligent;
+using namespace ade;
 
-namespace ade
-{
-
-PipelineColorVertex::PipelineColorVertex(std::shared_ptr<RenderTarget> rt) : base(rt)
+PipelineColorVertex::PipelineColorVertex(std::shared_ptr<ade::RenderTarget> rt) : base(rt)
 {
     // CreatePipelineState();
-    m_pVS = std::make_shared<Shader>();
-    m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cube.vsh", "main", "", true);
+    m_pVS = std::make_shared<ade::Shader>();
+    m_pVS->LoadShaderFromFile(ade::Shader::Shader::VertexShader, "cube.vsh", "main", "", true);
 
-    m_pPS = std::make_shared<Shader>();
-    m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cube.psh", "main", "", true);
+    m_pPS = std::make_shared<ade::Shader>();
+    m_pPS->LoadShaderFromFile(ade::Shader::Shader::PixelShader, "cube.psh", "main", "", true);
 
-    SetShader(Shader::Shader::VertexShader, m_pVS);
-    SetShader(Shader::Shader::PixelShader, m_pPS);
+    SetShader(ade::Shader::Shader::VertexShader, m_pVS);
+    SetShader(ade::Shader::Shader::PixelShader, m_pPS);
 
     static LayoutElement LayoutElems[] = { // Attribute 0 - vertex position
                                            LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
@@ -29,4 +27,3 @@ PipelineColorVertex::PipelineColorVertex(std::shared_ptr<RenderTarget> rt) : bas
 
 PipelineColorVertex::~PipelineColorVertex() {}
 
-}    // namespace ade

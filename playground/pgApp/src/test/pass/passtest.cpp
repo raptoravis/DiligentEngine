@@ -1,8 +1,5 @@
 #include "passtest.h"
 
-namespace ade
-{
-
 TestPass::TestPass(Technique* parentTechnique, std::shared_ptr<Scene> scene,
                    std::shared_ptr<Pipeline> pipeline)
     : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
@@ -84,4 +81,3 @@ void TestPass::Visit(Mesh& mesh, Pipeline* pipeline)
     mesh.Render(pipeline);
 }
 
-}    // namespace ade

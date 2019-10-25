@@ -2,20 +2,16 @@
 
 #include "engine/engine.h"
 
-namespace ade
+class PipelineColorVertex : public ade::Pipeline
 {
-
-class PipelineColorVertex : public Pipeline
-{
-    typedef Pipeline base;
+    typedef ade::Pipeline base;
 
   private:
-    std::shared_ptr<Shader> m_pVS;
-    std::shared_ptr<Shader> m_pPS;
+    std::shared_ptr<ade::Shader> m_pVS;
+    std::shared_ptr<ade::Shader> m_pPS;
 
   public:
-    PipelineColorVertex(std::shared_ptr<RenderTarget> rt);
+    PipelineColorVertex(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineColorVertex();
 };
 
-}    // namespace ade

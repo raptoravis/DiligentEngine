@@ -2,19 +2,15 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
-namespace ade
+class PipelineDeferredGeometry : public ade::PipelineBase
 {
-
-class PipelineDeferredGeometry : public PipelineBase
-{
-    typedef PipelineBase base;
+    typedef ade::PipelineBase base;
 
   private:
     virtual void InitPSODesc();
 
   public:
-    PipelineDeferredGeometry(std::shared_ptr<RenderTarget> rt);
+    PipelineDeferredGeometry(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineDeferredGeometry();
 };
 
-}    // namespace ade

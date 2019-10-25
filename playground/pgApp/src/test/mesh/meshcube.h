@@ -4,10 +4,7 @@
 
 #include "engine/engine.h"
 
-namespace ade
-{
-
-class MeshCube : public Mesh
+class MeshCube : public ade::Mesh
 {
     void CreateVertexBuffer();
     void CreateIndexBuffer();
@@ -16,4 +13,3 @@ class MeshCube : public Mesh
     MeshCube();
     virtual ~MeshCube();
 };
-}    // namespace ade

@@ -4,10 +4,7 @@
 
 using namespace Diligent;
 
-namespace ade
-{
-
-MeshCubeTex::MeshCubeTex() : Mesh()
+MeshCubeTex::MeshCubeTex() : ade::Mesh()
 {
     CreateVertexBuffer();
     CreateIndexBuffer();
@@ -65,10 +62,10 @@ void MeshCubeTex::CreateVertexBuffer()
         { float3(+1, +1, +1), float2(0, 0) }, { float3(-1, +1, +1), float2(1, 0) }
     };
 
-    std::shared_ptr<Buffer> buffer = SceneAss::createFloatVertexBuffer(
-        App::s_device, (const float*)CubeVerts, 24, sizeof(Vertex));
+    std::shared_ptr<ade::Buffer> buffer = ade::SceneAss::createFloatVertexBuffer(
+        ade::App::s_device, (const float*)CubeVerts, 24, sizeof(Vertex));
 
-    BufferBinding binding{ "VERTEX", 0 };
+    ade::BufferBinding binding{ "VERTEX", 0 };
     addVertexBuffer(binding, buffer);
 }
 
@@ -77,8 +74,5 @@ void MeshCubeTex::CreateIndexBuffer()
     Uint32 Indices[] = { 2,  0,  1,  2,  3,  0,  4,  6,  5,  4,  7,  6,  8,  10, 9,  8,  11, 10,
                          12, 14, 13, 12, 15, 14, 16, 18, 17, 16, 19, 18, 20, 21, 22, 20, 22, 23 };
 
-    m_pIndexBuffer = SceneAss::createUIntIndexBuffer(App::s_device, Indices, 36);
+    m_pIndexBuffer = ade::SceneAss::createUIntIndexBuffer(ade::App::s_device, Indices, 36);
 }
-
-
-}    // namespace ade

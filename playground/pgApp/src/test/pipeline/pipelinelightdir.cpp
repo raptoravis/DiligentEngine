@@ -1,9 +1,7 @@
 #include "pipelinelightdir.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 PipelineLightDir::PipelineLightDir(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
@@ -50,4 +48,3 @@ void PipelineLightDir::InitPSODesc()
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_GREATER;
 }
 
-}    // namespace ade

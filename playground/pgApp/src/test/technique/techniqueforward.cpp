@@ -10,8 +10,6 @@
 #include "../pass/passopaque.h"
 #include "../pass/passtransparent.h"
 
-namespace ade
-{
 
 TechniqueForward::TechniqueForward(std::shared_ptr<RenderTarget> rt,
                                    std::shared_ptr<Texture> backBuffer)
@@ -97,4 +95,3 @@ void TechniqueForward::init(std::shared_ptr<Scene> scene, std::vector<Light>* li
     }
 }
 
-}    // namespace ade

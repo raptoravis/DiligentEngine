@@ -6,9 +6,7 @@
 #include "test/pass/passrender.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class TechniqueForward : public Technique
 {
@@ -30,4 +28,3 @@ class TechniqueForward : public Technique
     void init(std::shared_ptr<Scene> scene, std::vector<Light>* lights);
 };
 
-}    // namespace ade

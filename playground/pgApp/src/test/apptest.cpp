@@ -93,7 +93,7 @@ void AppTest::initLightData()
 void AppTest::initBuffers()
 {
     m_PerObjectConstants =
-        std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(ade::PassRender::PerObject));
+        std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(PassRender::PerObject));
     m_MaterialConstants =
         std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(ade::Material::MaterialProperties));
     m_LightsStructuredBuffer = std::make_shared<ade::StructuredBuffer>(
@@ -213,13 +213,13 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     m_pCamera = std::make_shared<ade::Camera>(pos, dir);
 
     // technique will clean up passed added in it
-    m_pTechnique = std::make_shared<ade::TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
+    m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
 
-    m_pForwardTechnique = std::make_shared<ade::TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
-    m_pDeferredTechnique = std::make_shared<ade::TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
+    m_pForwardTechnique = std::make_shared<TechniqueForward>(m_pRenderTarget, m_pBackBuffer);
+    m_pDeferredTechnique = std::make_shared<TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
     m_pForwardPlusTechnique =
-        std::make_shared<ade::TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
-    m_pGdrTechnique = std::make_shared<ade::TechniqueGdr>(m_pRenderTarget, m_pBackBuffer);
+        std::make_shared<TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
+    m_pGdrTechnique = std::make_shared<TechniqueGdr>(m_pRenderTarget, m_pBackBuffer);
 
     //
     std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
@@ -232,38 +232,38 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     // if (m_renderingTechnique == RenderingTechnique::Forward)
     {
-        auto forwardTech = (ade::TechniqueForward*)m_pForwardTechnique.get();
-        forwardTech->Set(ade::PassRender::kPerObjectName, m_PerObjectConstants);
-        forwardTech->Set(ade::PassRender::kMaterialName, m_MaterialConstants);
-        forwardTech->Set(ade::PassRender::kLightsName, m_LightsStructuredBuffer);
+        auto forwardTech = (TechniqueForward*)m_pForwardTechnique.get();
+        forwardTech->Set(PassRender::kPerObjectName, m_PerObjectConstants);
+        forwardTech->Set(PassRender::kMaterialName, m_MaterialConstants);
+        forwardTech->Set(PassRender::kLightsName, m_LightsStructuredBuffer);
 
         forwardTech->init(testScene, &m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::Deferred)
     {
-        auto deferredTech = (ade::TechniqueDeferred*)m_pDeferredTechnique.get();
+        auto deferredTech = (TechniqueDeferred*)m_pDeferredTechnique.get();
 
-        deferredTech->Set(ade::PassRender::kPerObjectName, m_PerObjectConstants);
-        deferredTech->Set(ade::PassRender::kMaterialName, m_MaterialConstants);
-        deferredTech->Set(ade::PassRender::kLightsName, m_LightsStructuredBuffer);
+        deferredTech->Set(PassRender::kPerObjectName, m_PerObjectConstants);
+        deferredTech->Set(PassRender::kMaterialName, m_MaterialConstants);
+        deferredTech->Set(PassRender::kLightsName, m_LightsStructuredBuffer);
 
         deferredTech->init(testScene, &m_Lights);
     }
 
     // if (m_renderingTechnique == RenderingTechnique::ForwardPlus)
     {
-        auto fpTech = (ade::TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
+        auto fpTech = (TechniqueForwardPlus*)m_pForwardPlusTechnique.get();
 
-        fpTech->Set(ade::PassRender::kPerObjectName, m_PerObjectConstants);
-        fpTech->Set(ade::PassRender::kMaterialName, m_MaterialConstants);
-        fpTech->Set(ade::PassRender::kLightsName, m_LightsStructuredBuffer);
+        fpTech->Set(PassRender::kPerObjectName, m_PerObjectConstants);
+        fpTech->Set(PassRender::kMaterialName, m_MaterialConstants);
+        fpTech->Set(PassRender::kLightsName, m_LightsStructuredBuffer);
 
         fpTech->init(testScene, &m_Lights, m_pCamera);
     }
 
     {
-        auto gdrTech = (ade::TechniqueGdr*)m_pGdrTechnique.get();
+        auto gdrTech = (TechniqueGdr*)m_pGdrTechnique.get();
 
         gdrTech->init();
     }

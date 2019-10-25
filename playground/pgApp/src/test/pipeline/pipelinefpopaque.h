@@ -2,19 +2,16 @@
 
 #include "engine/pipeline/pipelinebase.h"
 
-namespace ade
-{
 
-class PipelineFPOpaque : public PipelineBase
+class PipelineFPOpaque : public ade::PipelineBase
 {
-    typedef PipelineBase base;
+    typedef ade::PipelineBase base;
 
   protected:
     virtual void InitPSODesc();
 
   public:
-    PipelineFPOpaque(std::shared_ptr<RenderTarget> rt);
+    PipelineFPOpaque(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineFPOpaque();
 };
 
-}    // namespace ade

@@ -8,12 +8,9 @@
 
 using namespace Diligent;
 
-namespace ade
+class PassGltf : public ade::Pass
 {
-
-class PassGltf : public Pass
-{
-    typedef Pass base;
+    typedef ade::Pass base;
 
     Diligent::RefCntAutoPtr<Diligent::IPipelineState> m_EnvMapPSO;
     Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> m_EnvMapSRB;
@@ -54,19 +51,17 @@ class PassGltf : public Pass
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_CameraAttribsCB;
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
-	std::shared_ptr<RenderTarget> m_pRenderTarget;
+	std::shared_ptr<ade::RenderTarget> m_pRenderTarget;
 	bool m_bLoaded = false;
   public:
-    PassGltf(Technique* parentTechnique, std::shared_ptr<RenderTarget> pRT, bool bLoad);
+    PassGltf(ade::Technique* parentTechnique, std::shared_ptr<ade::RenderTarget> pRT, bool bLoad);
 
     virtual ~PassGltf();
 
     virtual void PreRender();
 
-    virtual void Render(Pipeline* pipeline);
+    virtual void Render(ade::Pipeline* pipeline);
 
 	void Load();
     void UpdateUI();
 };
-
-}    // namespace ade

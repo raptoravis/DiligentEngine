@@ -2,8 +2,8 @@
 
 #include "engine/engine.h"
 
-namespace ade
-{
+using namespace ade;
+
 
 class TestPass : public Pass
 {
@@ -46,4 +46,3 @@ class TestPass : public Pass
 };
 
 
-}    // namespace ade

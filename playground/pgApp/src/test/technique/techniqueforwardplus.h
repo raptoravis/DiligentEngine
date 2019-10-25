@@ -8,9 +8,7 @@
 #include "test/pass/passpostprocess.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 const uint16_t m_LightCullingBlockSize = 16;
 
@@ -97,4 +95,3 @@ class TechniqueForwardPlus : public Technique
               std::shared_ptr<Camera> pCamera);
 };
 
-}    // namespace ade

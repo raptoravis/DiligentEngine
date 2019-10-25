@@ -2,22 +2,20 @@
 
 using namespace Diligent;
 
-namespace ade
-{
 
-PipelineTexVertex::PipelineTexVertex(std::shared_ptr<RenderTarget> rt) : base(rt)
+PipelineTexVertex::PipelineTexVertex(std::shared_ptr<ade::RenderTarget> rt) : base(rt)
 {
     LoadTexture();
 
     // CreatePipelineState();
-    m_pVS = std::make_shared<Shader>();
-    m_pVS->LoadShaderFromFile(Shader::Shader::VertexShader, "cubetex.vsh", "main");
+    m_pVS = std::make_shared<ade::Shader>();
+    m_pVS->LoadShaderFromFile(ade::Shader::Shader::VertexShader, "cubetex.vsh", "main");
 
-    m_pPS = std::make_shared<Shader>();
-    m_pPS->LoadShaderFromFile(Shader::Shader::PixelShader, "cubetex.psh", "main", "", true);
+    m_pPS = std::make_shared<ade::Shader>();
+    m_pPS->LoadShaderFromFile(ade::Shader::Shader::PixelShader, "cubetex.psh", "main", "", true);
 
-    SetShader(Shader::Shader::VertexShader, m_pVS);
-    SetShader(Shader::Shader::PixelShader, m_pPS);
+    SetShader(ade::Shader::Shader::VertexShader, m_pVS);
+    SetShader(ade::Shader::Shader::PixelShader, m_pPS);
 }
 
 PipelineTexVertex::~PipelineTexVertex() {}
@@ -68,7 +66,7 @@ void PipelineTexVertex::InitPSODesc()
     StaticSamplerDesc m_LinearClampSamplerDesc{ SHADER_TYPE_PIXEL, "g_Texture",
                                                 linearClampSampler };
 
-    m_LinearClampSampler = std::make_shared<SamplerState>(m_LinearClampSamplerDesc);
+    m_LinearClampSampler = std::make_shared<ade::SamplerState>(m_LinearClampSamplerDesc);
 
     m_pPS->GetShaderParameterByName("g_Texture_sampler").Set(m_LinearClampSampler);
 
@@ -81,9 +79,8 @@ void PipelineTexVertex::LoadTexture()
     loadInfo.IsSRGB = false;
     RefCntAutoPtr<ITexture> Tex;
     // CreateTextureFromFile("DGLogo.png", loadInfo, App::s_device, &Tex);
-    CreateTextureFromFile("apple-logo.png", loadInfo, App::s_device, &Tex);
+    CreateTextureFromFile("apple-logo.png", loadInfo, ade::App::s_device, &Tex);
 
-    m_Texture = std::make_shared<Texture>(Tex);
+    m_Texture = std::make_shared<ade::Texture>(Tex);
 }
 
-}    // namespace ade

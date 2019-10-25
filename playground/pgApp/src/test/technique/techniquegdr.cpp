@@ -4,8 +4,6 @@
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
 
-namespace ade
-{
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
@@ -48,4 +46,3 @@ void TechniqueGdr::init()
     //
 }
 
-}    // namespace ade

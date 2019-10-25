@@ -2,11 +2,8 @@
 
 using namespace Diligent;
 
-namespace ade
-{
 
-
-PipelineTransparent::PipelineTransparent(std::shared_ptr<RenderTarget> rt) : base(rt) {}
+PipelineTransparent::PipelineTransparent(std::shared_ptr<ade::RenderTarget> rt) : base(rt) {}
 
 PipelineTransparent::~PipelineTransparent() {}
 
@@ -32,4 +29,3 @@ void PipelineTransparent::InitPSODesc()
     RasterizerDesc.CullMode = CULL_MODE_NONE;
 }
 
-}    // namespace ade

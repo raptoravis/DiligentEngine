@@ -4,6 +4,7 @@
 #include "passgltfmodel.h"
 
 using namespace Diligent;
+using namespace ade;
 
 namespace Diligent
 {
@@ -22,9 +23,6 @@ struct EnvMapRenderAttribs {
     float Unusued2;
 };
 }    // namespace
-
-namespace ade
-{
 
 const std::pair<const char*, const char*> PassGltf::GLTFModels[] = {
     { "Sponza", "models/Sponza/Sponza.gltf" },
@@ -396,5 +394,3 @@ void PassGltf::Render(Pipeline* pipeline)
     }
 }
 
-
-}    // namespace ade

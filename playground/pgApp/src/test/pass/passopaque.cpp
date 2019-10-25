@@ -1,8 +1,5 @@
 #include "passopaque.h"
 
-namespace ade
-{
-
 PassOpaque::PassOpaque(Technique* parentTechnique, std::shared_ptr<Scene> scene,
                        std::shared_ptr<Pipeline> pipeline, std::vector<Light>* lights)
     : base(parentTechnique, scene, pipeline, lights)
@@ -30,4 +27,3 @@ void PassOpaque::Render(Pipeline* pipeline)
 {
     base::Render(pipeline);
 }
-}    // namespace ade

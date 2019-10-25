@@ -1,9 +1,7 @@
 #include "pipelinefpopaque.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 PipelineFPOpaque::PipelineFPOpaque(std::shared_ptr<RenderTarget> rt) : base(rt) {}
 
@@ -21,4 +19,3 @@ void PipelineFPOpaque::InitPSODesc()
     DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
 }
 
-}    // namespace ade

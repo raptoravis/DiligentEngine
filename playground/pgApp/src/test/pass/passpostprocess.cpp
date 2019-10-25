@@ -2,8 +2,6 @@
 
 #include "passpostprocess.h"
 
-namespace ade
-{
 
 PassPostprocess::PassPostprocess(Technique* parentTechnique, std::shared_ptr<Scene> scene,
                                  std::shared_ptr<Pipeline> pipeline,
@@ -40,4 +38,3 @@ void PassPostprocess::Visit(SceneNode& node, Pipeline* pipeline)
 {
     // Do nothing in this case
 }
-}    // namespace ade

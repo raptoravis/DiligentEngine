@@ -15,8 +15,6 @@
 #include "../pipeline/pipelinelightfront.h"
 #include "../pipeline/pipelinetransparent.h"
 
-namespace ade
-{
 
 TechniqueDeferred::TechniqueDeferred(std::shared_ptr<RenderTarget> rt,
                                      std::shared_ptr<Texture> backBuffer)
@@ -380,4 +378,3 @@ void TechniqueDeferred::Update()
     m_DebugTexture3Pass->SetEnabled(m_bDepth);
 }
 
-}    // namespace ade

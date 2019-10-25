@@ -2,11 +2,8 @@
 
 using namespace Diligent;
 
-namespace ade
-{
 
-
-PipelineLightFront::PipelineLightFront(std::shared_ptr<RenderTarget> rt) : base(rt) {}
+PipelineLightFront::PipelineLightFront(std::shared_ptr<ade::RenderTarget> rt) : base(rt) {}
 
 PipelineLightFront::~PipelineLightFront() {}
 
@@ -20,8 +17,8 @@ void PipelineLightFront::InitPSODesc()
     // auto color0Format =
     //    color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
-    auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
-    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : App::s_desc.DepthBufferFormat;
+    auto ds = m_pRenderTarget->GetTexture(ade::RenderTarget::AttachmentPoint::DepthStencil);
+    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : ade::App::s_desc.DepthBufferFormat;
 
     // This tutorial will render to a single render target
     m_PSODesc.GraphicsPipeline.NumRenderTargets = 0;
@@ -51,4 +48,3 @@ void PipelineLightFront::InitPSODesc()
     SetStencilRef(1);
 }
 
-}    // namespace ade

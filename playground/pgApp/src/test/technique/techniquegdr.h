@@ -5,9 +5,7 @@
 #include "engine/engine.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class TechniqueGdr : public Technique
 {
@@ -28,4 +26,3 @@ class TechniqueGdr : public Technique
     virtual void Render();
 };
 
-}    // namespace ade

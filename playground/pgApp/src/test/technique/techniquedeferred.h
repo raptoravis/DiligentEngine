@@ -7,9 +7,7 @@
 #include "test/pass/passrender.h"
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class TechniqueDeferred : public Technique
 {
@@ -62,4 +60,3 @@ class TechniqueDeferred : public Technique
     virtual void Update();
 };
 
-}    // namespace ade

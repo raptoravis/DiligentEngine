@@ -8,9 +8,7 @@
 
 
 using namespace Diligent;
-
-namespace ade
-{
+using namespace ade;
 
 class TechniqueTest : public Technique
 {
@@ -31,4 +29,3 @@ class TechniqueTest : public Technique
     virtual void Render();
 };
 
-}    // namespace ade

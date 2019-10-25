@@ -20,8 +20,6 @@
 
 #include "engine/scene/sceneass.h"
 
-namespace ade
-{
 
 const uint32_t AVERAGE_OVERLAPPING_LIGHTS_PER_TILE = 200u;
 
@@ -379,4 +377,3 @@ void TechniqueForwardPlus::Update()
 }
 
 
-}    // namespace ade
