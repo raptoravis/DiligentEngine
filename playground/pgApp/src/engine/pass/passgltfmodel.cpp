@@ -87,9 +87,16 @@ void PassGltf::Load()
         CreateUniformBuffer(App::s_device, sizeof(EnvMapRenderAttribs),
                             "Env map render attribs buffer", &m_EnvMapRenderAttribsCB);
 
+        auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+        auto color0Format =
+            color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
+
+        auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
+        auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : App::s_desc.DepthBufferFormat;
+
         GLTF_PBR_Renderer::CreateInfo RendererCI;
-        RendererCI.RTVFmt = App::s_desc.ColorBufferFormat;
-        RendererCI.DSVFmt = App::s_desc.DepthBufferFormat;
+        RendererCI.RTVFmt = color0Format;
+        RendererCI.DSVFmt = dsFormat;
         RendererCI.AllowDebugView = true;
         RendererCI.UseIBL = true;
         RendererCI.FrontCCW = true;
