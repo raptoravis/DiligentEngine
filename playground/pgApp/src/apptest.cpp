@@ -32,7 +32,7 @@ SampleBase* CreateSample()
 }
 }    // namespace Diligent
 
-//using namespace ade;
+// using namespace ade;
 
 void AppTest::initLightData()
 {
@@ -96,7 +96,8 @@ void AppTest::initBuffers()
     m_MaterialConstants =
         std::make_shared<ade::ConstantBuffer>((uint32_t)sizeof(ade::Material::MaterialProperties));
     m_LightsStructuredBuffer = std::make_shared<ade::StructuredBuffer>(
-        m_Lights.data(), (uint32_t)m_Lights.size(), (uint32_t)sizeof(ade::Light), ade::CPUAccess::Write);
+        m_Lights.data(), (uint32_t)m_Lights.size(), (uint32_t)sizeof(ade::Light),
+        ade::CPUAccess::Write);
 }
 
 
@@ -306,7 +307,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
     m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
     ade::App::s_eventArgs.set((float)CurrTime, (float)ElapsedTime, this, m_pCamera.get(),
-                           ade::App::s_ctx);
+                              ade::App::s_ctx);
 
     int technique = (int)m_renderingTechnique;
 

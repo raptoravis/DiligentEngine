@@ -4,6 +4,9 @@
 
 #include "engine/engine.h"
 
+#include "../pass/passgltfmodel.h"
+
+
 using namespace Diligent;
 
 namespace ade
@@ -18,10 +21,13 @@ class TechniqueTest : public Technique
     std::shared_ptr<Scene> m_pSceneCube;
     std::shared_ptr<Scene> m_pSceneCubeTex;
 
+	std::shared_ptr<PassGltf> m_pGLTFPass;
+    bool m_bGltfEnabled;
   public:
     TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueTest();
 
+	virtual void Update();
     virtual void Render();
 };
 

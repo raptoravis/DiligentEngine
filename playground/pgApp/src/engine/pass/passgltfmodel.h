@@ -54,8 +54,10 @@ class PassGltf : public Pass
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_CameraAttribsCB;
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_LightAttribsCB;
 
+	std::shared_ptr<RenderTarget> m_pRenderTarget;
+	bool m_bLoaded = false;
   public:
-    PassGltf();
+    PassGltf(Technique* parentTechnique, std::shared_ptr<RenderTarget> pRT, bool bLoad);
 
     virtual ~PassGltf();
 
@@ -63,6 +65,7 @@ class PassGltf : public Pass
 
     virtual void Render(Pipeline* pipeline);
 
+	void Load();
     void UpdateUI();
 };
 

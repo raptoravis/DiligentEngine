@@ -13,14 +13,14 @@ namespace Diligent
 
 namespace
 {
-    struct EnvMapRenderAttribs {
-        ToneMappingAttribs TMAttribs;
+struct EnvMapRenderAttribs {
+    ToneMappingAttribs TMAttribs;
 
-        float AverageLogLum;
-        float MipLevel;
-        float Unusued1;
-        float Unusued2;
-    };
+    float AverageLogLum;
+    float MipLevel;
+    float Unusued1;
+    float Unusued2;
+};
 }    // namespace
 
 namespace ade
@@ -66,54 +66,68 @@ void PassGltf::LoadModel(const char* Path)
 }
 
 
-PassGltf::PassGltf() : base(0)
+PassGltf::PassGltf(Technique* parentTechnique, std::shared_ptr<RenderTarget> pRT, bool bLoad)
+    : base(parentTechnique), m_pRenderTarget(pRT)
 {
-    RefCntAutoPtr<ITexture> EnvironmentMap;
+    if (bLoad) {
+        Load();
+    }
+}
 
-    CreateTextureFromFile("textures/papermill.ktx", TextureLoadInfo{ "Environment map" },
-                          App::s_device, &EnvironmentMap);
-    m_EnvironmentMapSRV = EnvironmentMap->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
+void PassGltf::Load()
+{
+    if (!m_bLoaded) {
 
-    CreateUniformBuffer(App::s_device, sizeof(EnvMapRenderAttribs),
-                        "Env map render attribs buffer", &m_EnvMapRenderAttribsCB);
+        RefCntAutoPtr<ITexture> EnvironmentMap;
 
-    GLTF_PBR_Renderer::CreateInfo RendererCI;
-    RendererCI.RTVFmt = App::s_desc.ColorBufferFormat;
-    RendererCI.DSVFmt = App::s_desc.DepthBufferFormat;
-    RendererCI.AllowDebugView = true;
-    RendererCI.UseIBL = true;
-    RendererCI.FrontCCW = true;
+        CreateTextureFromFile("textures/papermill.ktx", TextureLoadInfo{ "Environment map" },
+                              App::s_device, &EnvironmentMap);
+        m_EnvironmentMapSRV = EnvironmentMap->GetDefaultView(TEXTURE_VIEW_SHADER_RESOURCE);
 
-    m_GLTFRenderer.reset(new GLTF_PBR_Renderer(App::s_device, App::s_ctx, RendererCI));
+        CreateUniformBuffer(App::s_device, sizeof(EnvMapRenderAttribs),
+                            "Env map render attribs buffer", &m_EnvMapRenderAttribsCB);
 
-    CreateUniformBuffer(App::s_device, sizeof(CameraAttribs), "Camera attribs buffer",
-                        &m_CameraAttribsCB);
-    CreateUniformBuffer(App::s_device, sizeof(LightAttribs), "Light attribs buffer",
-                        &m_LightAttribsCB);
+        GLTF_PBR_Renderer::CreateInfo RendererCI;
+        RendererCI.RTVFmt = App::s_desc.ColorBufferFormat;
+        RendererCI.DSVFmt = App::s_desc.DepthBufferFormat;
+        RendererCI.AllowDebugView = true;
+        RendererCI.UseIBL = true;
+        RendererCI.FrontCCW = true;
 
-    StateTransitionDesc Barriers[] = {
-        { m_CameraAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER, true },
-        { m_LightAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER, true },
-        { m_EnvMapRenderAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER, true },
-        { EnvironmentMap, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_SHADER_RESOURCE, true }
-    };
-    App::s_ctx->TransitionResourceStates(_countof(Barriers), Barriers);
+        m_GLTFRenderer.reset(new GLTF_PBR_Renderer(App::s_device, App::s_ctx, RendererCI));
 
-    m_GLTFRenderer->PrecomputeCubemaps(App::s_device, App::s_ctx, m_EnvironmentMapSRV);
+        CreateUniformBuffer(App::s_device, sizeof(CameraAttribs), "Camera attribs buffer",
+                            &m_CameraAttribsCB);
+        CreateUniformBuffer(App::s_device, sizeof(LightAttribs), "Light attribs buffer",
+                            &m_LightAttribsCB);
 
-    CreateEnvMapPSO();
+        StateTransitionDesc Barriers[] = {
+            { m_CameraAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER, true },
+            { m_LightAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER, true },
+            { m_EnvMapRenderAttribsCB, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_CONSTANT_BUFFER,
+              true },
+            { EnvironmentMap, RESOURCE_STATE_UNKNOWN, RESOURCE_STATE_SHADER_RESOURCE, true }
+        };
+        App::s_ctx->TransitionResourceStates(_countof(Barriers), Barriers);
 
-    m_LightDirection = normalize(float3(0.5f, -0.6f, -0.2f));
+        m_GLTFRenderer->PrecomputeCubemaps(App::s_device, App::s_ctx, m_EnvironmentMapSRV);
 
-    LoadModel(GLTFModels[m_SelectedModel].second);
+        CreateEnvMapPSO();
+
+        m_LightDirection = normalize(float3(0.5f, -0.6f, -0.2f));
+
+        LoadModel(GLTFModels[m_SelectedModel].second);
+
+        m_bLoaded = true;
+    }
 }
 
 PassGltf::~PassGltf() {}
 
 void PassGltf::UpdateUI()
 {
-    {
-        ImGui::SameLine();
+    if (IsEnabled() && m_bLoaded) {
+        // ImGui::SameLine();
         ImGui::gizmo3D("Light direction", m_LightDirection, ImGui::GetTextLineHeight() * 10);
 
         ImGui::Separator();
@@ -214,8 +228,7 @@ void PassGltf::CreateEnvMapPSO()
 {
     ShaderCreateInfo ShaderCI;
     RefCntAutoPtr<IShaderSourceInputStreamFactory> pShaderSourceFactory;
-    App::s_engineFactory->CreateDefaultShaderSourceStreamFactory("shaders",
-                                                                   &pShaderSourceFactory);
+    App::s_engineFactory->CreateDefaultShaderSourceStreamFactory("shaders", &pShaderSourceFactory);
     ShaderCI.pShaderSourceStreamFactory = pShaderSourceFactory;
     ShaderCI.SourceLanguage = SHADER_SOURCE_LANGUAGE_HLSL;
     ShaderCI.UseCombinedTextureSamplers = true;
@@ -256,9 +269,17 @@ void PassGltf::CreateEnvMapPSO()
     PSODesc.GraphicsPipeline.pVS = pVS;
     PSODesc.GraphicsPipeline.pPS = pPS;
 
-    PSODesc.GraphicsPipeline.RTVFormats[0] = App::s_desc.ColorBufferFormat;
+    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+    auto color0Format =
+        color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
+
+    auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
+    auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : App::s_desc.DepthBufferFormat;
+
+
+    PSODesc.GraphicsPipeline.RTVFormats[0] = color0Format;
     PSODesc.GraphicsPipeline.NumRenderTargets = 1;
-    PSODesc.GraphicsPipeline.DSVFormat = App::s_desc.DepthBufferFormat;
+    PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
     PSODesc.GraphicsPipeline.PrimitiveTopology = PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     PSODesc.GraphicsPipeline.DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
 
@@ -301,8 +322,6 @@ void PassGltf::PreRender()
 {
     RenderEventArgs& e = App::s_eventArgs;
 
-    UpdateUI();
-
     if (!m_Model->Animations.empty() && m_PlayAnimation) {
         float& AnimationTimer = m_AnimationTimers[m_AnimationIndex];
         AnimationTimer += static_cast<float>(e.ElapsedTime);
@@ -313,58 +332,62 @@ void PassGltf::PreRender()
 
 void PassGltf::Render(Pipeline* pipeline)
 {
-    RenderEventArgs& e = App::s_eventArgs;
+    if (m_bLoaded) {
+        RenderEventArgs& e = App::s_eventArgs;
 
-    float4x4 CameraView = e.pCamera->getViewMatrix();
+        float4x4 CameraView = e.pCamera->getViewMatrix();
 
-    float4x4 CameraWorld = CameraView.Inverse();
-    float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);
-    float NearPlane = 0.1f;
-    float FarPlane = 100.f;
-    float aspectRatio =
-        static_cast<float>(App::s_desc.Width) / static_cast<float>(App::s_desc.Height);
-    // Projection matrix differs between DX and OpenGL
-    auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane,
-                                     App::s_device->GetDeviceCaps().IsGLDevice());
-    // Compute world-view-projection matrix
-    auto CameraViewProj = CameraView * Proj;
+        float4x4 CameraWorld = CameraView.Inverse();
+        float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);
+        float NearPlane = 0.1f;
+        float FarPlane = 100.f;
+        float aspectRatio =
+            static_cast<float>(App::s_desc.Width) / static_cast<float>(App::s_desc.Height);
+        // Projection matrix differs between DX and OpenGL
+        auto Proj = float4x4::Projection(PI_F / 4.f, aspectRatio, NearPlane, FarPlane,
+                                         App::s_device->GetDeviceCaps().IsGLDevice());
+        // Compute world-view-projection matrix
+        auto CameraViewProj = CameraView * Proj;
 
-    {
-        MapHelper<CameraAttribs> CamAttribs(App::s_ctx, m_CameraAttribsCB, MAP_WRITE,
-                                            MAP_FLAG_DISCARD);
-        CamAttribs->mProjT = Proj.Transpose();
-        CamAttribs->mViewProjT = CameraViewProj.Transpose();
-        CamAttribs->mViewProjInvT = CameraViewProj.Inverse().Transpose();
-        CamAttribs->f4Position = float4(CameraWorldPos, 1);
-    }
-
-    {
-        MapHelper<LightAttribs> lightAttribs(App::s_ctx, m_LightAttribsCB, MAP_WRITE,
-                                             MAP_FLAG_DISCARD);
-        lightAttribs->f4Direction = m_LightDirection;
-        lightAttribs->f4Intensity = m_LightColor * m_LightIntensity;
-    }
-
-    m_RenderParams.ModelTransform = m_ModelTransform;
-    m_GLTFRenderer->Render(App::s_ctx, *m_Model, m_RenderParams);
-
-    if (m_BackgroundMode != BackgroundMode::None) {
         {
-            MapHelper<EnvMapRenderAttribs> EnvMapAttribs(App::s_ctx, m_EnvMapRenderAttribsCB,
-                                                         MAP_WRITE, MAP_FLAG_DISCARD);
-            EnvMapAttribs->TMAttribs.iToneMappingMode = TONE_MAPPING_MODE_UNCHARTED2;
-            EnvMapAttribs->TMAttribs.bAutoExposure = 0;
-            EnvMapAttribs->TMAttribs.fMiddleGray = m_RenderParams.MiddleGray;
-            EnvMapAttribs->TMAttribs.bLightAdaptation = 0;
-            EnvMapAttribs->TMAttribs.fWhitePoint = m_RenderParams.WhitePoint;
-            EnvMapAttribs->TMAttribs.fLuminanceSaturation = 1.0;
-            EnvMapAttribs->AverageLogLum = m_RenderParams.AverageLogLum;
-            EnvMapAttribs->MipLevel = m_EnvMapMipLevel;
+            MapHelper<CameraAttribs> CamAttribs(App::s_ctx, m_CameraAttribsCB, MAP_WRITE,
+                                                MAP_FLAG_DISCARD);
+            CamAttribs->mProjT = Proj.Transpose();
+            CamAttribs->mViewProjT = CameraViewProj.Transpose();
+            CamAttribs->mViewProjInvT = CameraViewProj.Inverse().Transpose();
+            CamAttribs->f4Position = float4(CameraWorldPos, 1);
         }
-        App::s_ctx->SetPipelineState(m_EnvMapPSO);
-        App::s_ctx->CommitShaderResources(m_EnvMapSRB, RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-        DrawAttribs drawAttribs(3, DRAW_FLAG_VERIFY_ALL);
-        App::s_ctx->Draw(drawAttribs);
+
+        {
+            MapHelper<LightAttribs> lightAttribs(App::s_ctx, m_LightAttribsCB, MAP_WRITE,
+                                                 MAP_FLAG_DISCARD);
+            lightAttribs->f4Direction = m_LightDirection;
+            lightAttribs->f4Intensity = m_LightColor * m_LightIntensity;
+        }
+
+        m_RenderParams.ModelTransform = m_ModelTransform;
+        m_GLTFRenderer->Render(App::s_ctx, *m_Model, m_RenderParams);
+
+        if (m_BackgroundMode != BackgroundMode::None) {
+            {
+                MapHelper<EnvMapRenderAttribs> EnvMapAttribs(App::s_ctx, m_EnvMapRenderAttribsCB,
+                                                             MAP_WRITE, MAP_FLAG_DISCARD);
+                EnvMapAttribs->TMAttribs.iToneMappingMode = TONE_MAPPING_MODE_UNCHARTED2;
+                EnvMapAttribs->TMAttribs.bAutoExposure = 0;
+                EnvMapAttribs->TMAttribs.fMiddleGray = m_RenderParams.MiddleGray;
+                EnvMapAttribs->TMAttribs.bLightAdaptation = 0;
+                EnvMapAttribs->TMAttribs.fWhitePoint = m_RenderParams.WhitePoint;
+                EnvMapAttribs->TMAttribs.fLuminanceSaturation = 1.0;
+                EnvMapAttribs->AverageLogLum = m_RenderParams.AverageLogLum;
+                EnvMapAttribs->MipLevel = m_EnvMapMipLevel;
+            }
+            App::s_ctx->SetPipelineState(m_EnvMapPSO);
+            App::s_ctx->CommitShaderResources(m_EnvMapSRB, RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+            DrawAttribs drawAttribs(3, DRAW_FLAG_VERIFY_ALL);
+            App::s_ctx->Draw(drawAttribs);
+        }
     }
 }
+
+
 }    // namespace ade

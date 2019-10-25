@@ -15,9 +15,8 @@
 namespace ade
 {
 
-TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt,
-                             std::shared_ptr<Texture> backBuffer)
-    : base(rt, backBuffer)
+TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
+    : base(rt, backBuffer), m_bGltfEnabled(false)
 {
     std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
     AddPass(pSetRTPass);
@@ -26,11 +25,10 @@ TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt,
         std::make_shared<PassClearRT>(this, m_pRenderTarget);
     AddPass(pClearRTPass);
 
-    bool bTestGltf = false;
-    if (bTestGltf) {
-        std::shared_ptr<PassGltf> pGLTFPass = std::make_shared<PassGltf>();
-        AddPass(pGLTFPass);
-    }
+    bool bLoad = m_bGltfEnabled;
+    m_pGLTFPass = std::make_shared<PassGltf>(this, m_pRenderTarget, bLoad);
+    m_pGLTFPass->SetEnabled(bLoad);
+    AddPass(m_pGLTFPass);
 
     {
         std::shared_ptr<MeshCube> meshCube = std::make_shared<MeshCube>();
@@ -114,6 +112,25 @@ void TechniqueTest::Render()
     }
 
     base::Render();
+}
+
+void TechniqueTest::Update()
+{
+    ImGui::Separator();
+
+    bool bGltfEnabled = m_pGLTFPass->IsEnabled();
+    ImGui::Checkbox("gltf", &m_bGltfEnabled);
+    ImGui::Separator();
+
+    if (!bGltfEnabled && m_bGltfEnabled) {
+        m_pGLTFPass->Load();
+    } else if (bGltfEnabled && !bGltfEnabled) {
+        //
+    }
+
+	m_pGLTFPass->SetEnabled(m_bGltfEnabled);
+
+    m_pGLTFPass->UpdateUI();
 }
 
 }    // namespace ade
