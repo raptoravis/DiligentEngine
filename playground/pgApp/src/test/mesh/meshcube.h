@@ -2,19 +2,18 @@
 
 #include "SampleBase.h"
 
-#include "../engine.h"
+#include "engine/engine.h"
 
 namespace ade
 {
 
-class MeshCubeTex : public Mesh
+class MeshCube : public Mesh
 {
     void CreateVertexBuffer();
     void CreateIndexBuffer();
 
   public:
-    MeshCubeTex();
-    virtual ~MeshCubeTex();
+    MeshCube();
+    virtual ~MeshCube();
 };
-
 }    // namespace ade

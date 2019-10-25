@@ -1,20 +1,19 @@
 #include "techniquedeferred.h"
 
-#include "../pass/passclearrt.h"
-#include "../pass/passcopytexture.h"
+#include "engine/pass/passclearrt.h"
+#include "engine/pass/passcopytexture.h"
+#include "engine/pass/passsetrt.h"
+#include "engine/scene/sceneass.h"
+#include "engine/pipeline/pipelinedebug.h"
+
 #include "../pass/passlight.h"
 #include "../pass/passopaque.h"
-#include "../pass/passsetrt.h"
 #include "../pass/passtransparent.h"
-
-#include "../pipeline/pipelinedebug.h"
 #include "../pipeline/pipelinedeferredgeometry.h"
 #include "../pipeline/pipelinelightback.h"
 #include "../pipeline/pipelinelightdir.h"
 #include "../pipeline/pipelinelightfront.h"
 #include "../pipeline/pipelinetransparent.h"
-
-#include "../scene/sceneass.h"
 
 namespace ade
 {

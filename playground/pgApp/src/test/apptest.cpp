@@ -1,10 +1,10 @@
 #include "apptest.h"
 
-#include "engine/technique/techniquedeferred.h"
-#include "engine/technique/techniqueforward.h"
-#include "engine/technique/techniqueforwardplus.h"
-#include "engine/technique/techniquegdr.h"
-#include "engine/technique/techniquetest.h"
+#include "test/technique/techniquedeferred.h"
+#include "test/technique/techniqueforward.h"
+#include "test/technique/techniqueforwardplus.h"
+#include "test/technique/techniquegdr.h"
+#include "test/technique/techniquetest.h"
 
 #include "BasicMath.h"
 #include "CommonlyUsedStates.h"

@@ -72,6 +72,7 @@ target_link_directories(${PROJECT_NAME_TMP} PRIVATE ""
 			)
 
 target_include_directories(${PROJECT_NAME_TMP} PRIVATE 
+						${CMAKE_CURRENT_SOURCE_DIR}/src
 						${DE_TOP_PATH}/thirdparty/
 						${DE_TOP_PATH}/thirdparty/glm-0.9.9.6/
 						#${DE_TOP_PATH}/thirdparty/assimp-5.0.0/include

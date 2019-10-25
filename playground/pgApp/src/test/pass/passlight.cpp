@@ -1,7 +1,7 @@
 #include "passlight.h"
-#include "../scene/sceneass.h"
+#include "engine/scene/sceneass.h"
 
-#include "../utils/mathutils.h"
+#include "engine/utils/mathutils.h"
 
 namespace ade
 {

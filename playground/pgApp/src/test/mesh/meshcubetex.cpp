@@ -1,6 +1,6 @@
 
 #include "meshcubetex.h"
-#include "../scene/sceneass.h"
+#include "engine/scene/sceneass.h"
 
 using namespace Diligent;
 

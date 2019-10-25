@@ -1,16 +1,8 @@
 #include "TechniqueGdr.h"
 
-#include "engine/mesh/meshcube.h"
-#include "engine/mesh/meshcubetex.h"
-#include "engine/pass/passgltfmodel.h"
-
-#include "engine/pipeline/pipelinecolorvertex.h"
-#include "engine/pipeline/pipelinetexvertex.h"
-
 #include "engine/pass/passclearrt.h"
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
-#include "engine/pass/passtest.h"
 
 namespace ade
 {

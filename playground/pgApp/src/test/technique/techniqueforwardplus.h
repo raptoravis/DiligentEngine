@@ -2,10 +2,10 @@
 
 #include "SampleBase.h"
 
-#include "../engine.h"
-#include "../pass/passrender.h"
+#include "engine/engine.h"
 
-#include "../pass/passpostprocess.h"
+#include "test/pass/passrender.h"
+#include "test/pass/passpostprocess.h"
 
 using namespace Diligent;
 

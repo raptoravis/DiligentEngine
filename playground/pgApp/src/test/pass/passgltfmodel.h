@@ -4,7 +4,7 @@
 #include "GLTF_PBR_Renderer.h"
 #include "SampleBase.h"
 
-#include "../engine.h"
+#include "engine/engine.h"
 
 using namespace Diligent;
 

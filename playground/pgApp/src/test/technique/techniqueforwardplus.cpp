@@ -1,22 +1,24 @@
 #include "TechniqueForwardPlus.h"
 
-#include "../pass/passclearrt.h"
-#include "../pass/passcopybuffer.h"
-#include "../pass/passcopytexture.h"
-#include "../pass/passdispatch.h"
-#include "../pass/passinvokefunction.h"
-#include "../pass/passopaque.h"
+#include "engine/pass/passclearrt.h"
+#include "engine/pass/passcopybuffer.h"
+#include "engine/pass/passcopytexture.h"
+#include "engine/pass/passdispatch.h"
+#include "engine/pass/passinvokefunction.h"
+#include "engine/pass/passsetrt.h"
+
+#include "engine/pipeline/pipelinebase.h"
+#include "engine/pipeline/pipelinedebug.h"
+#include "engine/pipeline/pipelinedispatch.h"
+
 #include "../pass/passpostprocess.h"
-#include "../pass/passsetrt.h"
+#include "../pass/passopaque.h"
 #include "../pass/passtransparent.h"
 
-#include "../pipeline/pipelinebase.h"
-#include "../pipeline/pipelinedebug.h"
-#include "../pipeline/pipelinedispatch.h"
 #include "../pipeline/pipelinefpopaque.h"
 #include "../pipeline/pipelinetransparent.h"
 
-#include "../scene/sceneass.h"
+#include "engine/scene/sceneass.h"
 
 namespace ade
 {

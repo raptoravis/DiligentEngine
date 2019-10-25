@@ -1,12 +1,13 @@
 #include "techniqueforward.h"
 
-#include "../pipeline/pipelinebase.h"
+#include "engine/pass/passclearrt.h"
+#include "engine/pass/passcopytexture.h"
+#include "engine/pass/passsetrt.h"
+#include "engine/pipeline/pipelinebase.h"
+
 #include "../pipeline/pipelinetransparent.h"
 
-#include "../pass/passclearrt.h"
-#include "../pass/passcopytexture.h"
 #include "../pass/passopaque.h"
-#include "../pass/passsetrt.h"
 #include "../pass/passtransparent.h"
 
 namespace ade
