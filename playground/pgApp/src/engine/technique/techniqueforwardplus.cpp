@@ -6,13 +6,17 @@
 #include "../pass/passdispatch.h"
 #include "../pass/passinvokefunction.h"
 #include "../pass/passopaque.h"
+#include "../pass/passpostprocess.h"
 #include "../pass/passsetrt.h"
 #include "../pass/passtransparent.h"
 
 #include "../pipeline/pipelinebase.h"
+#include "../pipeline/pipelinedebug.h"
 #include "../pipeline/pipelinedispatch.h"
 #include "../pipeline/pipelinefpopaque.h"
 #include "../pipeline/pipelinetransparent.h"
+
+#include "../scene/sceneass.h"
 
 namespace ade
 {
@@ -194,12 +198,12 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
                         (uint32_t)ceil(App::s_desc.Height / (float)m_LightCullingBlockSize), 1);
 
     auto lightGridFormat = Diligent::TEX_FORMAT_RG32_UINT;
-    m_pLightGridOpaque = Scene::CreateTexture2D(
-        (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
-        lightGridFormat, CPUAccess::None, true);
-    m_pLightGridTransparent = Scene::CreateTexture2D(
-        (uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y, (uint16_t)numThreadGroups.z,
-        lightGridFormat, CPUAccess::None, true);
+    m_pLightGridOpaque =
+        Scene::CreateTexture2D((uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y,
+                               (uint16_t)numThreadGroups.z, lightGridFormat, CPUAccess::None, true);
+    m_pLightGridTransparent =
+        Scene::CreateTexture2D((uint16_t)numThreadGroups.x, (uint16_t)numThreadGroups.y,
+                               (uint16_t)numThreadGroups.z, lightGridFormat, CPUAccess::None, true);
 
     UpdateGridFrustums(pCamera);
 
@@ -233,7 +237,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
 
     m_pLightCullingDebugTexture =
         Scene::CreateTexture2D((uint16_t)App::s_desc.Width, (uint16_t)App::s_desc.Height, 1,
-                                 Diligent::TEX_FORMAT_RGBA32_FLOAT, CPUAccess::None, true);
+                               Diligent::TEX_FORMAT_RGBA32_FLOAT, CPUAccess::None, true);
     m_pLightCullingComputeShader->GetShaderParameterByName("DebugTexture")
         .Set(m_pLightCullingDebugTexture);
 
@@ -242,8 +246,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
     m_pLightCullingComputeShader->GetShaderParameterByName("LightCountHeatMap")
         .Set(m_pLightCullingHeatMap);
 
-    auto lightsSB =
-        std::dynamic_pointer_cast<StructuredBuffer>(this->Get(PassRender::kLightsName));
+    auto lightsSB = std::dynamic_pointer_cast<StructuredBuffer>(this->Get(PassRender::kLightsName));
 
     m_pLightCullingComputeShader->GetShaderParameterByName(PassRender::kLightsName).Set(lightsSB);
 
@@ -305,6 +308,8 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
     AddPass(
         std::make_shared<PassTransparent>(this, scene, m_pForwardPlusTransparentPipeline, lights));
 
+    initDebug();
+
     {
         auto srcTexture = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
         auto dstTexture = m_pBackBuffer;
@@ -314,5 +319,62 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
         AddPass(pCopyTexPass);
     }
 }
+
+
+void TechniqueForwardPlus::initDebug()
+{
+#if RIGHT_HANDED
+    bool IsGL = true;
+#else
+    bool IsGL = false;
+#endif
+    Diligent::DepthStencilStateDesc DSStateDesc;
+    DSStateDesc.DepthEnable = False;
+
+	Diligent::BlendStateDesc BlendDesc;
+    BlendDesc.RenderTargets[0].BlendEnable = True;
+    BlendDesc.RenderTargets[0].SrcBlend = BLEND_FACTOR_SRC_ALPHA;
+    BlendDesc.RenderTargets[0].DestBlend = BLEND_FACTOR_INV_SRC_ALPHA;
+    BlendDesc.RenderTargets[0].SrcBlendAlpha = BLEND_FACTOR_ZERO;
+    BlendDesc.RenderTargets[0].DestBlendAlpha = BLEND_FACTOR_ONE;
+
+    Diligent::float4x4 orthographicProjection = Diligent::float4x4::Ortho(2.f, 2, 0.f, 1.f, IsGL);
+
+    std::shared_ptr<Shader> pDebugTexturePixelShader1 = std::make_shared<Shader>();
+    pDebugTexturePixelShader1->LoadShaderFromFile(Shader::PixelShader, "DeferredRendering.hlsl",
+                                                  "PS_DebugTexture", "./resources/shaders");
+    pDebugTexturePixelShader1->GetShaderParameterByName("LinearRepeatSampler")
+        .Set(m_LinearRepeatSampler);
+
+    m_pDebugTextureWithBlendingPipeline = std::make_shared<PipelineDebug>(m_pRenderTarget);
+    m_pDebugTextureWithBlendingPipeline->SetShader(Shader::VertexShader, m_pVertexShader);
+    m_pDebugTextureWithBlendingPipeline->SetShader(Shader::PixelShader, pDebugTexturePixelShader1);
+    m_pDebugTextureWithBlendingPipeline->SetDepthStencilState(DSStateDesc);
+
+    m_pDebugTextureWithBlendingPipeline->SetBlendState(BlendDesc);
+
+    std::shared_ptr<Scene> debugTextureScene = SceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
+    m_DebugTexture0Pass = std::make_shared<PassPostprocess>(
+        this, debugTextureScene, m_pDebugTextureWithBlendingPipeline, orthographicProjection,
+        m_pLightCullingDebugTexture);
+    m_DebugTexture0Pass->SetEnabled(false);    // Initially disabled.
+    AddPass(m_DebugTexture0Pass);
+}
+
+void TechniqueForwardPlus::Render()
+{
+    base::Render();
+}
+
+void TechniqueForwardPlus::Update()
+{
+    ImGui::Separator();
+
+    ImGui::Checkbox("debug", &m_bDebugEnabled);
+    ImGui::Separator();
+
+    m_DebugTexture0Pass->SetEnabled(m_bDebugEnabled);
+}
+
 
 }    // namespace ade

@@ -15,8 +15,8 @@ class AppTest final : public ade::App
         Forward,
         Deferred,
         ForwardPlus,
+        Gdr,
         LightPrepass,
-        GDR,
         NumTechniques
     };
 
@@ -53,6 +53,7 @@ class AppTest final : public ade::App
     std::shared_ptr<ade::Technique> m_pForwardTechnique;
     std::shared_ptr<ade::Technique> m_pDeferredTechnique;
     std::shared_ptr<ade::Technique> m_pForwardPlusTechnique;
+    std::shared_ptr<ade::Technique> m_pGdrTechnique;
 
     RenderingTechnique m_renderingTechnique = RenderingTechnique::Test;
 };

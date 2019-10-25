@@ -3,6 +3,7 @@
 #include "engine/technique/techniquedeferred.h"
 #include "engine/technique/techniqueforward.h"
 #include "engine/technique/techniqueforwardplus.h"
+#include "engine/technique/techniquegdr.h"
 #include "engine/technique/techniquetest.h"
 
 #include "BasicMath.h"
@@ -182,7 +183,8 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     createRT();
 
-    m_renderingTechnique = RenderingTechnique::ForwardPlus;
+    m_renderingTechnique = RenderingTechnique::Gdr;
+    // m_renderingTechnique = RenderingTechnique::ForwardPlus;
     // m_renderingTechnique = RenderingTechnique::Deferred;
     // m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
@@ -217,6 +219,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     m_pDeferredTechnique = std::make_shared<ade::TechniqueDeferred>(m_pRenderTarget, m_pBackBuffer);
     m_pForwardPlusTechnique =
         std::make_shared<ade::TechniqueForwardPlus>(m_pRenderTarget, m_pBackBuffer);
+    m_pGdrTechnique = std::make_shared<ade::TechniqueGdr>(m_pRenderTarget, m_pBackBuffer);
 
     //
     std::shared_ptr<SceneTest> testScene = std::make_shared<SceneTest>();
@@ -258,6 +261,12 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
         fpTech->init(testScene, &m_Lights, m_pCamera);
     }
+
+    {
+        auto gdrTech = (ade::TechniqueGdr*)m_pGdrTechnique.get();
+
+        gdrTech->init();
+    }
 }
 
 AppTest::~AppTest()
@@ -295,6 +304,10 @@ void AppTest::Render()
         m_pForwardPlusTechnique->Render();
     }
 
+    if (m_renderingTechnique == RenderingTechnique::Gdr) {
+        m_pGdrTechnique->Render();
+    }
+
     // auto srcTexture = m_pRenderTarget->GetTexture(ade::RenderTarget::AttachmentPoint::Color0);
     // srcTexture->Copy(m_pBackBuffer.get());
 }
@@ -314,7 +327,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
     // ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        const char* desc[] = { "test", "forward", "deferred", "forward+" };
+        const char* desc[] = { "test", "forward", "deferred", "forward+", "gdr", "lightprepass" };
         // ImGui::SetNextItemWidth(100);
         ImGui::Combo("technique", &technique, desc, IM_ARRAYSIZE(desc));
 
@@ -354,6 +367,10 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         if (m_renderingTechnique == RenderingTechnique::ForwardPlus) {
             m_pForwardPlusTechnique->Update();
+        }
+
+        if (m_renderingTechnique == RenderingTechnique::Gdr) {
+            m_pGdrTechnique->Update();
         }
     }
 

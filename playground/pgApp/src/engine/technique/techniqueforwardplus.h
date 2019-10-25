@@ -5,6 +5,8 @@
 #include "../engine.h"
 #include "../pass/passrender.h"
 
+#include "../pass/passpostprocess.h"
+
 using namespace Diligent;
 
 namespace ade
@@ -46,6 +48,7 @@ class TechniqueForwardPlus : public Technique
     std::shared_ptr<RenderTarget> m_pDepthOnlyRenderTarget;
     std::shared_ptr<RenderTarget> m_pColorOnlyRenderTarget;
 
+	std::shared_ptr<Pipeline> m_pDebugTextureWithBlendingPipeline;
     std::shared_ptr<Pipeline> m_pDepthPrepassPipeline;
     std::shared_ptr<Pipeline> m_pForwardPlusOpaquePipeline;
     std::shared_ptr<Pipeline> m_pForwardPlusTransparentPipeline;
@@ -76,13 +79,19 @@ class TechniqueForwardPlus : public Technique
     std::shared_ptr<SamplerState> m_LinearRepeatSampler;
     std::shared_ptr<SamplerState> m_LinearClampSampler;
 
+	std::shared_ptr<PassPostprocess> m_DebugTexture0Pass;
+    bool m_bDebugEnabled = false;
 
     void UpdateGridFrustums(std::shared_ptr<Camera> pCamera);
     std::shared_ptr<Texture> LoadTexture(const std::string& path);
 
+	void initDebug();
   public:
     TechniqueForwardPlus(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
     virtual ~TechniqueForwardPlus();
+
+    virtual void Render();
+    virtual void Update();
 
     void init(const std::shared_ptr<Scene> scene, std::vector<Light>* lights,
               std::shared_ptr<Camera> pCamera);
