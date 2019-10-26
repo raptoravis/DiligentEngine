@@ -20,7 +20,7 @@
 
 #include "engine/utils/mathutils.h"
 
-#include "scenetest.h"
+#include "scene/scenetest.h"
 
 namespace Diligent
 {

@@ -33,18 +33,21 @@ class SceneAss : public Scene
     virtual ~SceneAss();
 
     static std::shared_ptr<Buffer> createFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                             const float* data, uint32_t count,
-                                                             uint32_t stride);
+                                                           const float* data, uint32_t count,
+                                                           uint32_t stride);
     static std::shared_ptr<Buffer> createUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                           const uint32_t* data,
-                                                           uint32_t sizeInBytes);
+                                                         const uint32_t* data,
+                                                         uint32_t sizeInBytes);
+    static std::shared_ptr<Buffer> createUInt16IndexBuffer(Diligent::IRenderDevice* device,
+                                                           const uint16_t* data, uint32_t count);
+
 
     static std::shared_ptr<SceneAss> CreateScene();
     static std::shared_ptr<Scene>
         CreatePlane(float size, const Diligent::float3& N = Diligent::float3(0, 1, 0));
     static std::shared_ptr<Scene> CreateScreenQuad(float left = -1.0f, float right = 1.0f,
-                                                     float bottom = -1.0f, float top = 1.0f,
-                                                     float z = 0.0f);
+                                                   float bottom = -1.0f, float top = 1.0f,
+                                                   float z = 0.0f);
     static std::shared_ptr<Scene> CreateSphere(float radius, float tesselation = 4);
     static std::shared_ptr<Scene> CreateCube(float size);
     static std::shared_ptr<Scene>
@@ -61,7 +64,7 @@ class SceneAss : public Scene
     friend class ProgressHandler;
 
     std::shared_ptr<Buffer> CreateFloatVertexBuffer(const float* data, uint32_t count,
-                                                      uint32_t stride);
+                                                    uint32_t stride);
     std::shared_ptr<Buffer> CreateUIntIndexBuffer(const uint32_t* data, uint32_t count);
 
     std::shared_ptr<Mesh> CreateMesh();
@@ -82,8 +85,7 @@ class SceneAss : public Scene
 
     void ImportMaterial(const aiMaterial& material, fs::path parentPath);
     void ImportMesh(const aiMesh& mesh);
-    std::shared_ptr<SceneNode> ImportSceneNode(std::shared_ptr<SceneNode> parent,
-                                                 aiNode* aiNode);
+    std::shared_ptr<SceneNode> ImportSceneNode(std::shared_ptr<SceneNode> parent, aiNode* aiNode);
 
     std::wstring m_SceneFile;
 };

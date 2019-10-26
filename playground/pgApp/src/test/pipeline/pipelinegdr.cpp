@@ -3,19 +3,25 @@
 using namespace Diligent;
 using namespace ade;
 
-PipelineGdr::PipelineGdr(std::shared_ptr<RenderTarget> rt) : base(rt) {}
-
-PipelineGdr::~PipelineGdr() {}
-
-void PipelineGdr::InitPSODesc()
+PipelineGdr::PipelineGdr(std::shared_ptr<ade::RenderTarget> rt) : base(rt)
 {
-    base::InitPSODesc();
+    // CreatePipelineState();
+    m_pVS = std::make_shared<ade::Shader>();
+    m_pVS->LoadShaderFromFile(ade::Shader::Shader::VertexShader, "cube.vsh", "main", "", true);
 
-    m_PSODesc.Name = "PipelineGdr PSO";
+    m_pPS = std::make_shared<ade::Shader>();
+    m_pPS->LoadShaderFromFile(ade::Shader::Shader::PixelShader, "cube.psh", "main", "", true);
 
-    auto& DepthStencilDesc = m_PSODesc.GraphicsPipeline.DepthStencilDesc;
-    DepthStencilDesc.DepthEnable = True;
-    DepthStencilDesc.DepthWriteEnable = False;
-    DepthStencilDesc.DepthFunc = COMPARISON_FUNC_LESS_EQUAL;
+    SetShader(ade::Shader::Shader::VertexShader, m_pVS);
+    SetShader(ade::Shader::Shader::PixelShader, m_pPS);
+
+    static LayoutElement LayoutElems[] = {
+        // Attribute 0 - vertex position
+        LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
+    };
+
+    m_PSODesc.GraphicsPipeline.InputLayout.LayoutElements = LayoutElems;
+    m_PSODesc.GraphicsPipeline.InputLayout.NumElements = _countof(LayoutElems);
 }
 
+PipelineGdr::~PipelineGdr() {}

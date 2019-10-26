@@ -484,6 +484,29 @@ std::shared_ptr<Buffer> SceneAss::createUIntIndexBuffer(Diligent::IRenderDevice*
     return buffer;
 }
 
+std::shared_ptr<Buffer> SceneAss::createUInt16IndexBuffer(Diligent::IRenderDevice* device,
+                                                        const uint16_t* data, uint32_t count)
+{
+    Diligent::BufferDesc IndBuffDesc;
+    IndBuffDesc.Name = "UInt index buffer";
+    IndBuffDesc.Usage = Diligent::USAGE_STATIC;
+    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+    IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
+
+    Diligent::BufferData IBData;
+    IBData.pData = data;
+    IBData.DataSize = sizeof(uint16_t) * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
+
+    std::shared_ptr<Buffer> buffer =
+        std::make_shared<Buffer>((uint32_t)sizeof(uint16_t), count, pBuffer);
+
+    return buffer;
+}
+
+
 std::shared_ptr<Mesh> SceneAss::CreateMesh()
 {
     std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();

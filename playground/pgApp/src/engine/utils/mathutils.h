@@ -153,4 +153,44 @@ inline Diligent::Quaternion MakeQuaternionFromTwoVec3(const Diligent::float3& u,
     return r;
 }
 
+inline void vec4MulMtx(Diligent::float4& out, const Diligent::float4& in, const Diligent::float4x4& mat)
+{
+    out = in * mat;
+}
+
+inline void mtxSRT(Diligent::float4x4& _result, float _sx, float _sy, float _sz, float _ax, float _ay,
+            float _az, float _tx, float _ty, float _tz)
+{
+    const float sx = sin(_ax);
+    const float cx = cos(_ax);
+    const float sy = sin(_ay);
+    const float cy = cos(_ay);
+    const float sz = sin(_az);
+    const float cz = cos(_az);
+
+    const float sxsz = sx * sz;
+    const float cycz = cy * cz;
+
+    _result._11 = _sx * (cycz - sxsz * sy);
+    _result._12 = _sx * -cx * sz;
+    _result._13 = _sx * (cz * sy + cy * sxsz);
+    _result._14 = 0.0f;
+
+    _result._21 = _sy * (cz * sx * sy + cy * sz);
+    _result._22 = _sy * cx * cz;
+    _result._23 = _sy * (sy * sz - cycz * sx);
+    _result._24 = 0.0f;
+
+    _result._31 = _sz * -cx * sy;
+    _result._32 = _sz * sx;
+    _result._33 = _sz * cx * cy;
+    _result._34 = 0.0f;
+
+    _result._41 = _tx;
+    _result._42 = _ty;
+    _result._43 = _tz;
+    _result._44 = 1.0f;
+}
+
+
 }    // namespace ade

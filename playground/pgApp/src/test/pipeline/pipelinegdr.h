@@ -1,17 +1,16 @@
 #pragma once
 
-#include "engine/pipeline/pipelinebase.h"
+#include "engine/engine.h"
 
-
-class PipelineGdr : public ade::PipelineBase
+class PipelineGdr : public ade::Pipeline
 {
-    typedef ade::PipelineBase base;
+    typedef ade::Pipeline base;
 
-  protected:
-    virtual void InitPSODesc();
+  private:
+    std::shared_ptr<ade::Shader> m_pVS;
+    std::shared_ptr<ade::Shader> m_pPS;
 
   public:
     PipelineGdr(std::shared_ptr<ade::RenderTarget> rt);
     virtual ~PipelineGdr();
 };
-
