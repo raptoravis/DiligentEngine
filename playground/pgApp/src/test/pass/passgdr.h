@@ -2,45 +2,49 @@
 
 #include "engine/engine.h"
 
-using namespace ade;
 
-
-class PassGdr : public Pass
+class PassGdr : public ade::Pass
 {
-    typedef Pass base;
+    typedef ade::Pass base;
 
   protected:
-    std::shared_ptr<Scene> m_pScene;
-    std::shared_ptr<Pipeline> m_pPipeline;
+    std::shared_ptr<ade::Scene> m_pScene;
+    std::shared_ptr<ade::Pipeline> m_pPipeline;
 
   public:
-    const char* kPerObjectName = "Constants";
-
-    PassGdr(Technique* parentTechnique, std::shared_ptr<Scene> scene,
-             std::shared_ptr<Pipeline> pipeline);
+    PassGdr(ade::Technique* parentTechnique, std::shared_ptr<ade::Scene> scene,
+             std::shared_ptr<ade::Pipeline> pipeline);
     virtual ~PassGdr();
 
     // Render the pass. This should only be called by the RenderTechnique.
     virtual void PreRender();
-    virtual void Render(Pipeline* pipeline);
+    virtual void Render(ade::Pipeline* pipeline);
     virtual void PostRender();
 
     // Inherited from Visitor
-    virtual void Visit(Scene& scene, Pipeline* pipeline);
-    virtual void Visit(SceneNode& node, Pipeline* pipeline);
-    virtual void Visit(Mesh& mesh, Pipeline* pipeline);
+    virtual void Visit(ade::Scene& scene, ade::Pipeline* pipeline);
+    virtual void Visit(ade::SceneNode& node, ade::Pipeline* pipeline);
+    virtual void Visit(ade::Mesh& mesh, ade::Pipeline* pipeline);
 
-  protected:
     // PerObject constant buffer data.
     __declspec(align(16)) struct PerObject {
-        Diligent::float4x4 ModelViewProjection;
+        Diligent::float4x4 Model;
+        Diligent::float4x4 ViewProjection;
     };
 
-    // Set and bind the constant buffer data.
+    __declspec(align(16)) struct ColorsMaterial {
+        Diligent::float4 colors[32];
+        Diligent::Uint32 mid;
+        Diligent::Uint32 padding[3];
+    };
+
+    void SetColorsMaterialPerObjectConstantBufferData(ColorsMaterial& data);
+  protected:
     void SetPerObjectConstantBufferData(PerObject& perObjectData);
-    // Bind the constant to the shader.
-    void BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader);
+
+    void BindPerObjectConstantBuffer(std::shared_ptr<ade::Shader> shader);
+    void BindColorsMaterialConstantBuffer(std::shared_ptr<ade::Shader> shader);
 
   private:
-    std::shared_ptr<ConstantBuffer> m_PerObjectConstantBuffer;
+    std::shared_ptr<ade::ConstantBuffer> m_PerObjectConstantBuffer;
 };

@@ -29,7 +29,7 @@ struct InstanceData {
 // A description of each prop
 struct Prop {
     PosVertex* m_vertices;
-    uint16_t* m_indices;
+    uint32_t* m_indices;
     InstanceData* m_instances;
 
     std::shared_ptr<ade::Buffer> m_vertexbufferHandle;

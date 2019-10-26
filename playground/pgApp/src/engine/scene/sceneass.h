@@ -38,9 +38,8 @@ class SceneAss : public Scene
     static std::shared_ptr<Buffer> createUIntIndexBuffer(Diligent::IRenderDevice* device,
                                                          const uint32_t* data,
                                                          uint32_t sizeInBytes);
-    static std::shared_ptr<Buffer> createUInt16IndexBuffer(Diligent::IRenderDevice* device,
-                                                           const uint16_t* data, uint32_t count);
-
+    //static std::shared_ptr<Buffer> createUInt16IndexBuffer(Diligent::IRenderDevice* device,
+    //                                                       const uint16_t* data, uint32_t count);
 
     static std::shared_ptr<SceneAss> CreateScene();
     static std::shared_ptr<Scene>

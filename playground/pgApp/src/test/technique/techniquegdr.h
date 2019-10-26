@@ -8,18 +8,18 @@
 
 
 using namespace Diligent;
-using namespace ade;
 
-class TechniqueGdr : public Technique
+class TechniqueGdr : public ade::Technique
 {
-    typedef Technique base;
+    typedef ade::Technique base;
 
-    std::shared_ptr<ConstantBuffer> m_VSConstants;
+    std::shared_ptr<ade::ConstantBuffer> m_PerObject;
+    std::shared_ptr<ade::ConstantBuffer> m_colors;
 
-    std::shared_ptr<Scene> m_pSceneCube;
+    std::shared_ptr<ade::Scene> m_pSceneCube;
 
   public:
-    TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer);
+    TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);
     virtual ~TechniqueGdr();
 
 	void init();

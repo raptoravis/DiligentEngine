@@ -1,17 +1,29 @@
 #include "passgdr.h"
+#include "../pipeline/pipelinegdr.h"
+
+using namespace ade;
+
 
 PassGdr::PassGdr(Technique* parentTechnique, std::shared_ptr<Scene> scene,
-                   std::shared_ptr<Pipeline> pipeline)
+                 std::shared_ptr<Pipeline> pipeline)
     : base(parentTechnique), m_pScene(scene), m_pPipeline(pipeline)
 {
 }
 
 PassGdr::~PassGdr() {}
 
+void PassGdr::SetColorsMaterialPerObjectConstantBufferData(ColorsMaterial& data)
+{
+    auto cb = std::dynamic_pointer_cast<ConstantBuffer>(
+        m_parentTechnique->Get(PipelineGdr::kColorsMaterialName));
+
+    cb->Set(data);
+}
+
 void PassGdr::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
-    auto perObjectCB =
-        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kPerObjectName));
+    auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
+        m_parentTechnique->Get(PipelineGdr::kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
@@ -19,9 +31,18 @@ void PassGdr::SetPerObjectConstantBufferData(PerObject& perObjectData)
 void PassGdr::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
 {
     if (shader) {
-        auto perObjectCB =
-            std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(kPerObjectName));
-        shader->GetShaderParameterByName(kPerObjectName).Set(perObjectCB);
+        auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
+            m_parentTechnique->Get(PipelineGdr::kPerObjectName));
+        shader->GetShaderParameterByName(PipelineGdr::kPerObjectName).Set(perObjectCB);
+    }
+}
+
+void PassGdr::BindColorsMaterialConstantBuffer(std::shared_ptr<ade::Shader> shader)
+{
+    if (shader) {
+        auto cb = std::dynamic_pointer_cast<ConstantBuffer>(
+            m_parentTechnique->Get(PipelineGdr::kColorsMaterialName));
+        shader->GetShaderParameterByName(PipelineGdr::kColorsMaterialName).Set(cb);
     }
 }
 
@@ -30,6 +51,8 @@ void PassGdr::PreRender()
     if (m_pPipeline) {
         // Make sure the per object constant buffer is bound to the vertex shader.
         BindPerObjectConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
+        BindColorsMaterialConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
+        BindColorsMaterialConstantBuffer(m_pPipeline->GetShader(Shader::PixelShader));
         m_pPipeline->Bind();
     }
 }
@@ -65,11 +88,10 @@ void PassGdr::Visit(SceneNode& node, Pipeline* pipeline)
         const Diligent::float4x4 nodeTransform = node.getWorldTransfom();
 
         // the mat1 * mat2 should be left mul
-        Diligent::float4x4 worldView = nodeTransform * viewMatrix;
-        Diligent::float4x4 worldViewProjMatrix = worldView * projMatrix;
+        Diligent::float4x4 viewProjMatrix = viewMatrix * projMatrix;
 
-        // as cube.vsh, mul(vec, mat), mat should be row major, so to transpose it
-        perObjectData.ModelViewProjection = worldViewProjMatrix.Transpose();
+        perObjectData.Model = nodeTransform;
+        perObjectData.ViewProjection = viewProjMatrix;
 
         // Update the constant buffer data
         SetPerObjectConstantBufferData(perObjectData);

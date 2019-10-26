@@ -1,0 +1,11 @@
+
+#include "CommonInclude.sh"
+
+
+
+float4 main( VertexShaderOutput IN ) : SV_TARGET
+{
+	float4 color = u_color[uint(IN.materialID)];
+
+	return float4(color.xyz, 1.0);
+}

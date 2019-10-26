@@ -15,7 +15,7 @@ static PosVertex s_cubeVertices[8] = {
     { -0.5f, 0.5f, -0.5f }, { 0.5f, 0.5f, -0.5f }, { -0.5f, -0.5f, -0.5f }, { 0.5f, -0.5f, -0.5f },
 };
 
-static const uint16_t s_cubeIndices[36] = {
+static const uint32_t s_cubeIndices[36] = {
     0, 1, 2,             // 0
     1, 3, 2, 4, 6, 5,    // 2
     5, 6, 7, 0, 2, 4,    // 4
@@ -39,17 +39,17 @@ void createCubeMesh(Prop& prop)
     prop.m_noofVertices = 8;
     prop.m_noofIndices = 36;
     prop.m_vertices = new PosVertex[prop.m_noofVertices];
-    prop.m_indices = new uint16_t[prop.m_noofIndices];
+    prop.m_indices = new uint32_t[prop.m_noofIndices];
 
     memcpy(prop.m_vertices, s_cubeVertices, prop.m_noofVertices * sizeof(PosVertex));
-    memcpy(prop.m_indices, s_cubeIndices, prop.m_noofIndices * sizeof(uint16_t));
+    memcpy(prop.m_indices, s_cubeIndices, prop.m_noofIndices * sizeof(uint32_t));
 
     std::shared_ptr<ade::Buffer> buffer = ade::SceneAss::createFloatVertexBuffer(
         ade::App::s_device, (const float*)prop.m_vertices, prop.m_noofVertices, sizeof(PosVertex));
 
     prop.m_vertexbufferHandle = buffer;
 
-    prop.m_indexbufferHandle = ade::SceneAss::createUInt16IndexBuffer(
+    prop.m_indexbufferHandle = ade::SceneAss::createUIntIndexBuffer(
         ade::App::s_device, prop.m_indices, prop.m_noofIndices);
 }
 

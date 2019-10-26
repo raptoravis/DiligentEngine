@@ -11,6 +11,10 @@ class PipelineGdr : public ade::Pipeline
     std::shared_ptr<ade::Shader> m_pPS;
 
   public:
-    PipelineGdr(std::shared_ptr<ade::RenderTarget> rt);
+    static const char* kPerObjectName;
+    static const char* kColorsMaterialName;
+
+    PipelineGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::ConstantBuffer> perObjectCB,
+                std::shared_ptr<ade::ConstantBuffer> colors);
     virtual ~PipelineGdr();
 };

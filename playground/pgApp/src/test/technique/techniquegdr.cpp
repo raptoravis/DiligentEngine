@@ -4,12 +4,13 @@
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
 
-#include "../pipeline/pipelinecolorvertex.h"
+#include "../pipeline/pipelinegdr.h"
 
-#include "../mesh/meshcube.h"
+#include "../mesh/meshprop.h"
 
-#include "../pass/passtest.h"
+#include "../pass/passgdr.h"
 
+using namespace ade;
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
@@ -22,7 +23,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
     AddPass(pClearRTPass);
 
     {
-        std::shared_ptr<MeshCube> meshCube = std::make_shared<MeshCube>();
+        std::shared_ptr<MeshProp> mesh = std::make_shared<MeshProp>();
 
 #if RIGHT_HANDED
         float z = 8.0f;
@@ -31,7 +32,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
 #endif
         float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
         std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-        root1->addMesh(meshCube);
+        root1->addMesh(mesh);
         m_pSceneCube = std::make_shared<Scene>();
         m_pSceneCube->setRootNode(root1);
 
@@ -42,15 +43,24 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
 #endif
 
         //
-        m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
-        this->Set("Constants", m_VSConstants);
+        m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
+        m_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::ColorsMaterial));
 
-        std::shared_ptr<PipelineColorVertex> pipelineColorVertex =
-            std::make_shared<PipelineColorVertex>(m_pRenderTarget);
+        this->Set(PipelineGdr::kPerObjectName, m_PerObject);
+        this->Set(PipelineGdr::kColorsMaterialName, m_colors);
 
-        std::shared_ptr<TestPass> pCubePass =
-            std::make_shared<TestPass>(this, m_pSceneCube, pipelineColorVertex);
-        AddPass(pCubePass);
+        std::shared_ptr<PipelineGdr> pipeline =
+            std::make_shared<PipelineGdr>(m_pRenderTarget, m_PerObject, m_colors);
+
+        std::shared_ptr<PassGdr> pPass =
+            std::make_shared<PassGdr>(this, m_pSceneCube, pipeline);
+        AddPass(pPass);
+
+		PassGdr::ColorsMaterial colorsMaterial;
+        colorsMaterial.mid = 0;
+        colorsMaterial.colors[0] = {1,1,1,1};
+
+		pPass->SetColorsMaterialPerObjectConstantBufferData(colorsMaterial);
 
         //
         {
@@ -72,14 +82,14 @@ TechniqueGdr::~TechniqueGdr()
 
 void TechniqueGdr::Render()
 {
-    const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;
-    {
-        auto rootCube = m_pSceneCube->getRootNode();
-        auto local = rootCube->getLocalTransform();
-        auto localNew =
-            Diligent::float4x4::RotationY(rotSpeed * App::s_eventArgs.ElapsedTime) * local;
-        rootCube->setLocalTransform(localNew);
-    }
+    //const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;
+    //{
+    //    auto rootCube = m_pSceneCube->getRootNode();
+    //    auto local = rootCube->getLocalTransform();
+    //    auto localNew =
+    //        Diligent::float4x4::RotationY(rotSpeed * App::s_eventArgs.ElapsedTime) * local;
+    //    rootCube->setLocalTransform(localNew);
+    //}
 
     base::Render();
 }

@@ -1,0 +1,16 @@
+
+#include "CommonInclude.sh"
+
+
+VertexShaderOutput main(AppData IN)
+{
+	VertexShaderOutput OUT;
+	
+	OUT.materialID = u_materialID;
+
+	float4 worldPos = mul(u_model, float4(IN.position, 1.0) );
+	
+	OUT.position = mul(u_viewProj, worldPos);
+	
+	return OUT;
+}
