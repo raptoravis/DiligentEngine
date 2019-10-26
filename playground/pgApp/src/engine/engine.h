@@ -953,6 +953,8 @@ class Pipeline : public Object
 
     Diligent::PipelineStateDesc m_PSODesc;
     ShaderMap m_Shaders;
+    Diligent::LayoutElement* m_pLayoutElements;
+    uint32_t m_LayoutElements;
 
     std::shared_ptr<RenderTarget> m_pRenderTarget;
     bool m_bDirty;
@@ -985,6 +987,8 @@ class Pipeline : public Object
 
     void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
     Diligent::DepthStencilStateDesc& GetDepthStencilState();
+
+	void SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements);
 
     void SetStencilRef(uint32_t ref);
 

@@ -1,8 +1,10 @@
 #include "passgdr.h"
-#include "../pipeline/pipelinegdr.h"
 
 using namespace ade;
 
+const char* PassGdr::kPerObjectName = "PerObject";
+const char* PassGdr::kColorsName = "Colors";
+const char* PassGdr::kMaterialIdName = "MaterialId";
 
 PassGdr::PassGdr(Technique* parentTechnique, std::shared_ptr<Scene> scene,
                  std::shared_ptr<Pipeline> pipeline)
@@ -12,47 +14,34 @@ PassGdr::PassGdr(Technique* parentTechnique, std::shared_ptr<Scene> scene,
 
 PassGdr::~PassGdr() {}
 
-void PassGdr::SetColorsMaterialPerObjectConstantBufferData(ColorsMaterial& data)
+void PassGdr::SetColorsConstantBufferData(Colors& data)
 {
-    auto cb = std::dynamic_pointer_cast<ConstantBuffer>(
-        m_parentTechnique->Get(PipelineGdr::kColorsMaterialName));
+    auto cb =
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(PassGdr::kColorsName));
+
+    cb->Set(data);
+}
+
+void PassGdr::SetMaterialIdConstantBufferData(MaterialId& data)
+{
+    auto cb =
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(PassGdr::kMaterialIdName));
 
     cb->Set(data);
 }
 
 void PassGdr::SetPerObjectConstantBufferData(PerObject& perObjectData)
 {
-    auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-        m_parentTechnique->Get(PipelineGdr::kPerObjectName));
+    auto perObjectCB =
+        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(PassGdr::kPerObjectName));
 
     perObjectCB->Set(perObjectData);
 }
 
-void PassGdr::BindPerObjectConstantBuffer(std::shared_ptr<Shader> shader)
-{
-    if (shader) {
-        auto perObjectCB = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->Get(PipelineGdr::kPerObjectName));
-        shader->GetShaderParameterByName(PipelineGdr::kPerObjectName).Set(perObjectCB);
-    }
-}
-
-void PassGdr::BindColorsMaterialConstantBuffer(std::shared_ptr<ade::Shader> shader)
-{
-    if (shader) {
-        auto cb = std::dynamic_pointer_cast<ConstantBuffer>(
-            m_parentTechnique->Get(PipelineGdr::kColorsMaterialName));
-        shader->GetShaderParameterByName(PipelineGdr::kColorsMaterialName).Set(cb);
-    }
-}
 
 void PassGdr::PreRender()
 {
     if (m_pPipeline) {
-        // Make sure the per object constant buffer is bound to the vertex shader.
-        BindPerObjectConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
-        BindColorsMaterialConstantBuffer(m_pPipeline->GetShader(Shader::VertexShader));
-        BindColorsMaterialConstantBuffer(m_pPipeline->GetShader(Shader::PixelShader));
         m_pPipeline->Bind();
     }
 }

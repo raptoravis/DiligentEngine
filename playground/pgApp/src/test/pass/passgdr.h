@@ -12,8 +12,13 @@ class PassGdr : public ade::Pass
     std::shared_ptr<ade::Pipeline> m_pPipeline;
 
   public:
+    static const char* kPerObjectName;
+    static const char* kColorsName;
+    static const char* kMaterialIdName;
+    
+
     PassGdr(ade::Technique* parentTechnique, std::shared_ptr<ade::Scene> scene,
-             std::shared_ptr<ade::Pipeline> pipeline);
+            std::shared_ptr<ade::Pipeline> pipeline);
     virtual ~PassGdr();
 
     // Render the pass. This should only be called by the RenderTechnique.
@@ -32,18 +37,19 @@ class PassGdr : public ade::Pass
         Diligent::float4x4 ViewProjection;
     };
 
-    __declspec(align(16)) struct ColorsMaterial {
+    __declspec(align(16)) struct Colors {
         Diligent::float4 colors[32];
+    };
+
+    __declspec(align(16)) struct MaterialId {
         Diligent::Uint32 mid;
         Diligent::Uint32 padding[3];
     };
 
-    void SetColorsMaterialPerObjectConstantBufferData(ColorsMaterial& data);
-  protected:
-    void SetPerObjectConstantBufferData(PerObject& perObjectData);
+    void SetColorsConstantBufferData(Colors& data);
+    void SetMaterialIdConstantBufferData(MaterialId& data);
 
-    void BindPerObjectConstantBuffer(std::shared_ptr<ade::Shader> shader);
-    void BindColorsMaterialConstantBuffer(std::shared_ptr<ade::Shader> shader);
+    void SetPerObjectConstantBufferData(PerObject& perObjectData);
 
   private:
     std::shared_ptr<ade::ConstantBuffer> m_PerObjectConstantBuffer;

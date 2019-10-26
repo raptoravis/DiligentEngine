@@ -14,9 +14,12 @@ class TechniqueGdr : public ade::Technique
     typedef ade::Technique base;
 
     std::shared_ptr<ade::ConstantBuffer> m_PerObject;
+    std::shared_ptr<ade::ConstantBuffer> m_materialId;
     std::shared_ptr<ade::ConstantBuffer> m_colors;
 
     std::shared_ptr<ade::Scene> m_pSceneCube;
+
+	std::shared_ptr<ade::Pass> createPassGdr();
 
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);

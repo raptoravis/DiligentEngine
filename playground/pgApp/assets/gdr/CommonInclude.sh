@@ -18,8 +18,12 @@ cbuffer PerObject : register( b0 )
 }
 
 
-cbuffer ColorsMaterial : register( b1 )
+cbuffer Colors : register( b1 )
 {
 	float4 u_color[32];
+}
+
+cbuffer MaterialId : register( b2 )
+{
     uint u_materialID;
 }

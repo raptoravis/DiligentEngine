@@ -4,8 +4,6 @@
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
 
-#include "../pipeline/pipelinegdr.h"
-
 #include "../mesh/meshprop.h"
 
 #include "../pass/passgdr.h"
@@ -44,23 +42,16 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
 
         //
         m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
-        m_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::ColorsMaterial));
+        m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
+        m_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 
-        this->Set(PipelineGdr::kPerObjectName, m_PerObject);
-        this->Set(PipelineGdr::kColorsMaterialName, m_colors);
+        this->Set(PassGdr::kPerObjectName, m_PerObject);
+        this->Set(PassGdr::kMaterialIdName, m_materialId);
+        this->Set(PassGdr::kColorsName, m_colors);
 
-        std::shared_ptr<PipelineGdr> pipeline =
-            std::make_shared<PipelineGdr>(m_pRenderTarget, m_PerObject, m_colors);
+		std::shared_ptr<Pass> pPass = createPassGdr();
 
-        std::shared_ptr<PassGdr> pPass =
-            std::make_shared<PassGdr>(this, m_pSceneCube, pipeline);
         AddPass(pPass);
-
-		PassGdr::ColorsMaterial colorsMaterial;
-        colorsMaterial.mid = 0;
-        colorsMaterial.colors[0] = {1,1,1,1};
-
-		pPass->SetColorsMaterialPerObjectConstantBufferData(colorsMaterial);
 
         //
         {
@@ -74,6 +65,52 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
     }
 }
 
+std::shared_ptr<ade::Pass> TechniqueGdr::createPassGdr()
+{
+    std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(m_pRenderTarget);
+
+    {
+        std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
+        vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
+                               "vs_gdr_instanced_indirect_rendering.vsh", "main", "./gdr", false);
+
+        std::shared_ptr<Shader> ps = std::make_shared<ade::Shader>();
+        ps->LoadShaderFromFile(ade::Shader::Shader::PixelShader,
+                               "fs_gdr_instanced_indirect_rendering.psh", "main", "./gdr", false);
+
+        vs->GetShaderParameterByName(PassGdr::kPerObjectName).Set(m_PerObject);
+        vs->GetShaderParameterByName(PassGdr::kMaterialIdName).Set(m_materialId);
+
+        ps->GetShaderParameterByName(PassGdr::kColorsName).Set(m_colors);
+
+        pipeline->SetShader(ade::Shader::Shader::VertexShader, vs);
+        pipeline->SetShader(ade::Shader::Shader::PixelShader, ps);
+
+        LayoutElement LayoutElems[] = {
+            // Attribute 0 - vertex position
+            LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
+        };
+
+        pipeline->SetInputLayout(LayoutElems, _countof(LayoutElems));
+    }
+
+    std::shared_ptr<PassGdr> pPass = std::make_shared<PassGdr>(this, m_pSceneCube, pipeline);
+
+    PassGdr::Colors colors;
+
+    colors.colors[0] = { 1, 1, 1, 1 };
+
+    pPass->SetColorsConstantBufferData(colors);
+
+    PassGdr::MaterialId materialId;
+
+    materialId.mid = 0;
+
+    pPass->SetMaterialIdConstantBufferData(materialId);
+
+    return pPass;
+}
+
 
 TechniqueGdr::~TechniqueGdr()
 {
@@ -82,7 +119,7 @@ TechniqueGdr::~TechniqueGdr()
 
 void TechniqueGdr::Render()
 {
-    //const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;
+    // const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;
     //{
     //    auto rootCube = m_pSceneCube->getRootNode();
     //    auto local = rootCube->getLocalTransform();

@@ -5,12 +5,16 @@ using namespace Diligent;
 namespace ade
 {
 
-Pipeline::Pipeline(std::shared_ptr<RenderTarget> rt) : m_pRenderTarget(rt), m_bDirty(true) {}
-
-Pipeline::~Pipeline()
+Pipeline::Pipeline(std::shared_ptr<RenderTarget> rt)
+    : m_pRenderTarget(rt), m_bDirty(true), m_pLayoutElements(nullptr), m_LayoutElements(0)
 {
     // virtual function can not be called in the constructor
     // InitPSODesc();
+}
+
+Pipeline::~Pipeline()
+{
+    delete m_pLayoutElements;
 }
 
 void Pipeline::InitPSODesc()
@@ -141,6 +145,15 @@ Diligent::DepthStencilStateDesc& Pipeline::GetDepthStencilState()
     return m_PSODesc.GraphicsPipeline.DepthStencilDesc;
 }
 
+void Pipeline::SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements) {
+    delete m_pLayoutElements;
+
+    m_LayoutElements = LayoutElements;
+	m_pLayoutElements = new Diligent::LayoutElement[LayoutElements];
+    memcpy(m_pLayoutElements, pLayoutElements, sizeof(Diligent::LayoutElement) * LayoutElements);
+}
+
+
 void Pipeline::SetStencilRef(uint32_t ref)
 {
     m_stencilRef = ref;
@@ -165,6 +178,11 @@ std::shared_ptr<RenderTarget> Pipeline::GetRenderTarget() const
 void Pipeline::Bind()
 {
     if (m_bDirty) {
+        if (m_LayoutElements > 0 && m_pLayoutElements) {
+            m_PSODesc.GraphicsPipeline.InputLayout.LayoutElements = m_pLayoutElements;
+            m_PSODesc.GraphicsPipeline.InputLayout.NumElements = m_LayoutElements;
+        }
+
         auto vars = GetDynamicVariables();
 
         m_PSODesc.ResourceLayout.Variables = vars.data();
@@ -204,8 +222,7 @@ void Pipeline::Bind()
 
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
-    App::s_ctx->CommitShaderResources(m_pSRB,
-                                        Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    App::s_ctx->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 }
 
 void Pipeline::UnBind()
