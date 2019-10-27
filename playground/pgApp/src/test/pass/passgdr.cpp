@@ -81,16 +81,21 @@ void PassGdr::Visit(Mesh& mesh, Pipeline* pipeline)
     // the mat1 * mat2 should be left mul
     Diligent::float4x4 viewProjMatrix = viewMatrix * projMatrix;
 
-	MeshProp* pMeshProp = (MeshProp*)&mesh;
-	//////////////////////////////////////////////////////////////////////////
+    MeshProp* pMeshProp = (MeshProp*)&mesh;
+    //////////////////////////////////////////////////////////////////////////
     auto prop = pMeshProp->m_prop;
     InstanceData* data = prop.m_instances;
 
-    const uint32_t numInstances = prop.m_noofInstances;
+    uint32_t numInstances = prop.m_noofInstances;
+
+    CHECK_ERR(numInstances <= MODELS_COUNT, "num of instances should not be larger than ",
+              MODELS_COUNT);
+
+	numInstances = std::min(numInstances, MODELS_COUNT);
 
     PerObject perObjectData;
 
-	for (uint32_t i = 0; i < numInstances; ++i) {
+    for (uint32_t i = 0; i < numInstances; ++i) {
         perObjectData.Models[i] = data[i].m_world;
     }
 

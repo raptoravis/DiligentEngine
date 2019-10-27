@@ -26,7 +26,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
         m_pSceneGdr = std::make_shared<SceneGdr>();
         m_pSceneGdr->create();
 
-        auto prop0 = m_pSceneGdr->m_props[0];
+        auto prop0 = m_pSceneGdr->m_props[3];
         std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
 
         auto scene = std::make_shared<Scene>();
@@ -35,7 +35,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
         root1->AddMesh(meshProp);
         scene->SetRootNode(root1);
 
-        //
+        //////////////////////////////////////////////////////////////////////////
         m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
         m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
         m_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
@@ -43,7 +43,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
         this->Set(PassGdr::kPerObjectName, m_PerObject);
         this->Set(PassGdr::kMaterialIdName, m_materialId);
         this->Set(PassGdr::kColorsName, m_colors);
-
+		//////////////////////////////////////////////////////////////////////////
         std::shared_ptr<Pass> pPass = createPassGdr(scene);
 
         AddPass(pPass);
@@ -95,10 +95,10 @@ std::shared_ptr<ade::Pass> TechniqueGdr::createPassGdr(std::shared_ptr<ade::Scen
 
     PassGdr::Colors colors;
 
-    uint32_t numOfProps = SceneGdr::s_maxNoofProps;
-    numOfProps = std::min(numOfProps, 32u);
+    uint32_t noofMaterials = m_pSceneGdr->m_noofMaterials;
+    noofMaterials = std::min(noofMaterials, 32u);
     memcpy(colors.colors, m_pSceneGdr->m_materials,
-           sizeof(m_pSceneGdr->m_materials[0]) * numOfProps);
+           sizeof(m_pSceneGdr->m_materials[0]) * noofMaterials);
     pPass->SetColorsConstantBufferData(colors);
 
     return pPass;
