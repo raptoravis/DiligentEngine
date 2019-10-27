@@ -19,6 +19,7 @@
 #include <windows.h>
 
 #include "engine/utils/mathutils.h"
+#include "engine/common/cameraalt.h"
 
 #include "scene/scenetest.h"
 

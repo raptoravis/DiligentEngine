@@ -4,6 +4,253 @@
 
 namespace ade
 {
+constexpr float kPi = 3.1415926535897932384626433832795f;
+constexpr float kPi2 = 6.2831853071795864769252867665590f;
+constexpr float kInvPi = 1.0f / kPi;
+constexpr float kPiHalf = 1.5707963267948966192313216916398f;
+constexpr float kPiQuarter = 0.7853981633974483096156608458199f;
+constexpr float kSqrt2 = 1.4142135623730950488016887242097f;
+
+constexpr float kNearZero = 1.0f / float(1 << 28);
+constexpr float kFloatMin = 1.175494e-38f;
+constexpr float kFloatMax = 3.402823e+38f;
+
+template <typename Ty>
+inline void swap(Ty& _a, Ty& _b)
+{
+    Ty tmp = _a;
+    _a = _b;
+    _b = tmp;
+}
+
+#undef min
+#undef max
+
+template <typename Ty>
+inline constexpr Ty min(const Ty& _a, const Ty& _b)
+{
+    return _a < _b ? _a : _b;
+}
+
+template <typename Ty>
+inline constexpr Ty max(const Ty& _a, const Ty& _b)
+{
+    return _a > _b ? _a : _b;
+}
+
+template <typename Ty>
+inline constexpr Ty min(const Ty& _a, const Ty& _b, const Ty& _c)
+{
+    return min(min(_a, _b), _c);
+}
+
+template <typename Ty>
+inline constexpr Ty max(const Ty& _a, const Ty& _b, const Ty& _c)
+{
+    return max(max(_a, _b), _c);
+}
+
+template <typename Ty>
+inline constexpr Ty mid(const Ty& _a, const Ty& _b, const Ty& _c)
+{
+    return max(min(_a, _b), min(max(_a, _b), _c));
+}
+
+template <typename Ty>
+inline constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
+{
+    return max(min(_a, _max), _min);
+}
+
+inline float lerp(float _a, float _b, float _t)
+{
+    return _a + (_b - _a) * _t;
+}
+
+
+inline Diligent::float3 fromLatLong(float _u, float _v)
+{
+    Diligent::float3 result;
+    const float phi = _u * kPi2;
+    const float theta = _v * kPi;
+
+    const float st = sin(theta);
+    const float sp = sin(phi);
+    const float ct = cos(theta);
+    const float cp = cos(phi);
+
+    result.x = -st * sp;
+    result.y = ct;
+    result.z = -st * cp;
+    return result;
+}
+
+inline void toLatLong(float* _outU, float* _outV, const Diligent::float3 _dir)
+{
+    const float phi = atan2(_dir.x, _dir.z);
+    const float theta = acos(_dir.y);
+
+    *_outU = (kPi + phi) / kPi2;
+    *_outV = theta * kInvPi;
+}
+
+
+inline Diligent::float3 neg(const Diligent::float3& _a)
+{
+    return {
+        -_a.x,
+        -_a.y,
+        -_a.z,
+    };
+}
+
+inline Diligent::float3 add(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        _a.x + _b.x,
+        _a.y + _b.y,
+        _a.z + _b.z,
+    };
+}
+
+inline Diligent::float3 add(const Diligent::float3& _a, float _b)
+{
+    return {
+        _a.x + _b,
+        _a.y + _b,
+        _a.z + _b,
+    };
+}
+
+inline Diligent::float3 sub(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        _a.x - _b.x,
+        _a.y - _b.y,
+        _a.z - _b.z,
+    };
+}
+
+inline Diligent::float3 sub(const Diligent::float3& _a, float _b)
+{
+    return {
+        _a.x - _b,
+        _a.y - _b,
+        _a.z - _b,
+    };
+}
+
+inline Diligent::float3 mul(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        _a.x * _b.x,
+        _a.y * _b.y,
+        _a.z * _b.z,
+    };
+}
+
+inline Diligent::float3 mul(const Diligent::float3& _a, float _b)
+{
+    return {
+        _a.x * _b,
+        _a.y * _b,
+        _a.z * _b,
+    };
+}
+
+inline Diligent::float3 mad(const Diligent::float3& _a, const float _b, const Diligent::float3& _c)
+{
+    return add(mul(_a, _b), _c);
+}
+
+inline Diligent::float3 mad(const Diligent::float3& _a, const Diligent::float3& _b,
+                            const Diligent::float3& _c)
+{
+    return add(mul(_a, _b), _c);
+}
+
+inline float dot(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return _a.x * _b.x + _a.y * _b.y + _a.z * _b.z;
+}
+
+inline Diligent::float3 cross(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        _a.y * _b.z - _a.z * _b.y,
+        _a.z * _b.x - _a.x * _b.z,
+        _a.x * _b.y - _a.y * _b.x,
+    };
+}
+
+inline float length(const Diligent::float3& _a)
+{
+    return sqrt(dot(_a, _a));
+}
+
+inline float distanceSq(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    const Diligent::float3& ba = sub(_b, _a);
+    return dot(ba, ba);
+}
+
+inline float distance(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return length(sub(_b, _a));
+}
+
+inline Diligent::float3 lerp(const Diligent::float3& _a, const Diligent::float3& _b, float _t)
+{
+    return {
+        lerp(_a.x, _b.x, _t),
+        lerp(_a.y, _b.y, _t),
+        lerp(_a.z, _b.z, _t),
+    };
+}
+
+inline Diligent::float3 lerp(const Diligent::float3& _a, const Diligent::float3& _b,
+                             const Diligent::float3& _t)
+{
+    return {
+        lerp(_a.x, _b.x, _t.x),
+        lerp(_a.y, _b.y, _t.y),
+        lerp(_a.z, _b.z, _t.z),
+    };
+}
+
+inline Diligent::float3 normalize(const Diligent::float3& _a)
+{
+    const float invLen = 1.0f / length(_a);
+    const Diligent::float3& result = mul(_a, invLen);
+    return result;
+}
+
+inline Diligent::float3 min(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        std::min(_a.x, _b.x),
+        std::min(_a.y, _b.y),
+        std::min(_a.z, _b.z),
+    };
+}
+
+inline Diligent::float3 max(const Diligent::float3& _a, const Diligent::float3& _b)
+{
+    return {
+        std::max(_a.x, _b.x),
+        std::max(_a.y, _b.y),
+        std::max(_a.z, _b.z),
+    };
+}
+
+inline Diligent::float3 rcp(const Diligent::float3& _a)
+{
+    return {
+        1.0f / _a.x,
+        1.0f / _a.y,
+        1.0f / _a.z,
+    };
+}
 
 inline float SIGN(float x)
 {
@@ -201,14 +448,15 @@ struct Handness {
 };
 
 inline void mtxLookAt(Diligent::float4x4& _result, const Diligent::float3& _eye,
-                      const Diligent::float3& _at, const Diligent::float3& _up,
+                      const Diligent::float3& _at,
+                      const Diligent::float3& _up = Diligent::float3(0, 1, 0),
                       Handness::Enum _handness = Handness::Left)
 {
-    const Diligent::float3 view =
+    const Diligent::float3& view =
         Diligent::normalize(Handness::Right == _handness ? _eye - _at : _at - _eye);
-    const Diligent::float3 uxv = Diligent::cross(_up, view);
-    const Diligent::float3 right = Diligent::normalize(uxv);
-    const Diligent::float3 up = Diligent::cross(view, right);
+    const Diligent::float3& uxv = Diligent::cross(_up, view);
+    const Diligent::float3& right = Diligent::normalize(uxv);
+    const Diligent::float3& up = Diligent::cross(view, right);
 
     memset(_result.m, 0, sizeof(float) * 16);
 
@@ -222,7 +470,7 @@ inline void mtxLookAt(Diligent::float4x4& _result, const Diligent::float3& _eye,
 
     _result._31 = right.z;
     _result._32 = up.z;
-    _result._33= view.z;
+    _result._33 = view.z;
 
     _result._41 = -Diligent::dot(right, _eye);
     _result._42 = -Diligent::dot(up, _eye);
