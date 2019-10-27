@@ -124,7 +124,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const Light& li
             perObjectData.ModelView = float4x4::Identity();
         } else {
             auto& Proj = e.pCamera->getProjectionMatrix();
-            // const float4x4 nodeTransform = e.pSceneNode->getLocalTransform();
+            // const float4x4 nodeTransform = e.pSceneNode->GetLocalTransform();
             const float4x4 nodeTransform = Diligent::float4x4::Identity();
 
             Diligent::float4x4 translation =

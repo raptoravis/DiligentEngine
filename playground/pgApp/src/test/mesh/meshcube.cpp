@@ -55,7 +55,7 @@ void MeshCube::CreateVertexBuffer()
         ade::App::s_device, (const float*)MeshCubeVerts, 8, sizeof(Vertex));
 
     ade::BufferBinding binding{ "VERTEX", 0 };
-    addVertexBuffer(binding, buffer);
+    AddVertexBuffer(binding, buffer);
 }
 
 void MeshCube::CreateIndexBuffer()

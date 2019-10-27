@@ -516,8 +516,7 @@ class Texture : public Resource
     Diligent::ITextureView* GetRenderTargetView();
     Diligent::ITextureView* GetUnorderedAccessView();
 
-    void Clear(ClearFlags clearFlags, const Diligent::float4& color, float depth,
-               uint8_t stencil);
+    void Clear(ClearFlags clearFlags, const Diligent::float4& color, float depth, uint8_t stencil);
     void Copy(Texture* dstTexture);
 
     void Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType);
@@ -850,15 +849,19 @@ class Mesh : public Object
     std::shared_ptr<Buffer> m_pIndexBuffer;
     std::shared_ptr<Material> m_pMaterial;
 
+    uint32_t m_instances = 1;
+
   public:
     Mesh();
     virtual ~Mesh();
 
-    // Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
-    virtual void addVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> buffer);
-    virtual void setIndexBuffer(std::shared_ptr<Buffer> buffer);
+    void SetInstancesCount(uint32_t instancesCount);
 
-    virtual void setMaterial(std::shared_ptr<Material> material);
+    // Adds a buffer to this mesh with a particular semantic (HLSL) or register ID (GLSL).
+    virtual void AddVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> buffer);
+    virtual void SetIndexBuffer(std::shared_ptr<Buffer> buffer);
+
+    virtual void SetMaterial(std::shared_ptr<Material> material);
     virtual std::shared_ptr<Material> getMaterial() const;
 
     virtual void Render(Pipeline* pipeline);
@@ -877,21 +880,21 @@ class SceneNode : public Object, public std::enable_shared_from_this<SceneNode>
      * Assign a name to this scene node so that it can be searched for later.
      */
     const std::string& getName() const;
-    void setName(const std::string& name);
+    void SetName(const std::string& name);
 
-    Diligent::float4x4 getLocalTransform() const;
-    void setLocalTransform(const Diligent::float4x4& localTransform);
-    Diligent::float4x4 getInverseLocalTransform() const;
-    Diligent::float4x4 getWorldTransfom() const;
-    void setWorldTransform(const Diligent::float4x4& worldTransform);
+    Diligent::float4x4 GetLocalTransform() const;
+    void SetLocalTransform(const Diligent::float4x4& localTransform);
+    Diligent::float4x4 GetInverseLocalTransform() const;
+    Diligent::float4x4 GetWorldTransfom() const;
+    void SetWorldTransform(const Diligent::float4x4& worldTransform);
 
-    Diligent::float4x4 getInverseWorldTransform() const;
+    Diligent::float4x4 GetInverseWorldTransform() const;
 
-    void addChild(std::shared_ptr<SceneNode> pNode);
-    void removeChild(std::shared_ptr<SceneNode> pNode);
-    void setParent(std::weak_ptr<SceneNode> pNode);
+    void AddChild(std::shared_ptr<SceneNode> pNode);
+    void RemoveChild(std::shared_ptr<SceneNode> pNode);
+    void SetParent(std::weak_ptr<SceneNode> pNode);
 
-    void addMesh(std::shared_ptr<Mesh> mesh);
+    void AddMesh(std::shared_ptr<Mesh> mesh);
     void RemoveMesh(std::shared_ptr<Mesh> mesh);
 
     virtual void Accept(Visitor& visitor, Pipeline* pipeline);
@@ -928,16 +931,16 @@ class Scene : public Object
     Scene();
     virtual ~Scene();
 
-    std::shared_ptr<SceneNode> getRootNode() const { return m_pRootNode; }
-    void setRootNode(std::shared_ptr<SceneNode> root) { m_pRootNode = root; }
+    std::shared_ptr<SceneNode> GetRootNode() const { return m_pRootNode; }
+    void SetRootNode(std::shared_ptr<SceneNode> root) { m_pRootNode = root; }
 
     virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
     static std::shared_ptr<Texture> CreateTexture2D(uint16_t width, uint16_t height,
-                                                      uint16_t slices,
-                                                      Diligent::TEXTURE_FORMAT format,
-                                                      CPUAccess cpuAccess, bool gpuWrite,
-                                                      bool bGenerateMipmaps = false);
+                                                    uint16_t slices,
+                                                    Diligent::TEXTURE_FORMAT format,
+                                                    CPUAccess cpuAccess, bool gpuWrite,
+                                                    bool bGenerateMipmaps = false);
 };
 
 class Pipeline : public Object
@@ -988,7 +991,7 @@ class Pipeline : public Object
     void SetDepthStencilState(const Diligent::DepthStencilStateDesc& depthStencilState);
     Diligent::DepthStencilStateDesc& GetDepthStencilState();
 
-	void SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements);
+    void SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements);
 
     void SetStencilRef(uint32_t ref);
 
@@ -1038,7 +1041,7 @@ class PassPilpeline : public Pass
 
   public:
     PassPilpeline(Technique* parentTechnique, std::shared_ptr<Scene> scene,
-                    std::shared_ptr<Pipeline> pipeline);
+                  std::shared_ptr<Pipeline> pipeline);
     virtual ~PassPilpeline();
 
     virtual void PreRender();

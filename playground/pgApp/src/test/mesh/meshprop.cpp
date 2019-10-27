@@ -60,16 +60,21 @@ float rand01()
 }
 
 
-MeshProp::MeshProp() : ade::Mesh()
+MeshProp::MeshProp(const Prop* prop) : ade::Mesh()
 {
-    m_prop = std::make_shared<Prop>();
+    if (!prop) {
+        createCubeMesh(m_prop);
+    } else {
+        m_prop = *prop;
+    }
+	
+	{
 
-    createCubeMesh((*m_prop.get()));
+        ade::BufferBinding binding{ "VERTEX", 0 };
+        AddVertexBuffer(binding, m_prop.m_vertexbufferHandle);
 
-    ade::BufferBinding binding{ "VERTEX", 0 };
-    addVertexBuffer(binding, m_prop->m_vertexbufferHandle);
-
-    m_pIndexBuffer = m_prop->m_indexbufferHandle;
+        m_pIndexBuffer = m_prop.m_indexbufferHandle;
+    }
 }
 
 MeshProp::~MeshProp()

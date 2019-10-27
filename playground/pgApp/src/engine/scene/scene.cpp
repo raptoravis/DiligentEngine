@@ -20,62 +20,62 @@ const std::string& SceneNode::getName() const
     return m_Name;
 }
 
-void SceneNode::setName(const std::string& name)
+void SceneNode::SetName(const std::string& name)
 {
     m_Name = name;
 }
 
-Diligent::float4x4 SceneNode::getLocalTransform() const
+Diligent::float4x4 SceneNode::GetLocalTransform() const
 {
     return m_LocalTransform;
 }
 
-void SceneNode::setLocalTransform(const Diligent::float4x4& localTransform)
+void SceneNode::SetLocalTransform(const Diligent::float4x4& localTransform)
 {
     m_LocalTransform = localTransform;
     m_InverseTransform = localTransform.Inverse();
 }
 
-Diligent::float4x4 SceneNode::getInverseLocalTransform() const
+Diligent::float4x4 SceneNode::GetInverseLocalTransform() const
 {
     return m_InverseTransform;
 }
 
-Diligent::float4x4 SceneNode::getWorldTransfom() const
+Diligent::float4x4 SceneNode::GetWorldTransfom() const
 {
     return GetParentWorldTransform() * m_LocalTransform;
 }
 
-void SceneNode::setWorldTransform(const Diligent::float4x4& worldTransform)
+void SceneNode::SetWorldTransform(const Diligent::float4x4& worldTransform)
 {
     Diligent::float4x4 inverseParentTransform = GetParentWorldTransform().Inverse();
-    setLocalTransform(inverseParentTransform * worldTransform);
+    SetLocalTransform(inverseParentTransform * worldTransform);
 }
 
-Diligent::float4x4 SceneNode::getInverseWorldTransform() const
+Diligent::float4x4 SceneNode::GetInverseWorldTransform() const
 {
-    return getWorldTransfom().Inverse();
+    return GetWorldTransfom().Inverse();
 }
 
 Diligent::float4x4 SceneNode::GetParentWorldTransform() const
 {
     Diligent::float4x4 parentTransform = Diligent::float4x4::Identity();
     if (std::shared_ptr<SceneNode> parent = m_pParentNode.lock()) {
-        parentTransform = parent->getWorldTransfom();
+        parentTransform = parent->GetWorldTransfom();
     }
 
     return parentTransform;
 }
 
-void SceneNode::addChild(std::shared_ptr<SceneNode> pNode)
+void SceneNode::AddChild(std::shared_ptr<SceneNode> pNode)
 {
     if (pNode) {
         NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
         if (iter == m_Children.end()) {
-            Diligent::float4x4 worldTransform = pNode->getWorldTransfom();
+            Diligent::float4x4 worldTransform = pNode->GetWorldTransfom();
             pNode->m_pParentNode = shared_from_this();
-            Diligent::float4x4 localTransform = getInverseWorldTransform() * worldTransform;
-            pNode->setLocalTransform(localTransform);
+            Diligent::float4x4 localTransform = GetInverseWorldTransform() * worldTransform;
+            pNode->SetLocalTransform(localTransform);
             m_Children.push_back(pNode);
             if (!pNode->getName().empty()) {
                 m_ChildrenByName.insert(NodeNameMap::value_type(pNode->getName(), pNode));
@@ -84,12 +84,12 @@ void SceneNode::addChild(std::shared_ptr<SceneNode> pNode)
     }
 }
 
-void SceneNode::removeChild(std::shared_ptr<SceneNode> pNode)
+void SceneNode::RemoveChild(std::shared_ptr<SceneNode> pNode)
 {
     if (pNode) {
         NodeList::iterator iter = std::find(m_Children.begin(), m_Children.end(), pNode);
         if (iter != m_Children.end()) {
-            pNode->setParent(std::weak_ptr<SceneNode>());
+            pNode->SetParent(std::weak_ptr<SceneNode>());
 
             m_Children.erase(iter);
 
@@ -101,28 +101,28 @@ void SceneNode::removeChild(std::shared_ptr<SceneNode> pNode)
         } else {
             // Maybe this node appears lower in the hierarchy...
             for (auto child : m_Children) {
-                child->removeChild(pNode);
+                child->RemoveChild(pNode);
             }
         }
     }
 }
 
-void SceneNode::setParent(std::weak_ptr<SceneNode> wpNode)
+void SceneNode::SetParent(std::weak_ptr<SceneNode> wpNode)
 {
     std::shared_ptr<SceneNode> me = shared_from_this();
 
     if (std::shared_ptr<SceneNode> parent = wpNode.lock()) {
-        parent->addChild(shared_from_this());
+        parent->AddChild(shared_from_this());
     } else if (parent = m_pParentNode.lock()) {
         // Setting parent to NULL.. remove from current parent and reset parent node.
-        Diligent::float4x4 worldTransform = getWorldTransfom();
-        parent->removeChild(shared_from_this());
+        Diligent::float4x4 worldTransform = GetWorldTransfom();
+        parent->RemoveChild(shared_from_this());
         m_pParentNode.reset();
-        setLocalTransform(worldTransform);
+        SetLocalTransform(worldTransform);
     }
 }
 
-void SceneNode::addMesh(std::shared_ptr<Mesh> mesh)
+void SceneNode::AddMesh(std::shared_ptr<Mesh> mesh)
 {
     assert(mesh);
     MeshList::iterator iter = std::find(m_Meshes.begin(), m_Meshes.end(), mesh);

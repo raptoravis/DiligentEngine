@@ -62,7 +62,7 @@ void TestPass::Visit(SceneNode& node, Pipeline* pipeline)
         Diligent::float4x4 viewMatrix = camera->getViewMatrix();
         Diligent::float4x4 projMatrix = camera->getProjectionMatrix();
 
-        const Diligent::float4x4 nodeTransform = node.getWorldTransfom();
+        const Diligent::float4x4 nodeTransform = node.GetWorldTransfom();
 
         // the mat1 * mat2 should be left mul
         Diligent::float4x4 worldView = nodeTransform * viewMatrix;

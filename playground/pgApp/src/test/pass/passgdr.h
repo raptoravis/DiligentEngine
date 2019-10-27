@@ -2,6 +2,7 @@
 
 #include "engine/engine.h"
 
+#define MODELS_COUNT 100
 
 class PassGdr : public ade::Pass
 {
@@ -11,6 +12,7 @@ class PassGdr : public ade::Pass
     std::shared_ptr<ade::Scene> m_pScene;
     std::shared_ptr<ade::Pipeline> m_pPipeline;
 
+	Diligent::float4x4 m_nodeTransform;
   public:
     static const char* kPerObjectName;
     static const char* kColorsName;
@@ -33,8 +35,9 @@ class PassGdr : public ade::Pass
 
     // PerObject constant buffer data.
     __declspec(align(16)) struct PerObject {
-        Diligent::float4x4 Model;
         Diligent::float4x4 ViewProjection;
+        Diligent::float4x4 Model;
+        Diligent::float4x4 Models[MODELS_COUNT];
     };
 
     __declspec(align(16)) struct Colors {

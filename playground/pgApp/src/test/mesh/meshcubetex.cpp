@@ -66,7 +66,7 @@ void MeshCubeTex::CreateVertexBuffer()
         ade::App::s_device, (const float*)CubeVerts, 24, sizeof(Vertex));
 
     ade::BufferBinding binding{ "VERTEX", 0 };
-    addVertexBuffer(binding, buffer);
+    AddVertexBuffer(binding, buffer);
 }
 
 void MeshCubeTex::CreateIndexBuffer()

@@ -131,7 +131,7 @@ bool SceneAss::LoadFromFile(const std::wstring& fileName)
         if (m_pRootNode) {
             // Save the root nodes local transform
             // so it can be restored on reload.
-            localTransform = m_pRootNode->getLocalTransform();
+            localTransform = m_pRootNode->GetLocalTransform();
             m_pRootNode.reset();
         }
         // Delete the previously loaded assets.
@@ -149,7 +149,7 @@ bool SceneAss::LoadFromFile(const std::wstring& fileName)
         }
 
         m_pRootNode = ImportSceneNode(m_pRootNode, scene->mRootNode);
-        m_pRootNode->setLocalTransform(localTransform);
+        m_pRootNode->SetLocalTransform(localTransform);
     }
 
     return true;
@@ -305,34 +305,34 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
     std::shared_ptr<Mesh> pMesh = CreateMesh();
 
     assert(mesh.mMaterialIndex < m_Materials.size());
-    pMesh->setMaterial(m_Materials[mesh.mMaterialIndex]);
+    pMesh->SetMaterial(m_Materials[mesh.mMaterialIndex]);
 
     if (mesh.HasPositions()) {
         std::shared_ptr<Buffer> positions =
             CreateFloatVertexBuffer(&(mesh.mVertices[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(BufferBinding("POSITION", 0), positions);
+        pMesh->AddVertexBuffer(BufferBinding("POSITION", 0), positions);
     }
 
     if (mesh.HasNormals()) {
         std::shared_ptr<Buffer> normals =
             CreateFloatVertexBuffer(&(mesh.mNormals[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(BufferBinding("NORMAL", 0), normals);
+        pMesh->AddVertexBuffer(BufferBinding("NORMAL", 0), normals);
     }
 
     if (mesh.HasTangentsAndBitangents()) {
         std::shared_ptr<Buffer> tangents =
             CreateFloatVertexBuffer(&(mesh.mTangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(BufferBinding("TANGENT", 0), tangents);
+        pMesh->AddVertexBuffer(BufferBinding("TANGENT", 0), tangents);
 
         std::shared_ptr<Buffer> bitangents = CreateFloatVertexBuffer(
             &(mesh.mBitangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
-        pMesh->addVertexBuffer(BufferBinding("BINORMAL", 0), bitangents);
+        pMesh->AddVertexBuffer(BufferBinding("BINORMAL", 0), bitangents);
     }
 
     for (uint32_t i = 0; mesh.HasVertexColors(i); ++i) {
         std::shared_ptr<Buffer> colors =
             CreateFloatVertexBuffer(&(mesh.mColors[i][0].r), mesh.mNumVertices, sizeof(aiColor4D));
-        pMesh->addVertexBuffer(BufferBinding("COLOR", i), colors);
+        pMesh->AddVertexBuffer(BufferBinding("COLOR", i), colors);
     }
 
     for (uint32_t i = 0; mesh.HasTextureCoords(i); ++i) {
@@ -345,7 +345,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
             }
             std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 texcoods1D.data(), (uint32_t)texcoods1D.size(), sizeof(float));
-            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
+            pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         case 2:    // 2-component texture coordinates (U,V)
         {
@@ -356,7 +356,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
             }
             std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 &(texcoods2D[0].x), (uint32_t)texcoods2D.size(), sizeof(aiVector2D));
-            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
+            pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         case 3:    // 3-component texture coordinates (U,V,W)
         {
@@ -366,7 +366,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
             }
             std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
                 &(texcoods3D[0].x), (uint32_t)texcoods3D.size(), sizeof(aiVector3D));
-            pMesh->addVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
+            pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
         }
     }
@@ -386,7 +386,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
         if (indices.size() > 0) {
             std::shared_ptr<Buffer> indexBuffer =
                 CreateUIntIndexBuffer(indices.data(), (uint32_t)indices.size());
-            pMesh->setIndexBuffer(indexBuffer);
+            pMesh->SetIndexBuffer(indexBuffer);
         }
     }
 
@@ -409,11 +409,11 @@ std::shared_ptr<SceneNode> SceneAss::ImportSceneNode(std::shared_ptr<SceneNode> 
                                       mat.c4, mat.d4);
 
     std::shared_ptr<SceneNode> pNode = std::make_shared<SceneNode>(localTransform);
-    pNode->setParent(parent);
+    pNode->SetParent(parent);
 
     std::string nodeName(aiNode->mName.C_Str());
     if (!nodeName.empty()) {
-        pNode->setName(nodeName);
+        pNode->SetName(nodeName);
     }
 
     // Add meshes to scene node
@@ -421,19 +421,19 @@ std::shared_ptr<SceneNode> SceneAss::ImportSceneNode(std::shared_ptr<SceneNode> 
         assert(aiNode->mMeshes[i] < m_Meshes.size());
 
         std::shared_ptr<Mesh> pMesh = m_Meshes[aiNode->mMeshes[i]];
-        pNode->addMesh(pMesh);
+        pNode->AddMesh(pMesh);
     }
 
     // Recursively Import children
     for (uint32_t i = 0; i < aiNode->mNumChildren; ++i) {
         std::shared_ptr<SceneNode> pChild = ImportSceneNode(pNode, aiNode->mChildren[i]);
-        pNode->addChild(pChild);
+        pNode->AddChild(pChild);
     }
 
     return pNode;
 }
 
-std::shared_ptr<SceneNode> SceneAss::getRootNode() const
+std::shared_ptr<SceneNode> SceneAss::GetRootNode() const
 {
     return m_pRootNode;
 }

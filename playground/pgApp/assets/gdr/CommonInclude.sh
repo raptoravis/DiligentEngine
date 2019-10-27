@@ -10,11 +10,16 @@ struct VertexShaderOutput
     float4 position     : SV_POSITION;  // Clip space position.
 };
 
+#ifndef MODELS_COUNT
+#define MODELS_COUNT 100
+#endif
 
 cbuffer PerObject : register( b0 )
 {
-    float4x4 u_model;
 	float4x4 u_viewProj;
+	float4x4 u_model;
+
+	float4x4 u_models[MODELS_COUNT];
 }
 
 

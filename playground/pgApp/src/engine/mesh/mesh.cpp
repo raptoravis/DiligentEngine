@@ -14,17 +14,22 @@ Mesh::~Mesh()
     //
 }
 
-void Mesh::addVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> Buffer)
+void Mesh::SetInstancesCount(uint32_t instancesCount)
+{
+    m_instances = instancesCount;
+}
+
+void Mesh::AddVertexBuffer(const BufferBinding& binding, std::shared_ptr<Buffer> Buffer)
 {
     m_VertexBuffers[binding] = Buffer;
 }
 
-void Mesh::setIndexBuffer(std::shared_ptr<Buffer> Buffer)
+void Mesh::SetIndexBuffer(std::shared_ptr<Buffer> Buffer)
 {
     m_pIndexBuffer = Buffer;
 }
 
-void Mesh::setMaterial(std::shared_ptr<Material> Material)
+void Mesh::SetMaterial(std::shared_ptr<Material> Material)
 {
     m_pMaterial = Material;
 }
@@ -96,6 +101,7 @@ void Mesh::Render(Pipeline* pipeline)
         DrawIndexedAttribs DrawAttrs;
         DrawAttrs.IndexType = VT_UINT32;    // Index type
         DrawAttrs.NumIndices = count;
+        DrawAttrs.NumInstances = m_instances;
         // Verify the state of vertex and index buffers
         DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
 

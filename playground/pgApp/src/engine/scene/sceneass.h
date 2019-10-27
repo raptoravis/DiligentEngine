@@ -25,7 +25,7 @@ class SceneAss : public Scene
   public:
     typedef Scene base;
 
-    virtual std::shared_ptr<SceneNode> getRootNode() const;
+    virtual std::shared_ptr<SceneNode> GetRootNode() const;
     virtual bool LoadFromFile(const std::wstring& fileName);
     virtual bool LoadFromString(const std::string& scene, const std::string& format);
 

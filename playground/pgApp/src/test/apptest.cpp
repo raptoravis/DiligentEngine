@@ -191,7 +191,11 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
     Diligent::float3 pos = Diligent::float3(0, 0, 0);
     Diligent::float3 dir = Diligent::float3(0, 0, -1);
-    if (m_renderingTechnique != RenderingTechnique::Test) {
+
+    if (m_renderingTechnique == RenderingTechnique::Gdr) {
+        pos = Diligent::float3(55.0f, 20.0f, 65.0f);
+        dir = Diligent::normalize(Diligent::float3(0, 0, 0) - pos);
+    } else if (m_renderingTechnique != RenderingTechnique::Test) {
 #if RIGHT_HANDED
         float z = 25;
         dir = Diligent::float3(0, 0, -1);
@@ -200,7 +204,7 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
         // inverted by camera
         dir = Diligent::float3(0, 0, -1);
 #endif
-        pos = float3(0, 0, z);
+        pos = Diligent::float3(0, 0, z);
     } else {
 #if RIGHT_HANDED
         dir = Diligent::float3(0, 0, 1);
@@ -333,8 +337,8 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         // Quaternion rot = Quaternion(m_viewMatrix);
         // ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
-        const float3& pos = m_pCamera->getPos();
-        float3 look = m_pCamera->getLook();
+        const Diligent::float3& pos = m_pCamera->getPos();
+        Diligent::float3 look = m_pCamera->getLook();
 
         ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
 
@@ -346,10 +350,10 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         ImGui::Separator();
 
-        float4x4 camTt = m_pCamera->getViewMatrix();
+        Diligent::float4x4 camTt = m_pCamera->getViewMatrix();
 
         // Quaternion rot = ade::mRot2Quat(camTt);
-        Quaternion rot = ade::calculateRotation(camTt);
+        Diligent::Quaternion rot = ade::calculateRotation(camTt);
 
         ImGui::gizmo3D("Camera", rot, ImGui::GetTextLineHeight() * 10);
 
@@ -379,16 +383,16 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         if (m_renderingTechnique == RenderingTechnique::Test) {
 #if RIGHT_HANDED
-            float3 dir = Diligent::float3(0, 0, 1);
+            Diligent::float3 dir = Diligent::float3(0, 0, 1);
 #else
             // inverted by camera
-            float3 dir = Diligent::float3(0, 0, -1);
+            Diligent::float3 dir = Diligent::float3(0, 0, -1);
 #endif
 
-            m_pCamera->reset(float3(0, 0, 0), dir);
+            m_pCamera->reset(Diligent::float3(0, 0, 0), dir);
         } else {
 #if RIGHT_HANDED
-            float3 dir = Diligent::float3(0, 0, -1);
+            Diligent::float3 dir = Diligent::float3(0, 0, -1);
             float z = 25.0f;
 #else
             // inverted by camera
@@ -396,7 +400,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
             float z = -25.0f;
 #endif
 
-            m_pCamera->reset(float3(0, 0, z), dir);
+            m_pCamera->reset(Diligent::float3(0, 0, z), dir);
         }
     }
 

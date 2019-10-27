@@ -130,7 +130,7 @@ inline Diligent::Quaternion calculateRotation(const Diligent::float4x4& m)
 }
 
 inline Diligent::Quaternion MakeQuaternionFromTwoVec3(const Diligent::float3& u,
-                                                      const Diligent::float3& v)
+                                                                  const Diligent::float3& v)
 {
     float norm_u_norm_v = sqrt(Diligent::dot(u, u) * Diligent::dot(v, v));
     float real_part = norm_u_norm_v + Diligent::dot(u, v);
@@ -153,13 +153,14 @@ inline Diligent::Quaternion MakeQuaternionFromTwoVec3(const Diligent::float3& u,
     return r;
 }
 
-inline void vec4MulMtx(Diligent::float4& out, const Diligent::float4& in, const Diligent::float4x4& mat)
+inline void vec4MulMtx(Diligent::float4& out, const Diligent::float4& in,
+                       const Diligent::float4x4& mat)
 {
     out = in * mat;
 }
 
-inline void mtxSRT(Diligent::float4x4& _result, float _sx, float _sy, float _sz, float _ax, float _ay,
-            float _az, float _tx, float _ty, float _tz)
+inline void mtxSRT(Diligent::float4x4& _result, float _sx, float _sy, float _sz, float _ax,
+                   float _ay, float _az, float _tx, float _ty, float _tz)
 {
     const float sx = sin(_ax);
     const float cx = cos(_ax);
@@ -192,5 +193,41 @@ inline void mtxSRT(Diligent::float4x4& _result, float _sx, float _sy, float _sz,
     _result._44 = 1.0f;
 }
 
+struct Handness {
+    enum Enum {
+        Left,
+        Right,
+    };
+};
+
+inline void mtxLookAt(Diligent::float4x4& _result, const Diligent::float3& _eye,
+                      const Diligent::float3& _at, const Diligent::float3& _up,
+                      Handness::Enum _handness = Handness::Left)
+{
+    const Diligent::float3 view =
+        Diligent::normalize(Handness::Right == _handness ? _eye - _at : _at - _eye);
+    const Diligent::float3 uxv = Diligent::cross(_up, view);
+    const Diligent::float3 right = Diligent::normalize(uxv);
+    const Diligent::float3 up = Diligent::cross(view, right);
+
+    memset(_result.m, 0, sizeof(float) * 16);
+
+    _result._11 = right.x;
+    _result._12 = up.x;
+    _result._13 = view.x;
+
+    _result._21 = right.y;
+    _result._22 = up.y;
+    _result._23 = view.y;
+
+    _result._31 = right.z;
+    _result._32 = up.z;
+    _result._33= view.z;
+
+    _result._41 = -Diligent::dot(right, _eye);
+    _result._42 = -Diligent::dot(up, _eye);
+    _result._43 = -Diligent::dot(view, _eye);
+    _result._44 = 1.0f;
+}
 
 }    // namespace ade

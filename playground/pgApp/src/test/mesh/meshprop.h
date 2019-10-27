@@ -18,9 +18,9 @@ struct RenderPass {
 
 // All the per-instance data we store
 struct InstanceData {
-    //float m_world[16];
-    //float m_bboxMin[4];
-    //float m_bboxMax[4];
+    // float m_world[16];
+    // float m_bboxMin[4];
+    // float m_bboxMax[4];
     Diligent::float4x4 m_world;
     Diligent::float4 m_bboxMin;
     Diligent::float4 m_bboxMax;
@@ -44,7 +44,7 @@ struct Prop {
 
 // A simplistic material, comprised of a color only
 struct Material {
-    //float m_color[4];
+    // float m_color[4];
     Diligent::float4 m_color;
 };
 
@@ -55,9 +55,9 @@ float rand01();
 
 class MeshProp : public ade::Mesh
 {
-    std::shared_ptr<Prop> m_prop;
-
   public:
-    MeshProp();
+    MeshProp(const Prop* prop);
     virtual ~MeshProp();
+
+    Prop m_prop;
 };

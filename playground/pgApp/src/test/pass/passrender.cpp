@@ -128,7 +128,7 @@ void PassRender::Visit(SceneNode& node, Pipeline* pipeline)
 
     const float4x4 view = e.pCamera->getViewMatrix();
     // TODO: change to use world
-    const float4x4 local = node.getLocalTransform();
+    const float4x4 local = node.GetLocalTransform();
 
     // Set cube world view matrix
     float4x4 worldViewMatrix = local * view;

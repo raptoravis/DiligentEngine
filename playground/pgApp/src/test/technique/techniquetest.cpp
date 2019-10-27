@@ -40,9 +40,9 @@ TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<T
 #endif
         float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
         std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-        root1->addMesh(meshCube);
+        root1->AddMesh(meshCube);
         m_pSceneCube = std::make_shared<Scene>();
-        m_pSceneCube->setRootNode(root1);
+        m_pSceneCube->SetRootNode(root1);
 
 #if RIGHT_HANDED
         z = 5.0f;
@@ -53,9 +53,9 @@ TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<T
         float4x4 trans2 = float4x4::Scale(0.6f) * float4x4::RotationX(-PI_F * 0.1f) *
                           float4x4::Translation(0.f, 0.0f, z);
         std::shared_ptr<SceneNode> root2 = std::make_shared<SceneNode>(trans2);
-        root2->addMesh(meshCubeTex);
+        root2->AddMesh(meshCubeTex);
         m_pSceneCubeTex = std::make_shared<Scene>();
-        m_pSceneCubeTex->setRootNode(root2);
+        m_pSceneCubeTex->SetRootNode(root2);
 
         //
         m_VSConstants = std::make_shared<ConstantBuffer>((uint32_t)sizeof(float4x4));
@@ -96,18 +96,18 @@ void TechniqueTest::Render()
 {
     const float rotSpeed = (Diligent::PI_F / 180.0f) * 100.0f;
     {
-        auto rootCube = m_pSceneCube->getRootNode();
-        auto local = rootCube->getLocalTransform();
+        auto rootCube = m_pSceneCube->GetRootNode();
+        auto local = rootCube->GetLocalTransform();
         auto localNew =
             Diligent::float4x4::RotationY(rotSpeed * App::s_eventArgs.ElapsedTime) * local;
-        rootCube->setLocalTransform(localNew);
+        rootCube->SetLocalTransform(localNew);
     }
     {
-        auto rootCube = m_pSceneCubeTex->getRootNode();
-        auto local = rootCube->getLocalTransform();
+        auto rootCube = m_pSceneCubeTex->GetRootNode();
+        auto local = rootCube->GetLocalTransform();
         auto localNew =
             Diligent::float4x4::RotationY(-rotSpeed * App::s_eventArgs.ElapsedTime) * local;
-        rootCube->setLocalTransform(localNew);
+        rootCube->SetLocalTransform(localNew);
     }
 
     base::Render();

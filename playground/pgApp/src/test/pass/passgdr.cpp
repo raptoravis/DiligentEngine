@@ -1,4 +1,5 @@
 #include "passgdr.h"
+#include "../mesh/meshprop.h"
 
 using namespace ade;
 
@@ -65,29 +66,46 @@ void PassGdr::Visit(Scene& scene, Pipeline* pipeline) {}
 
 void PassGdr::Visit(SceneNode& node, Pipeline* pipeline)
 {
-    Camera* camera = App::s_eventArgs.pCamera;
-    if (camera) {
-        PerObject perObjectData;
-
-        // Diligent::float4x4 is column major,
-        // in hlsl, when mul(mat, vec), the mat is column major like opengl
-        Diligent::float4x4 viewMatrix = camera->getViewMatrix();
-        Diligent::float4x4 projMatrix = camera->getProjectionMatrix();
-
-        const Diligent::float4x4 nodeTransform = node.getWorldTransfom();
-
-        // the mat1 * mat2 should be left mul
-        Diligent::float4x4 viewProjMatrix = viewMatrix * projMatrix;
-
-        perObjectData.Model = nodeTransform;
-        perObjectData.ViewProjection = viewProjMatrix;
-
-        // Update the constant buffer data
-        SetPerObjectConstantBufferData(perObjectData);
-    }
+    m_nodeTransform = node.GetWorldTransfom();
 }
 
 void PassGdr::Visit(Mesh& mesh, Pipeline* pipeline)
 {
+    Camera* camera = App::s_eventArgs.pCamera;
+
+    // Diligent::float4x4 is column major,
+    // in hlsl, when mul(mat, vec), the mat is column major like opengl
+    Diligent::float4x4 viewMatrix = camera->getViewMatrix();
+    Diligent::float4x4 projMatrix = camera->getProjectionMatrix();
+
+    // the mat1 * mat2 should be left mul
+    Diligent::float4x4 viewProjMatrix = viewMatrix * projMatrix;
+
+	MeshProp* pMeshProp = (MeshProp*)&mesh;
+	//////////////////////////////////////////////////////////////////////////
+    auto prop = pMeshProp->m_prop;
+    InstanceData* data = prop.m_instances;
+
+    const uint32_t numInstances = prop.m_noofInstances;
+
+    PerObject perObjectData;
+
+	for (uint32_t i = 0; i < numInstances; ++i) {
+        perObjectData.Models[i] = data[i].m_world;
+    }
+
+    perObjectData.Model = m_nodeTransform;
+    perObjectData.ViewProjection = viewProjMatrix;
+
+    // Update the constant buffer data
+    SetPerObjectConstantBufferData(perObjectData);
+    mesh.SetInstancesCount((uint32_t)numInstances);
+    //////////////////////////////////////////////////////////////////////////
+    PassGdr::MaterialId materialId;
+
+    materialId.mid = prop.m_materialID;
+
+    SetMaterialIdConstantBufferData(materialId);
+
     mesh.Render(pipeline);
 }
