@@ -3,6 +3,8 @@
 #include "BasicMath.h"
 #include "SampleBase.h"
 
+#include "engine/engine.h"
+
 #include "engine/utils/mathutils.h"
 
 namespace ade
@@ -20,7 +22,7 @@ class CameraFly : public Camera
     CameraFly();
     virtual ~CameraFly();
 
-	virtual void reset();
+    virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
     virtual void update(Diligent::InputController* pInputController, float ElapsedTime);
 
     const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
@@ -89,11 +91,11 @@ class CameraAlt : public Camera
     CameraAlt();
     virtual ~CameraAlt();
 
-	virtual void reset();
+    virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
     virtual void update(Diligent::InputController* pInputController, float _dt);
 
-	const Diligent::float3& GetTarget() const;
-    void SetTarget(const Diligent::float3& target);
+    virtual void SetPos(const Diligent::float3& p);
+    virtual void SetLookAt(const Diligent::float3& target);
 
     const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
 

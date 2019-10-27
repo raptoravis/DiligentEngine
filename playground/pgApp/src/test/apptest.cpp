@@ -190,20 +190,14 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     // m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
 
-    Diligent::float3 pos = Diligent::float3(0, 0, 25);
-    Diligent::float3 lookAt = Diligent::float3(0, 0, 0);
-
     if (m_renderingTechnique == RenderingTechnique::Gdr) {
-        pos = Diligent::float3(55.0f, 20.0f, 65.0f);
         m_pCamera = std::make_shared<ade::CameraAlt>();
     } else {
-        m_pCamera = std::make_shared<ade::CameraFly>();
+        // m_pCamera = std::make_shared<ade::CameraFly>();
+        m_pCamera = std::make_shared<ade::CameraAlt>();
     }
 
-    m_pCamera->SetPos(pos);
-    m_pCamera->SetLookAt(lookAt);
-
-    // m_pCamera = std::make_shared<ade::CameraAlt>();
+    resetCamera();
 
     // technique will clean up passed added in it
     m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
@@ -260,6 +254,26 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
 
         gdrTech->init();
     }
+}
+
+void AppTest::resetCamera()
+{
+    Diligent::float3 cameraPos;
+    Diligent::float3 cameraLook;
+
+    // m_cameraPos = Diligent::float3(0, 0, 0);
+    // m_cameraLookAt = Diligent::float3(0, 0, 1);
+
+    if (m_renderingTechnique == RenderingTechnique::Gdr) {
+        cameraPos = Diligent::float3(55.0f, 20.0f, 65.0f);
+        cameraLook = Diligent::float3(0, 0, 0);
+
+    } else {
+        cameraPos = Diligent::float3(0, 0, -25);
+        cameraLook = Diligent::float3(0, 0, 0);
+    }
+
+    m_pCamera->reset(cameraPos, cameraLook);
 }
 
 AppTest::~AppTest()
@@ -338,7 +352,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
         ImGui::Text("dir: %f %f %f", lookDir.x, lookDir.y, lookDir.z);
 
         if (ImGui::Button("Reset view")) {
-            m_pCamera->reset();
+            resetCamera();
         }
 
         ImGui::Separator();
@@ -374,7 +388,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
     if ((int)m_renderingTechnique != technique) {
         m_renderingTechnique = (RenderingTechnique)technique;
 
-        m_pCamera->reset();
+        resetCamera();
     }
 
     ImGui::End();

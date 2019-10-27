@@ -80,10 +80,10 @@ void PassGdr::Visit(Mesh& mesh, Pipeline* pipeline)
 
     uint32_t numInstances = prop.m_noofInstances;
 
-    CHECK_ERR(numInstances <= MODELS_COUNT, "num of instances should not be larger than ",
-              MODELS_COUNT);
+    CHECK_ERR(numInstances <= MODELS_COUNT, "num of instances ", numInstances,
+              " should not be larger than ", MODELS_COUNT);
 
-	numInstances = std::min(numInstances, MODELS_COUNT);
+    numInstances = std::min(numInstances, MODELS_COUNT);
     //////////////////////////////////////////////////////////////////////////
     PerObject perObjectData;
 

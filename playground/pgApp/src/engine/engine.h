@@ -121,21 +121,21 @@ class Camera : public Object
     Diligent::float4x4 m_viewMatrix;
     Diligent::float4x4 m_projectionMatrix;
 
-    Diligent::float3 pos;
-    Diligent::float3 lookAt;
+    Diligent::float3 m_location;
+    Diligent::float3 m_lookAt;
 
   public:
     Camera();
     virtual ~Camera();
 
-    virtual void reset();
+    virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
 
     virtual void update(Diligent::InputController* pInputController, float ElapsedTime) = 0;
 
-    void SetPos(const Diligent::float3& p);
+    virtual void SetPos(const Diligent::float3& p);
     const Diligent::float3& GetPos() const;
 
-    void SetLookAt(const Diligent::float3& target);
+    virtual void SetLookAt(const Diligent::float3& target);
     Diligent::float3 GetLookDir() const;
 
     const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }

@@ -4,8 +4,8 @@
 #include "SampleBase.h"
 #include <vector>
 
-#include "engine/engine.h"
 #include "engine/common/camera.h"
+#include "engine/engine.h"
 
 using namespace Diligent;
 
@@ -36,6 +36,7 @@ class AppTest final : public ade::App
     void initLightData();
     void initBuffers();
     void createRT();
+    void resetCamera();
 
   private:
     std::vector<ade::Light> m_Lights;
