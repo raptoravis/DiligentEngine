@@ -94,6 +94,34 @@ inline void toLatLong(float* _outU, float* _outV, const Diligent::float3 _dir)
     *_outV = theta * kInvPi;
 }
 
+	inline  float toRad(float _deg)
+{
+    return _deg * kPi / 180.0f;
+}
+
+inline  float toDeg(float _rad)
+{
+    return _rad * 180.0f / kPi;
+}
+
+inline  uint32_t floatToBits(float _a)
+{
+    union {
+        float f;
+        uint32_t ui;
+    } u = { _a };
+    return u.ui;
+}
+
+inline  float bitsToFloat(uint32_t _a)
+{
+    union {
+        uint32_t ui;
+        float f;
+    } u = { _a };
+    return u.f;
+}
+
 
 inline Diligent::float3 neg(const Diligent::float3& _a)
 {
@@ -377,7 +405,7 @@ inline Diligent::Quaternion calculateRotation(const Diligent::float4x4& m)
 }
 
 inline Diligent::Quaternion MakeQuaternionFromTwoVec3(const Diligent::float3& u,
-                                                                  const Diligent::float3& v)
+                                                      const Diligent::float3& v)
 {
     float norm_u_norm_v = sqrt(Diligent::dot(u, u) * Diligent::dot(v, v));
     float real_part = norm_u_norm_v + Diligent::dot(u, v);
@@ -477,5 +505,53 @@ inline void mtxLookAt(Diligent::float4x4& _result, const Diligent::float3& _eye,
     _result._43 = -Diligent::dot(view, _eye);
     _result._44 = 1.0f;
 }
+
+
+inline void mtxProjXYWH(float* _result, float _x, float _y, float _width, float _height,
+                        float _near, float _far, bool _homogeneousNdc, Handness::Enum _handness)
+{
+    const float diff = _far - _near;
+    const float aa = _homogeneousNdc ? (_far + _near) / diff : _far / diff;
+    const float bb = _homogeneousNdc ? (2.0f * _far * _near) / diff : _near * aa;
+
+    memset(_result, 0, sizeof(float) * 16);
+
+    _result[0] = _width;
+    _result[5] = _height;
+    _result[8] = (Handness::Right == _handness) ? _x : -_x;
+    _result[9] = (Handness::Right == _handness) ? _y : -_y;
+    _result[10] = (Handness::Right == _handness) ? -aa : aa;
+    _result[11] = (Handness::Right == _handness) ? -1.0f : 1.0f;
+    _result[14] = -bb;
+}
+
+inline void mtxProj(float* _result, float _ut, float _dt, float _lt, float _rt, float _near,
+                   float _far,
+             bool _homogeneousNdc, Handness::Enum _handness)
+{
+    const float invDiffRl = 1.0f / (_rt - _lt);
+    const float invDiffUd = 1.0f / (_ut - _dt);
+    const float width = 2.0f * _near * invDiffRl;
+    const float height = 2.0f * _near * invDiffUd;
+    const float xx = (_rt + _lt) * invDiffRl;
+    const float yy = (_ut + _dt) * invDiffUd;
+    mtxProjXYWH(_result, xx, yy, width, height, _near, _far, _homogeneousNdc, _handness);
+}
+
+inline void mtxProj(float* _result, const float _fov[4], float _near, float _far,
+                   bool _homogeneousNdc,
+             Handness::Enum _handness)
+{
+    mtxProj(_result, _fov[0], _fov[1], _fov[2], _fov[3], _near, _far, _homogeneousNdc, _handness);
+}
+
+inline void mtxProj(float* _result, float _fovy, float _aspect, float _near, float _far,
+             bool _homogeneousNdc = false, Handness::Enum _handness = Handness::Left)
+{
+    const float height = 1.0f / std::tan(toRad(_fovy) * 0.5f);
+    const float width = height * 1.0f / _aspect;
+    mtxProjXYWH(_result, 0.0f, 0.0f, width, height, _near, _far, _homogeneousNdc, _handness);
+}
+
 
 }    // namespace ade

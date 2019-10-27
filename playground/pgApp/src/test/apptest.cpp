@@ -18,8 +18,8 @@
 
 #include <windows.h>
 
+#include "engine/common/camera.h"
 #include "engine/utils/mathutils.h"
-#include "engine/common/cameraalt.h"
 
 #include "scene/scenetest.h"
 
@@ -190,32 +190,20 @@ void AppTest::Initialize(IEngineFactory* pEngineFactory, IRenderDevice* pDevice,
     // m_renderingTechnique = RenderingTechnique::Forward;
     // m_renderingTechnique = RenderingTechnique::Test;
 
-    Diligent::float3 pos = Diligent::float3(0, 0, 0);
-    Diligent::float3 dir = Diligent::float3(0, 0, -1);
+    Diligent::float3 pos = Diligent::float3(0, 0, 25);
+    Diligent::float3 lookAt = Diligent::float3(0, 0, 0);
 
     if (m_renderingTechnique == RenderingTechnique::Gdr) {
         pos = Diligent::float3(55.0f, 20.0f, 65.0f);
-        dir = Diligent::normalize(Diligent::float3(0, 0, 0) - pos);
-    } else if (m_renderingTechnique != RenderingTechnique::Test) {
-#if RIGHT_HANDED
-        float z = 25;
-        dir = Diligent::float3(0, 0, -1);
-#else
-        float z = -25;
-        // inverted by camera
-        dir = Diligent::float3(0, 0, -1);
-#endif
-        pos = Diligent::float3(0, 0, z);
+        m_pCamera = std::make_shared<ade::CameraAlt>();
     } else {
-#if RIGHT_HANDED
-        dir = Diligent::float3(0, 0, 1);
-#else
-        // inverted by camera
-        dir = Diligent::float3(0, 0, -1);
-#endif
+        m_pCamera = std::make_shared<ade::CameraFly>();
     }
 
-    m_pCamera = std::make_shared<ade::Camera>(pos, dir);
+    m_pCamera->SetPos(pos);
+    m_pCamera->SetLookAt(lookAt);
+
+    // m_pCamera = std::make_shared<ade::CameraAlt>();
 
     // technique will clean up passed added in it
     m_pTechnique = std::make_shared<TechniqueTest>(m_pRenderTarget, m_pBackBuffer);
@@ -324,6 +312,10 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
     m_pCamera->update(&m_InputController, (float)ElapsedTime);
 
+    // Camera.
+    // const bool mouseOverGui = ImGui::MouseOverArea();
+    const bool mouseOverGui = false;
+
     ade::App::s_eventArgs.set((float)CurrTime, (float)ElapsedTime, this, m_pCamera.get(),
                               ade::App::s_ctx);
 
@@ -338,12 +330,12 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         // Quaternion rot = Quaternion(m_viewMatrix);
         // ImGui::gizmo3D("Model Rotation", rot, ImGui::GetTextLineHeight() * 10);
-        const Diligent::float3& pos = m_pCamera->getPos();
-        Diligent::float3 look = m_pCamera->getLook();
+        const Diligent::float3& pos = m_pCamera->GetPos();
+        Diligent::float3 lookDir = m_pCamera->GetLookDir();
 
         ImGui::Text("pos: %f %f %f", pos.x, pos.y, pos.z);
 
-        ImGui::Text("look: %f %f %f", look.x, look.y, look.z);
+        ImGui::Text("dir: %f %f %f", lookDir.x, lookDir.y, lookDir.z);
 
         if (ImGui::Button("Reset view")) {
             m_pCamera->reset();
@@ -382,27 +374,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
     if ((int)m_renderingTechnique != technique) {
         m_renderingTechnique = (RenderingTechnique)technique;
 
-        if (m_renderingTechnique == RenderingTechnique::Test) {
-#if RIGHT_HANDED
-            Diligent::float3 dir = Diligent::float3(0, 0, 1);
-#else
-            // inverted by camera
-            Diligent::float3 dir = Diligent::float3(0, 0, -1);
-#endif
-
-            m_pCamera->reset(Diligent::float3(0, 0, 0), dir);
-        } else {
-#if RIGHT_HANDED
-            Diligent::float3 dir = Diligent::float3(0, 0, -1);
-            float z = 25.0f;
-#else
-            // inverted by camera
-            float3 dir = Diligent::float3(0, 0, -1);
-            float z = -25.0f;
-#endif
-
-            m_pCamera->reset(Diligent::float3(0, 0, z), dir);
-        }
+        m_pCamera->reset();
     }
 
     ImGui::End();

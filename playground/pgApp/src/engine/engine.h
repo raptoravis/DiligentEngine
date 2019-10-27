@@ -117,41 +117,32 @@ class Visitor : public Object
 
 class Camera : public Object
 {
-    Diligent::MouseState m_LastMouseState;
-
+  protected:
     Diligent::float4x4 m_viewMatrix;
     Diligent::float4x4 m_projectionMatrix;
 
     Diligent::float3 pos;
-    Diligent::float3 look;
-
-    // original
-    const Diligent::float3 _pos;
-    const Diligent::float3 _look;
-
-    const Diligent::float3 up = { 0.0f, 1.0f, 0.0f };
+    Diligent::float3 lookAt;
 
   public:
-    Camera(const Diligent::float3 pos, const Diligent::float3 dir);
-
+    Camera();
     virtual ~Camera();
 
-    void reset();
-    void reset(const Diligent::float3& p, const Diligent::float3& dir);
-    void setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL = false);
+    virtual void reset();
 
-    void update(Diligent::InputController* pInputController, float ElapsedTime);
+    virtual void update(Diligent::InputController* pInputController, float ElapsedTime) = 0;
 
-    void setPos(const Diligent::float3& p);
-    const Diligent::float3& getPos() const { return pos; }
+    void SetPos(const Diligent::float3& p);
+    const Diligent::float3& GetPos() const;
 
-    void setLook(const Diligent::float3& dir);
-    Diligent::float3 getLook() const;
+    void SetLookAt(const Diligent::float3& target);
+    Diligent::float3 GetLookDir() const;
 
     const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
 
     const Diligent::float4x4& getProjectionMatrix() const { return m_projectionMatrix; }
 };
+
 
 // CPU Access. Used for textures and Buffers
 enum CPUAccess {

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "engine/engine.h"
+#include "engine/common/camera.h"
 
 using namespace Diligent;
 
