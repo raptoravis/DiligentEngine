@@ -15,14 +15,6 @@ PassGdr::PassGdr(Technique* parentTechnique, std::shared_ptr<Scene> scene,
 
 PassGdr::~PassGdr() {}
 
-void PassGdr::SetColorsConstantBufferData(Colors& data)
-{
-    auto cb =
-        std::dynamic_pointer_cast<ConstantBuffer>(m_parentTechnique->Get(PassGdr::kColorsName));
-
-    cb->Set(data);
-}
-
 void PassGdr::SetMaterialIdConstantBufferData(MaterialId& data)
 {
     auto cb =
@@ -92,25 +84,27 @@ void PassGdr::Visit(Mesh& mesh, Pipeline* pipeline)
               MODELS_COUNT);
 
 	numInstances = std::min(numInstances, MODELS_COUNT);
-
+    //////////////////////////////////////////////////////////////////////////
     PerObject perObjectData;
+
+    perObjectData.Model = m_nodeTransform;
+    perObjectData.ViewProjection = viewProjMatrix;
 
     for (uint32_t i = 0; i < numInstances; ++i) {
         perObjectData.Models[i] = data[i].m_world;
     }
 
-    perObjectData.Model = m_nodeTransform;
-    perObjectData.ViewProjection = viewProjMatrix;
-
     // Update the constant buffer data
     SetPerObjectConstantBufferData(perObjectData);
-    mesh.SetInstancesCount((uint32_t)numInstances);
     //////////////////////////////////////////////////////////////////////////
     PassGdr::MaterialId materialId;
 
-    materialId.mid = prop.m_materialID;
+    materialId.materialID = prop.m_materialID;
 
     SetMaterialIdConstantBufferData(materialId);
+
+    //////////////////////////////////////////////////////////////////////////
+    mesh.SetInstancesCount((uint32_t)numInstances);
 
     mesh.Render(pipeline);
 }

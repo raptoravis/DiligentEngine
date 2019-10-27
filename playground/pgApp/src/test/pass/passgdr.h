@@ -45,11 +45,10 @@ class PassGdr : public ade::Pass
     };
 
     __declspec(align(16)) struct MaterialId {
-        Diligent::Uint32 mid;
+        Diligent::Uint32 materialID;
         Diligent::Uint32 padding[3];
     };
 
-    void SetColorsConstantBufferData(Colors& data);
     void SetMaterialIdConstantBufferData(MaterialId& data);
 
     void SetPerObjectConstantBufferData(PerObject& perObjectData);

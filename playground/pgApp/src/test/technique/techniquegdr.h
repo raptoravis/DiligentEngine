@@ -4,8 +4,7 @@
 
 #include "engine/engine.h"
 
-#include "../pass/passgltfmodel.h"
-
+#include "../pass/passgdr.h"
 
 using namespace Diligent;
 
@@ -22,7 +21,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<SceneGdr> m_pSceneGdr;
 
     std::shared_ptr<ade::Pass> createPassGdr(std::shared_ptr<ade::Scene> scene);
-	
+    void SetColorsConstantBufferData(PassGdr::Colors& data);
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);
     virtual ~TechniqueGdr();
