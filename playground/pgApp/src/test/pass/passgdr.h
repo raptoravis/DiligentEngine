@@ -2,7 +2,7 @@
 
 #include "engine/engine.h"
 
-#define MODELS_COUNT 200u
+#define MODELS_COUNT 300u
 
 class PassGdr : public ade::Pass
 {

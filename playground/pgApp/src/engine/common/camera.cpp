@@ -132,7 +132,8 @@ void CameraFly::setProjectionMatrix(float NearPlane, float FarPlane, bool bIsGL)
     }
 }
 
-void CameraFly::update(Diligent::InputController* pInputController, float ElapsedTime)
+void CameraFly::update(Diligent::InputController* pInputController, float ElapsedTime,
+                       float moveSpeed)
 {
     int moveForward = 0;
     int moveBackward = 0;
@@ -215,14 +216,16 @@ void CameraFly::update(Diligent::InputController* pInputController, float Elapse
 
         float* view = &m_viewMatrix.m00;
 
+        float kMoveSpeed = (accelerate ? moveSpeed * 5.0f : moveSpeed) * ElapsedTime;
+
         // flythrough_camera_update calculate in opengl right-handed space
         // side = cross(look, up) (0, 0, -1) X (0, 1, 0) => (1, 0, 0)
         // up = cross(side, look)
         // if !FLYTHROUGH_CAMERA_LEFT_HANDED_BIT, lookDir = -lookDir
         flythrough_camera_update(&m_location.x, &lookDir.x, &up.x, view, delta_time_sec,
-                                 2.0f * (accelerate ? 5.0f : 1.0f),    // eye_speed
-                                 0.1f,                                 // degrees_per_cursor_move
-                                 80.0f,                                // max_pitch_rotation_degrees
+                                 kMoveSpeed,    // eye_speed
+                                 0.1f,          // degrees_per_cursor_move
+                                 80.0f,         // max_pitch_rotation_degrees
                                  (int)MouseDeltaX, (int)MouseDeltaY, mf, moveLeft, mb, moveRight,
                                  jump, crouch, flag);
 
@@ -318,19 +321,102 @@ void CameraAlt::SetPos(const Diligent::float3& p)
 {
     base::SetPos(p);
 
-	m_pos.curr = p;
-	m_pos.dest = p;
+    m_pos.curr = p;
+    m_pos.dest = p;
 }
 
 void CameraAlt::SetLookAt(const Diligent::float3& target)
 {
     base::SetLookAt(target);
-		
-	m_target.dest = target;
+
+    m_target.dest = target;
     m_target.curr = target;
 }
 
-void CameraAlt::update(Diligent::InputController* pInputController, float _dt)
+
+void CameraAlt::moveKeyboard(Diligent::InputController* pInputController, float _dt,
+                             float moveSpeed)
+{
+    int moveForward = 0;
+    int moveBackward = 0;
+    int moveLeft = 0;
+    int moveRight = 0;
+
+    int jump = 0;
+    int crouch = 0;
+    int accelerate = 0;
+
+    if (pInputController) {
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveLeft) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            moveLeft = 1;
+        }
+
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveRight) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            moveRight = 1;
+        }
+
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveForward) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            moveForward = 1;
+        }
+
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveBackward) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            moveBackward = 1;
+        }
+
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveUp) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            jump = 1;
+        }
+        if ((pInputController->GetKeyState(Diligent::InputKeys::MoveDown) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            crouch = 1;
+        }
+
+        if ((pInputController->GetKeyState(Diligent::InputKeys::ShiftDown) &
+             Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+            accelerate = 1;
+        }
+    }
+
+    float kMoveSpeed = (accelerate ? moveSpeed * 5.0f : moveSpeed) * _dt;
+
+    if (moveForward) {
+        Diligent::float3 forward{ m_viewMatrix._13, m_viewMatrix._23, m_viewMatrix._33 };
+        m_pos.dest += ade::mul(forward, kMoveSpeed);
+    }
+    if (moveBackward) {
+        Diligent::float3 forward{ m_viewMatrix._13, m_viewMatrix._23, m_viewMatrix._33 };
+        m_pos.dest -= ade::mul(forward, kMoveSpeed);
+    }
+
+    if (moveRight) {
+        Diligent::float3 right{ m_viewMatrix._11, m_viewMatrix._21, m_viewMatrix._31 };
+        m_pos.dest += ade::mul(right, kMoveSpeed);
+        m_target.dest += ade::mul(right, kMoveSpeed);
+    }
+    if (moveLeft) {
+        Diligent::float3 right{ m_viewMatrix._11, m_viewMatrix._21, m_viewMatrix._31 };
+        m_pos.dest -= ade::mul(right, kMoveSpeed);
+        m_target.dest -= ade::mul(right, kMoveSpeed);
+    }
+
+    if (jump) {
+        Diligent::float3 up{ m_viewMatrix._12, m_viewMatrix._22, m_viewMatrix._32 };
+        m_pos.dest += ade::mul(up, kMoveSpeed);
+        m_target.dest += ade::mul(up, kMoveSpeed);
+    }
+    if (crouch) {
+        Diligent::float3 up{ m_viewMatrix._12, m_viewMatrix._22, m_viewMatrix._32 };
+        m_pos.dest -= ade::mul(up, kMoveSpeed);
+        m_target.dest -= ade::mul(up, kMoveSpeed);
+    }
+}
+
+void CameraAlt::moveMouse(Diligent::InputController* pInputController, float _dt)
 {
     if (pInputController) {
         Diligent::MouseState mouseState = pInputController->GetMouseState();
@@ -338,15 +424,23 @@ void CameraAlt::update(Diligent::InputController* pInputController, float _dt)
         m_mouse.update(float(mouseState.PosX), float(mouseState.PosY), 0, App::s_desc.Width,
                        App::s_desc.Height);
 
-        {
-            if (mouseState.ButtonFlags & Diligent::MouseState::BUTTON_FLAG_LEFT) {
-                this->orbit(m_mouse.m_dx, m_mouse.m_dy);
-            } else if (mouseState.ButtonFlags & Diligent::MouseState::BUTTON_FLAG_RIGHT) {
-                this->dolly(m_mouse.m_dx + m_mouse.m_dy);
-            } else if (m_mouse.m_scroll != 0) {
-                this->dolly(float(m_mouse.m_scroll) * 0.05f);
-            }
+        if (mouseState.ButtonFlags & Diligent::MouseState::BUTTON_FLAG_LEFT) {
+            this->orbit(m_mouse.m_dx, m_mouse.m_dy);
+        } else if (mouseState.ButtonFlags & Diligent::MouseState::BUTTON_FLAG_RIGHT) {
+            this->dolly(m_mouse.m_dx + m_mouse.m_dy);
+        } else if (m_mouse.m_scroll != 0) {
+            this->dolly(float(m_mouse.m_scroll) * 0.05f);
         }
+    }
+}
+
+
+void CameraAlt::update(Diligent::InputController* pInputController, float _dt, float moveSpeed)
+{
+    if (pInputController) {
+        moveMouse(pInputController, _dt);
+
+        moveKeyboard(pInputController, _dt, moveSpeed);
     }
 
     {

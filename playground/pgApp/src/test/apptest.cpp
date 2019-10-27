@@ -324,11 +324,16 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 {
     SampleBase::Update(CurrTime, ElapsedTime);
 
-    m_pCamera->update(&m_InputController, (float)ElapsedTime);
-
     // Camera.
     // const bool mouseOverGui = ImGui::MouseOverArea();
     const bool mouseOverGui = false;
+
+    m_pCamera->update(&m_InputController, (float)ElapsedTime);
+
+    if ((m_InputController.GetKeyState(Diligent::InputKeys::Reset) &
+         Diligent::INPUT_KEY_STATE_FLAG_KEY_IS_DOWN) != 0) {
+        resetCamera();
+    }
 
     ade::App::s_eventArgs.set((float)CurrTime, (float)ElapsedTime, this, m_pCamera.get(),
                               ade::App::s_ctx);

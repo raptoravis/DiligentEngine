@@ -23,7 +23,8 @@ class CameraFly : public Camera
     virtual ~CameraFly();
 
     virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
-    virtual void update(Diligent::InputController* pInputController, float ElapsedTime);
+    virtual void update(Diligent::InputController* pInputController, float ElapsedTime,
+                        float moveSpeed);
 
     const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
 
@@ -72,9 +73,11 @@ class CameraAlt : public Camera
 
     void consumeOrbit(float _amount);
 
-    void update(float _dt);
-
     void envViewMtx(float* _mtx);
+
+	void moveKeyboard(Diligent::InputController* pInputController, float _dt, float moveSpeed);
+
+	void moveMouse(Diligent::InputController* pInputController, float _dt);
 
     struct Interp3f {
         Diligent::float3 curr;
@@ -92,7 +95,7 @@ class CameraAlt : public Camera
     virtual ~CameraAlt();
 
     virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
-    virtual void update(Diligent::InputController* pInputController, float _dt);
+    virtual void update(Diligent::InputController* pInputController, float _dt, float moveSpeed);
 
     virtual void SetPos(const Diligent::float3& p);
     virtual void SetLookAt(const Diligent::float3& target);

@@ -130,7 +130,8 @@ class Camera : public Object
 
     virtual void reset(const Diligent::float3& pos, const Diligent::float3& lookAt);
 
-    virtual void update(Diligent::InputController* pInputController, float ElapsedTime) = 0;
+    virtual void update(Diligent::InputController* pInputController, float ElapsedTime,
+                        float moveSpeed = 10.0f) = 0;
 
     virtual void SetPos(const Diligent::float3& p);
     const Diligent::float3& GetPos() const;

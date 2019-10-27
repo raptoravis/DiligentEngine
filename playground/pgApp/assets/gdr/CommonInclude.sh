@@ -11,7 +11,7 @@ struct VertexShaderOutput
 };
 
 #ifndef MODELS_COUNT
-#define MODELS_COUNT 200
+#define MODELS_COUNT 300
 #endif
 
 cbuffer PerObject : register( b0 )
