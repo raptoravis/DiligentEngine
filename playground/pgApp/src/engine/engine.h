@@ -930,7 +930,7 @@ class Scene : public Object
 
 //////////////////////////////////////////////////////////////////////////
     static std::shared_ptr<Buffer> CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                           const float* data, uint32_t count,
+                                                           float* data, uint32_t count,
                                                            uint32_t stride);
     static std::shared_ptr<Buffer> CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
                                                          const uint32_t* data,

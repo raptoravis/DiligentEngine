@@ -52,7 +52,7 @@ void MeshCube::CreateVertexBuffer()
     };
 
     std::shared_ptr<ade::Buffer> buffer = ade::Scene::CreateFloatVertexBuffer(
-        ade::App::s_device, (const float*)MeshCubeVerts, 8, sizeof(Vertex));
+        ade::App::s_device, (float*)MeshCubeVerts, 8, sizeof(Vertex));
 
     ade::BufferBinding binding{ "VERTEX", 0 };
     AddVertexBuffer(binding, buffer);

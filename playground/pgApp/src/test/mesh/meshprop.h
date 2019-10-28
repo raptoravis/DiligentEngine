@@ -39,11 +39,11 @@ struct Prop {
     uint16_t m_noofIndices;
     uint16_t m_noofInstances;
     uint16_t m_materialID;
-    RenderPass::Enum m_renderPass;
+    ::RenderPass::Enum m_renderPass;
 };
 
 // A simplistic material, comprised of a color only
-struct Material {
+struct MaterialColor {
     // float m_color[4];
     Diligent::float4 m_color;
 };

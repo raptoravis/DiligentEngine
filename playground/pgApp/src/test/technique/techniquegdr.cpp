@@ -34,11 +34,24 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
         //////////////////////////////////////////////////////////////////////////
         m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
         m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
-        m_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
+        u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 
         this->Set(PassGdr::kPerObjectName, m_PerObject);
         this->Set(PassGdr::kMaterialIdName, m_materialId);
-        this->Set(PassGdr::kColorsName, m_colors);
+        this->Set(PassGdr::kColorsName, u_colors);
+
+        // Create uniforms and samplers.
+        u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+        u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+
+        SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+                                         FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+                                         TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
+
+        StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth",
+                                       linearRepeatSampler };
+
+        s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
 
         {
             PassGdr::Colors colors;
@@ -147,7 +160,7 @@ std::shared_ptr<ade::Pass> TechniqueGdr::createPassGdr(std::shared_ptr<ade::Scen
         vs->GetShaderParameterByName(PassGdr::kPerObjectName).Set(m_PerObject);
         vs->GetShaderParameterByName(PassGdr::kMaterialIdName).Set(m_materialId);
 
-        ps->GetShaderParameterByName(PassGdr::kColorsName).Set(m_colors);
+        ps->GetShaderParameterByName(PassGdr::kColorsName).Set(u_colors);
 
         pipeline->SetShader(ade::Shader::Shader::VertexShader, vs);
         pipeline->SetShader(ade::Shader::Shader::PixelShader, ps);
@@ -335,6 +348,62 @@ void TechniqueGdr::createHiZBuffers()
                                         m_pRenderTarget, nullptr);
     m_programStreamCompaction = loadProgram("cs_gdr_stream_compaction.sh",
                                             ade::Shader::ComputeShader, m_pRenderTarget, nullptr);
+
+    //////////////////////////////////////////////////////////////////////////
+    // Calculate how many vertices/indices the master buffers will need.
+    uint16_t totalNoofVertices = 0;
+    uint16_t totalNoofIndices = 0;
+    for (uint16_t i = 0; i < m_pSceneGdr->m_noofProps; i++) {
+        Prop& prop = m_pSceneGdr->m_props[i];
+
+        totalNoofVertices += prop.m_noofVertices;
+        totalNoofIndices += prop.m_noofIndices;
+    }
+
+    // CPU data to fill the master buffers
+    m_allPropVerticesDataCPU = new PosVertex[totalNoofVertices];
+    m_allPropIndicesDataCPU = new uint32_t[totalNoofIndices];
+    m_indirectBufferDataCPU = new uint32_t[m_pSceneGdr->m_noofProps * 3];
+
+    // Copy data over to the master buffers
+    PosVertex* propVerticesData = m_allPropVerticesDataCPU;
+    uint32_t* propIndicesData = m_allPropIndicesDataCPU;
+
+    uint16_t vertexBufferOffset = 0;
+    uint16_t indexBufferOffset = 0;
+
+    for (uint16_t i = 0; i < m_pSceneGdr->m_noofProps; i++) {
+        Prop& prop = m_pSceneGdr->m_props[i];
+
+        ade::memCopy(propVerticesData, prop.m_vertices, prop.m_noofVertices * sizeof(PosVertex));
+        ade::memCopy(propIndicesData, prop.m_indices, prop.m_noofIndices * sizeof(uint16_t));
+
+        propVerticesData += prop.m_noofVertices;
+        propIndicesData += prop.m_noofIndices;
+
+        m_indirectBufferDataCPU[i * 3] = prop.m_noofIndices;
+        m_indirectBufferDataCPU[i * 3 + 1] = indexBufferOffset;
+        m_indirectBufferDataCPU[i * 3 + 2] = vertexBufferOffset;
+
+        indexBufferOffset += prop.m_noofIndices;
+        vertexBufferOffset += prop.m_noofVertices;
+    }
+
+    // Create master vertex buffer
+    m_allPropsVertexbufferHandle = Scene::CreateFloatVertexBuffer(
+        App::s_device, (float*)m_allPropVerticesDataCPU, totalNoofVertices, 3 * sizeof(PosVertex));
+
+    // Create master index buffer.
+    m_allPropsIndexbufferHandle = Scene::CreateUIntIndexBuffer(
+        App::s_device, m_allPropIndicesDataCPU, totalNoofIndices * sizeof(uint32_t));
+
+    // Create buffer with const drawcall data which will be copied to the indirect buffer later.
+    m_indirectBufferData =
+        Scene::CreateFloatVertexBuffer(App::s_device, (float*)m_indirectBufferDataCPU,
+                                       m_pSceneGdr->m_noofProps, 3 * sizeof(uint32_t));
+
+    m_useIndirect = true;
+    m_firstFrame = true;
 }
 
 std::shared_ptr<ade::Pipeline> TechniqueGdr::loadProgram(const std::string& shader,

@@ -232,7 +232,7 @@ std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
 
 
 std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                       const float* data, uint32_t count,
+                                                       float* data, uint32_t count,
                                                        uint32_t stride)
 {
     bool bDynamic = !data;

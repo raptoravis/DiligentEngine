@@ -15,7 +15,7 @@ void SceneGdr::create()
     m_props = new Prop[s_maxNoofProps];
 
     // first create space for some materials
-    m_materials = new Material[s_maxNoofProps];
+    m_materials = new MaterialColor[s_maxNoofProps];
     m_noofMaterials = 0;
 
     // add a ground plane

@@ -4,6 +4,7 @@
 
 #include "engine/engine.h"
 
+#include "../mesh/meshprop.h"
 #include "../pass/passgdr.h"
 
 using namespace Diligent;
@@ -16,7 +17,11 @@ class TechniqueGdr : public ade::Technique
 
     std::shared_ptr<ade::ConstantBuffer> m_PerObject;
     std::shared_ptr<ade::ConstantBuffer> m_materialId;
-    std::shared_ptr<ade::ConstantBuffer> m_colors;
+    std::shared_ptr<ade::ConstantBuffer> u_colors;
+
+    std::shared_ptr<ade::ConstantBuffer> u_inputRTSize;
+    std::shared_ptr<ade::ConstantBuffer> u_cullingConfig;
+    std::shared_ptr<ade::SamplerState> s_texOcclusionDepth;
 
     std::shared_ptr<SceneGdr> m_pSceneGdr;
     std::shared_ptr<ade::Pass> createPassGdr(std::shared_ptr<ade::Scene> scene);
@@ -45,6 +50,17 @@ class TechniqueGdr : public ade::Technique
                                                ade::Shader::ShaderType st,
                                                std::shared_ptr<ade::RenderTarget> rt,
                                                std::shared_ptr<ade::Scene> scene);
+	//////////////////////////////////////////////////////////////////////////
+    PosVertex* m_allPropVerticesDataCPU;
+    uint32_t* m_allPropIndicesDataCPU;
+    uint32_t* m_indirectBufferDataCPU;
+
+    bool m_useIndirect;
+    bool m_firstFrame;
+
+    std::shared_ptr<ade::Buffer> m_allPropsVertexbufferHandle;
+    std::shared_ptr<ade::Buffer> m_allPropsIndexbufferHandle;
+    std::shared_ptr<ade::Buffer> m_indirectBufferData;
 
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);

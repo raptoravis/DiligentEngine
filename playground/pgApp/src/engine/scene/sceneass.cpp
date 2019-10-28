@@ -474,7 +474,7 @@ std::shared_ptr<Texture> SceneAss::CreateTexture2D(uint16_t width, uint16_t heig
 std::shared_ptr<Buffer> SceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count,
                                                           uint32_t stride)
 {
-    return Scene::CreateFloatVertexBuffer(App::s_device, data, count, stride);
+    return Scene::CreateFloatVertexBuffer(App::s_device, (float*)data, count, stride);
 }
 
 std::shared_ptr<Buffer> SceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
