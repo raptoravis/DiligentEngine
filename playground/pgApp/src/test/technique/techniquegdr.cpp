@@ -28,110 +28,103 @@ static const uint16_t s_maxNoofInstances = 2048;
 #define RENDER_PASS_COMPACT_STREAM_ID 3
 #define RENDER_PASS_MAIN_ID 4
 
+const bool bUseNew = false;
+
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
 {
-    std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
-    AddPass(pSetRTPass);
+    if (!bUseNew) {
+        std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
+        AddPass(pSetRTPass);
 
-    std::shared_ptr<PassClearRT> pClearRTPass =
-        std::make_shared<PassClearRT>(this, m_pRenderTarget);
-    AddPass(pClearRTPass);
+        std::shared_ptr<PassClearRT> pClearRTPass =
+            std::make_shared<PassClearRT>(this, m_pRenderTarget);
+        AddPass(pClearRTPass);
 
-    {
-        m_pSceneGdr = std::make_shared<SceneGdr>();
-        m_pSceneGdr->create();
-        //////////////////////////////////////////////////////////////////////////
-        m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
-        m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
-        u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
+        bool bUse = true;
 
-        this->Set(PassGdr::kPerObjectName, m_PerObject);
-        this->Set(PassGdr::kMaterialIdName, m_materialId);
-        this->Set(PassGdr::kColorsName, u_colors);
-
-        // Create uniforms and samplers.
-        u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
-        u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
-
-        SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
-                                         FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
-                                         TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
-
-        StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth",
-                                       linearRepeatSampler };
-
-        s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
-
-        {
-            PassGdr::Colors colors;
-
-            uint32_t noofMaterials = m_pSceneGdr->m_noofMaterials;
-            noofMaterials = std::min(noofMaterials, 32u);
-            memcpy(colors.colors, m_pSceneGdr->m_materials,
-                   sizeof(m_pSceneGdr->m_materials[0]) * noofMaterials);
-            SetColorsConstantBufferData(colors);
-        }
-
-        {
-            auto prop0 = m_pSceneGdr->m_props[0];
-            std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
-
-            auto scene = std::make_shared<Scene>();
-            float4x4 trans1 = float4x4::Identity();
-            std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-            root1->AddMesh(meshProp);
-            scene->SetRootNode(root1);
-
+        if (bUse) {
+            m_pSceneGdr = std::make_shared<SceneGdr>();
+            m_pSceneGdr->create();
             //////////////////////////////////////////////////////////////////////////
-            std::shared_ptr<Pass> pPass = createPassGdr(scene);
+            m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
+            m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
+            u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 
-            AddPass(pPass);
-        }
-        {
-            auto prop0 = m_pSceneGdr->m_props[1];
-            std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
+            this->Set(PassGdr::kPerObjectName, m_PerObject);
+            this->Set(PassGdr::kMaterialIdName, m_materialId);
+            this->Set(PassGdr::kColorsName, u_colors);
 
-            auto scene = std::make_shared<Scene>();
-            float4x4 trans1 = float4x4::Identity();
-            std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-            root1->AddMesh(meshProp);
-            scene->SetRootNode(root1);
+            {
+                PassGdr::Colors colors;
 
-            //////////////////////////////////////////////////////////////////////////
-            std::shared_ptr<Pass> pPass = createPassGdr(scene);
+                uint32_t noofMaterials = m_pSceneGdr->m_noofMaterials;
+                noofMaterials = std::min(noofMaterials, 32u);
+                memcpy(colors.colors, m_pSceneGdr->m_materials,
+                       sizeof(m_pSceneGdr->m_materials[0]) * noofMaterials);
+                SetColorsConstantBufferData(colors);
+            }
 
-            AddPass(pPass);
-        }
-        {
-            auto prop0 = m_pSceneGdr->m_props[2];
-            std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
+            {
+                auto prop0 = m_pSceneGdr->m_props[0];
+                std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
 
-            auto scene = std::make_shared<Scene>();
-            float4x4 trans1 = float4x4::Identity();
-            std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-            root1->AddMesh(meshProp);
-            scene->SetRootNode(root1);
+                auto scene = std::make_shared<Scene>();
+                float4x4 trans1 = float4x4::Identity();
+                std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
+                root1->AddMesh(meshProp);
+                scene->SetRootNode(root1);
 
-            //////////////////////////////////////////////////////////////////////////
-            std::shared_ptr<Pass> pPass = createPassGdr(scene);
+                //////////////////////////////////////////////////////////////////////////
+                std::shared_ptr<Pass> pPass = createPassGdr(scene);
 
-            AddPass(pPass);
-        }
-        {
-            auto prop0 = m_pSceneGdr->m_props[3];
-            std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
+                AddPass(pPass);
+            }
+            {
+                auto prop0 = m_pSceneGdr->m_props[1];
+                std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
 
-            auto scene = std::make_shared<Scene>();
-            float4x4 trans1 = float4x4::Identity();
-            std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
-            root1->AddMesh(meshProp);
-            scene->SetRootNode(root1);
+                auto scene = std::make_shared<Scene>();
+                float4x4 trans1 = float4x4::Identity();
+                std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
+                root1->AddMesh(meshProp);
+                scene->SetRootNode(root1);
 
-            //////////////////////////////////////////////////////////////////////////
-            std::shared_ptr<Pass> pPass = createPassGdr(scene);
+                //////////////////////////////////////////////////////////////////////////
+                std::shared_ptr<Pass> pPass = createPassGdr(scene);
 
-            AddPass(pPass);
+                AddPass(pPass);
+            }
+            {
+                auto prop0 = m_pSceneGdr->m_props[2];
+                std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
+
+                auto scene = std::make_shared<Scene>();
+                float4x4 trans1 = float4x4::Identity();
+                std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
+                root1->AddMesh(meshProp);
+                scene->SetRootNode(root1);
+
+                //////////////////////////////////////////////////////////////////////////
+                std::shared_ptr<Pass> pPass = createPassGdr(scene);
+
+                AddPass(pPass);
+            }
+            {
+                auto prop0 = m_pSceneGdr->m_props[3];
+                std::shared_ptr<MeshProp> meshProp = std::make_shared<MeshProp>(&prop0);
+
+                auto scene = std::make_shared<Scene>();
+                float4x4 trans1 = float4x4::Identity();
+                std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
+                root1->AddMesh(meshProp);
+                scene->SetRootNode(root1);
+
+                //////////////////////////////////////////////////////////////////////////
+                std::shared_ptr<Pass> pPass = createPassGdr(scene);
+
+                AddPass(pPass);
+            }
         }
 
         //
@@ -210,8 +203,6 @@ void TechniqueGdr::Update()
     ImGui::Separator();
 }
 
-void TechniqueGdr::init() {}
-
 void TechniqueGdr::createHiZBuffers()
 {
     {
@@ -223,8 +214,8 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.Height = m_hiZheight;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_R24G8_TYPELESS;    // TEX_FORMAT_D32_FLOAT;
-        DepthBufferDesc.SampleCount = 1;                       // App::s_desc.SamplesCount;
+        DepthBufferDesc.Format = TEX_FORMAT_R32_TYPELESS;    // TEX_FORMAT_R24G8_TYPELESS;
+        DepthBufferDesc.SampleCount = 1;                     // App::s_desc.SamplesCount;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
         DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
@@ -243,7 +234,7 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.Height = m_hiZheight;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_D32_FLOAT;
+        DepthBufferDesc.Format = TEX_FORMAT_R32_TYPELESS;
         DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
@@ -252,11 +243,23 @@ void TechniqueGdr::createHiZBuffers()
 
         Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
         App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
-        m_hiZDepthBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+        m_hiZBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
     }
 
     // how many mip will the Hi Z buffer have?
     m_noofHiZMips = (uint8_t)(1 + ade::floor(ade::log2(float(ade::max(m_hiZwidth, m_hiZheight)))));
+
+    // Create uniforms and samplers.
+    u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+    u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+
+    SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+                                     FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+                                     TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
+
+    StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth", linearRepeatSampler };
+
+    s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
 
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
@@ -683,8 +686,18 @@ void TechniqueGdr::renderOccludePropsPass()
 // render the unoccluded props to the screen
 void TechniqueGdr::renderMainPass()
 {
+    std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
+    vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
+                           "vs_gdr_instanced_indirect_rendering.vsh", "main", "./gdr", false);
+
+    std::shared_ptr<Shader> ps = std::make_shared<ade::Shader>();
+    ps->LoadShaderFromFile(ade::Shader::Shader::PixelShader,
+                           "fs_gdr_instanced_indirect_rendering.psh", "main", "./gdr", false);
+
     m_pipelineMainPass = std::make_shared<Pipeline>(m_pRenderTarget);
-    m_pipelineMainPass->SetShader(Shader::VertexShader, m_programMainPass);
+
+    m_pipelineMainPass->SetShader(Shader::VertexShader, vs);
+    m_pipelineMainPass->SetShader(Shader::VertexShader, ps);
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Set view and projection matrix for view 0.
@@ -753,4 +766,39 @@ void TechniqueGdr::renderMainPass()
         }
         m_firstFrame = false;
     }));
+}
+
+void TechniqueGdr::init()
+{
+    if (bUseNew) {
+        m_pSceneGdr = std::make_shared<SceneGdr>();
+        m_pSceneGdr->create();
+
+        createHiZBuffers();
+
+        std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
+        AddPass(pSetRTPass);
+
+        std::shared_ptr<PassClearRT> pClearRTPass =
+            std::make_shared<PassClearRT>(this, m_pRenderTarget);
+        AddPass(pClearRTPass);
+
+        renderOcclusionBufferPass();
+
+        renderDownscalePass();
+
+        renderOccludePropsPass();
+
+        renderMainPass();
+
+        //
+        {
+            auto srcTexture = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+            auto dstTexture = m_pBackBuffer;
+
+            std::shared_ptr<PassCopyTexture> pCopyTexPass =
+                std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
+            AddPass(pCopyTexPass);
+        }
+    }
 }

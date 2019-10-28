@@ -37,7 +37,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
     std::shared_ptr<ade::Buffer> m_indirectBuffer;
 
-    std::shared_ptr<ade::Shader> m_programMainPass;
+    //std::shared_ptr<ade::Shader> m_programMainPass;
     std::shared_ptr<ade::Shader> m_programOcclusionPass;
     std::shared_ptr<ade::Shader> m_programCopyZ;
     std::shared_ptr<ade::Shader> m_programDownscaleHiZ;
