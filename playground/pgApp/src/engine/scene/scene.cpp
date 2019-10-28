@@ -231,4 +231,82 @@ std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
     return tex;
 }
 
+
+std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
+                                                          const float* data, uint32_t count,
+                                                          uint32_t stride)
+{
+    // Create a vertex buffer that stores cube vertices
+    Diligent::BufferDesc VertBuffDesc;
+    VertBuffDesc.Name = "Float vertex buffer";
+    VertBuffDesc.Usage = Diligent::USAGE_STATIC;
+    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+    VertBuffDesc.uiSizeInBytes = stride * count;
+
+    Diligent::BufferData VBData;
+    VBData.pData = data;
+    VBData.DataSize = stride * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+
+    return buffer;
+}
+
+std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
+                                                        const uint32_t* data, uint32_t count)
+{
+    bool bDynamic = !data;
+
+    Diligent::BufferDesc IndBuffDesc;
+    IndBuffDesc.Name = "UInt index buffer";
+    IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
+    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+    IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    if (bDynamic) {
+        device->CreateBuffer(IndBuffDesc, nullptr, &pBuffer);
+    } else {
+        Diligent::BufferData IBData;
+        IBData.pData = data;
+        IBData.DataSize = sizeof(uint32_t) * count;
+
+        device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
+    }
+
+    std::shared_ptr<Buffer> buffer =
+        std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
+
+    return buffer;
+}
+
+// std::shared_ptr<Buffer> Scene::CreateUInt16IndexBuffer(Diligent::IRenderDevice* device,
+//                                                        const uint16_t* data, uint32_t count)
+//{
+//    Diligent::BufferDesc IndBuffDesc;
+//    IndBuffDesc.Name = "UInt16 index buffer";
+//    IndBuffDesc.Usage = Diligent::USAGE_STATIC;
+//    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+//    IndBuffDesc.uiSizeInBytes = sizeof(uint16_t) * count;
+//
+//    Diligent::BufferData IBData;
+//    IBData.pData = data;
+//    IBData.DataSize = sizeof(uint16_t) * count;
+//
+//    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+//    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
+//
+//    std::shared_ptr<Buffer> buffer =
+//        std::make_shared<Buffer>((uint32_t)sizeof(uint16_t), count, pBuffer);
+//
+//    return buffer;
+//}
+//
+
+
 }    // namespace ade

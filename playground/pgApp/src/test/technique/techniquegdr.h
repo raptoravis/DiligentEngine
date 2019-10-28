@@ -19,14 +19,25 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::ConstantBuffer> m_colors;
 
     std::shared_ptr<SceneGdr> m_pSceneGdr;
-
     std::shared_ptr<ade::Pass> createPassGdr(std::shared_ptr<ade::Scene> scene);
     void SetColorsConstantBufferData(PassGdr::Colors& data);
+//////////////////////////////////////////////////////////////////////////
+    std::shared_ptr<ade::Texture> m_hiZDepthBuffer;
+    std::shared_ptr<ade::Texture> m_hiZBuffer;
+    uint32_t m_noofHiZMips;
+    std::shared_ptr<ade::Buffer> m_drawcallInstanceCounts;
+    std::shared_ptr<ade::Buffer> m_instancePredicates;
+    std::shared_ptr<ade::Buffer> m_instanceBoundingBoxes;
+    std::shared_ptr<ade::Buffer> m_instanceBuffer;
+    std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
+
+    void createHiZBuffers();
+
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);
     virtual ~TechniqueGdr();
 
-	void init();
+    void init();
     virtual void Update();
     virtual void Render();
 };

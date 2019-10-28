@@ -62,6 +62,44 @@ inline constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
     return max(min(_a, _max), _min);
 }
 
+inline float log2(float _a)
+{
+    return std::log2(_a);
+}
+
+inline float trunc(float _a)
+{
+    return float(int(_a));
+}
+
+inline float fract(float _a)
+{
+    return _a - trunc(_a);
+}
+
+inline float floor(float _a)
+{
+    if (_a < 0.0f) {
+        const float fr = fract(-_a);
+        const float result = -_a - fr;
+
+        return -(0.0f != fr ? result + 1.0f : result);
+    }
+
+    return _a - fract(_a);
+}
+
+inline float ceil(float _a)
+{
+    return -floor(-_a);
+}
+
+inline float round(float _f)
+{
+    return floor(_f + 0.5f);
+}
+
+
 inline float lerp(float _a, float _b, float _t)
 {
     return _a + (_b - _a) * _t;
@@ -94,17 +132,17 @@ inline void toLatLong(float* _outU, float* _outV, const Diligent::float3 _dir)
     *_outV = theta * kInvPi;
 }
 
-	inline  float toRad(float _deg)
+inline float toRad(float _deg)
 {
     return _deg * kPi / 180.0f;
 }
 
-inline  float toDeg(float _rad)
+inline float toDeg(float _rad)
 {
     return _rad * 180.0f / kPi;
 }
 
-inline  uint32_t floatToBits(float _a)
+inline uint32_t floatToBits(float _a)
 {
     union {
         float f;
@@ -113,7 +151,7 @@ inline  uint32_t floatToBits(float _a)
     return u.ui;
 }
 
-inline  float bitsToFloat(uint32_t _a)
+inline float bitsToFloat(uint32_t _a)
 {
     union {
         uint32_t ui;
@@ -526,8 +564,7 @@ inline void mtxProjXYWH(float* _result, float _x, float _y, float _width, float 
 }
 
 inline void mtxProj(float* _result, float _ut, float _dt, float _lt, float _rt, float _near,
-                   float _far,
-             bool _homogeneousNdc, Handness::Enum _handness)
+                    float _far, bool _homogeneousNdc, Handness::Enum _handness)
 {
     const float invDiffRl = 1.0f / (_rt - _lt);
     const float invDiffUd = 1.0f / (_ut - _dt);
@@ -539,14 +576,13 @@ inline void mtxProj(float* _result, float _ut, float _dt, float _lt, float _rt, 
 }
 
 inline void mtxProj(float* _result, const float _fov[4], float _near, float _far,
-                   bool _homogeneousNdc,
-             Handness::Enum _handness)
+                    bool _homogeneousNdc, Handness::Enum _handness)
 {
     mtxProj(_result, _fov[0], _fov[1], _fov[2], _fov[3], _near, _far, _homogeneousNdc, _handness);
 }
 
 inline void mtxProj(float* _result, float _fovy, float _aspect, float _near, float _far,
-             bool _homogeneousNdc = false, Handness::Enum _handness = Handness::Left)
+                    bool _homogeneousNdc = false, Handness::Enum _handness = Handness::Left)
 {
     const float height = 1.0f / std::tan(toRad(_fovy) * 0.5f);
     const float width = height * 1.0f / _aspect;

@@ -44,12 +44,12 @@ void createCubeMesh(Prop& prop)
     memcpy(prop.m_vertices, s_cubeVertices, prop.m_noofVertices * sizeof(PosVertex));
     memcpy(prop.m_indices, s_cubeIndices, prop.m_noofIndices * sizeof(uint32_t));
 
-    std::shared_ptr<ade::Buffer> buffer = ade::SceneAss::createFloatVertexBuffer(
+    std::shared_ptr<ade::Buffer> buffer = ade::Scene::CreateFloatVertexBuffer(
         ade::App::s_device, (const float*)prop.m_vertices, prop.m_noofVertices, sizeof(PosVertex));
 
     prop.m_vertexbufferHandle = buffer;
 
-    prop.m_indexbufferHandle = ade::SceneAss::createUIntIndexBuffer(
+    prop.m_indexbufferHandle = ade::Scene::CreateUIntIndexBuffer(
         ade::App::s_device, prop.m_indices, prop.m_noofIndices);
 }
 

@@ -51,7 +51,7 @@ void MeshCube::CreateVertexBuffer()
         { float3(+1, -1, +1), float4(0.2f, 0.2f, 0.2f, 1) },
     };
 
-    std::shared_ptr<ade::Buffer> buffer = ade::SceneAss::createFloatVertexBuffer(
+    std::shared_ptr<ade::Buffer> buffer = ade::Scene::CreateFloatVertexBuffer(
         ade::App::s_device, (const float*)MeshCubeVerts, 8, sizeof(Vertex));
 
     ade::BufferBinding binding{ "VERTEX", 0 };
@@ -63,5 +63,5 @@ void MeshCube::CreateIndexBuffer()
     const Uint32 Indices[] = { 2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7,
                                1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6 };
 
-    m_pIndexBuffer = ade::SceneAss::createUIntIndexBuffer(ade::App::s_device, Indices, 36);
+    m_pIndexBuffer = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, Indices, 36);
 }

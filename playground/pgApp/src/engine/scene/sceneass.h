@@ -32,15 +32,6 @@ class SceneAss : public Scene
     SceneAss();
     virtual ~SceneAss();
 
-    static std::shared_ptr<Buffer> createFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                           const float* data, uint32_t count,
-                                                           uint32_t stride);
-    static std::shared_ptr<Buffer> createUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                         const uint32_t* data,
-                                                         uint32_t sizeInBytes);
-    //static std::shared_ptr<Buffer> createUInt16IndexBuffer(Diligent::IRenderDevice* device,
-    //                                                       const uint16_t* data, uint32_t count);
-
     static std::shared_ptr<SceneAss> CreateScene();
     static std::shared_ptr<Scene>
         CreatePlane(float size, const Diligent::float3& N = Diligent::float3(0, 1, 0));

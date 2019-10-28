@@ -4,6 +4,8 @@
 #include "engine/pass/passcopytexture.h"
 #include "engine/pass/passsetrt.h"
 
+#include "engine/utils/mathutils.h"
+
 #include "../mesh/meshprop.h"
 
 #include "../pass/passgdr.h"
@@ -11,6 +13,10 @@
 
 
 using namespace ade;
+
+static const uint16_t s_maxNoofProps = 10;
+
+static const uint16_t s_maxNoofInstances = 2048;
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
@@ -34,7 +40,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
         this->Set(PassGdr::kMaterialIdName, m_materialId);
         this->Set(PassGdr::kColorsName, m_colors);
 
-		{
+        {
             PassGdr::Colors colors;
 
             uint32_t noofMaterials = m_pSceneGdr->m_noofMaterials;
@@ -42,7 +48,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
             memcpy(colors.colors, m_pSceneGdr->m_materials,
                    sizeof(m_pSceneGdr->m_materials[0]) * noofMaterials);
             SetColorsConstantBufferData(colors);
-		}
+        }
 
         {
             auto prop0 = m_pSceneGdr->m_props[0];
@@ -119,8 +125,7 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
 
 void TechniqueGdr::SetColorsConstantBufferData(PassGdr::Colors& data)
 {
-    auto cb =
-        std::dynamic_pointer_cast<ConstantBuffer>(this->Get(PassGdr::kColorsName));
+    auto cb = std::dynamic_pointer_cast<ConstantBuffer>(this->Get(PassGdr::kColorsName));
 
     cb->Set(data);
 }
@@ -192,3 +197,64 @@ void TechniqueGdr::Update()
 }
 
 void TechniqueGdr::init() {}
+
+void TechniqueGdr::createHiZBuffers()
+{
+    uint32_t hiZwidth = 1024;
+    uint32_t hiZheight = 512;
+
+
+    {
+        // Create depth buffer
+        Diligent::TextureDesc DepthBufferDesc;
+        DepthBufferDesc.Name = "hiZDepthBuffer";
+        DepthBufferDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+        DepthBufferDesc.Width = hiZwidth;
+        DepthBufferDesc.Height = hiZheight;
+        DepthBufferDesc.MipLevels = 1;
+        DepthBufferDesc.ArraySize = 1;
+        DepthBufferDesc.Format = TEX_FORMAT_R24G8_TYPELESS;    // TEX_FORMAT_D32_FLOAT;
+        DepthBufferDesc.SampleCount = 1;                       // App::s_desc.SamplesCount;
+        DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
+        DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
+        DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+        DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
+
+        Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
+        App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+        m_hiZDepthBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+    }
+    {
+        // Create depth buffer
+        Diligent::TextureDesc DepthBufferDesc;
+        DepthBufferDesc.Name = "hiZBuffer";
+        DepthBufferDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+        DepthBufferDesc.Width = hiZwidth;
+        DepthBufferDesc.Height = hiZheight;
+        DepthBufferDesc.MipLevels = 1;
+        DepthBufferDesc.ArraySize = 1;
+        DepthBufferDesc.Format = TEX_FORMAT_D32_FLOAT;
+        DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
+        DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
+        DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
+        DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+        DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
+
+        Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
+        App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+        m_hiZDepthBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+    }
+
+    // how many mip will the Hi Z buffer have?
+    m_noofHiZMips = (uint8_t)(1 + ade::floor(ade::log2(float(ade::max(hiZwidth, hiZheight)))));
+
+    {
+        // The compute shader will write how many unoccluded instances per drawcall there are here
+        m_drawcallInstanceCounts =
+            ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr, s_maxNoofProps);
+
+        // the compute shader will write the result of the occlusion test for each instance here
+        m_instancePredicates =
+            ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr, s_maxNoofInstances);
+    }
+}

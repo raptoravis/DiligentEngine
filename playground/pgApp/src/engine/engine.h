@@ -928,6 +928,17 @@ class Scene : public Object
 
     virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
+//////////////////////////////////////////////////////////////////////////
+    static std::shared_ptr<Buffer> CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
+                                                           const float* data, uint32_t count,
+                                                           uint32_t stride);
+    static std::shared_ptr<Buffer> CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
+                                                         const uint32_t* data,
+                                                         uint32_t sizeInBytes);
+    // static std::shared_ptr<Buffer> CreateUInt16IndexBuffer(Diligent::IRenderDevice* device,
+    //                                                       const uint16_t* data, uint32_t count);
+
+
     static std::shared_ptr<Texture> CreateTexture2D(uint16_t width, uint16_t height,
                                                     uint16_t slices,
                                                     Diligent::TEXTURE_FORMAT format,

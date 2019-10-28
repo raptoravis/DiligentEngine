@@ -290,8 +290,8 @@ void SceneAss::ImportMaterial(const aiMaterial& material, fs::path parentPath)
         // the texture is a normal map or a bump map based on its pixel depth. Bump maps are usually
         // 8 BPP (grayscale) and normal maps are usually 24 BPP or higher.
         Material::TextureType textureType = (pTexture->GetBPP() >= 24)
-                                                  ? Material::TextureType::Normal
-                                                  : Material::TextureType::Bump;
+                                                ? Material::TextureType::Normal
+                                                : Material::TextureType::Bump;
 
         pMaterial->SetTexture(textureType, pTexture);
     }
@@ -395,7 +395,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
 }
 
 std::shared_ptr<SceneNode> SceneAss::ImportSceneNode(std::shared_ptr<SceneNode> parent,
-                                                         aiNode* aiNode)
+                                                     aiNode* aiNode)
 {
     if (!aiNode) {
         return nullptr;
@@ -438,75 +438,6 @@ std::shared_ptr<SceneNode> SceneAss::GetRootNode() const
     return m_pRootNode;
 }
 
-std::shared_ptr<Buffer> SceneAss::createFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                              const float* data, uint32_t count,
-                                                              uint32_t stride)
-{
-    // Create a vertex buffer that stores cube vertices
-    Diligent::BufferDesc VertBuffDesc;
-    VertBuffDesc.Name = "Float vertex buffer";
-    VertBuffDesc.Usage = Diligent::USAGE_STATIC;
-    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-    VertBuffDesc.uiSizeInBytes = stride * count;
-
-    Diligent::BufferData VBData;
-    VBData.pData = data;
-    VBData.DataSize = stride * count;
-
-    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
-
-    device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
-
-    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
-
-    return buffer;
-}
-
-std::shared_ptr<Buffer> SceneAss::createUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                            const uint32_t* data, uint32_t count)
-{
-    Diligent::BufferDesc IndBuffDesc;
-    IndBuffDesc.Name = "UInt index buffer";
-    IndBuffDesc.Usage = Diligent::USAGE_STATIC;
-    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-    IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
-
-    Diligent::BufferData IBData;
-    IBData.pData = data;
-    IBData.DataSize = sizeof(uint32_t) * count;
-
-    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
-    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
-
-    std::shared_ptr<Buffer> buffer =
-        std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
-
-    return buffer;
-}
-
-//std::shared_ptr<Buffer> SceneAss::createUInt16IndexBuffer(Diligent::IRenderDevice* device,
-//                                                        const uint16_t* data, uint32_t count)
-//{
-//    Diligent::BufferDesc IndBuffDesc;
-//    IndBuffDesc.Name = "UInt16 index buffer";
-//    IndBuffDesc.Usage = Diligent::USAGE_STATIC;
-//    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-//    IndBuffDesc.uiSizeInBytes = sizeof(uint16_t) * count;
-//
-//    Diligent::BufferData IBData;
-//    IBData.pData = data;
-//    IBData.DataSize = sizeof(uint16_t) * count;
-//
-//    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
-//    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
-//
-//    std::shared_ptr<Buffer> buffer =
-//        std::make_shared<Buffer>((uint32_t)sizeof(uint16_t), count, pBuffer);
-//
-//    return buffer;
-//}
-//
-
 std::shared_ptr<Mesh> SceneAss::CreateMesh()
 {
     std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
@@ -541,14 +472,14 @@ std::shared_ptr<Texture> SceneAss::CreateTexture2D(uint16_t width, uint16_t heig
 }
 
 std::shared_ptr<Buffer> SceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count,
-                                                              uint32_t stride)
+                                                          uint32_t stride)
 {
-    return createFloatVertexBuffer(App::s_device, data, count, stride);
+    return Scene::CreateFloatVertexBuffer(App::s_device, data, count, stride);
 }
 
 std::shared_ptr<Buffer> SceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
 {
-    return createUIntIndexBuffer(App::s_device, data, count);
+    return Scene::CreateUIntIndexBuffer(App::s_device, data, count);
 }
 
 std::shared_ptr<SceneAss> SceneAss::CreateScene()
@@ -635,8 +566,8 @@ std::shared_ptr<Scene> SceneAss::CreatePlane(float size, const Diligent::float3&
     return nullptr;
 }
 
-std::shared_ptr<Scene> SceneAss::CreateScreenQuad(float left, float right, float bottom,
-                                                      float top, float z)
+std::shared_ptr<Scene> SceneAss::CreateScreenQuad(float left, float right, float bottom, float top,
+                                                  float z)
 {
     Diligent::float3 p[4];    // Vertex position
     Diligent::float3 n[4];    // Vertex normal (required for texture patch polygons)
@@ -727,8 +658,8 @@ std::shared_ptr<Scene> SceneAss::CreateCube(float size)
     return nullptr;
 }
 
-std::shared_ptr<Scene> SceneAss::CreateCylinder(float baseRadius, float apexRadius,
-                                                    float height, const Diligent::float3& axis)
+std::shared_ptr<Scene> SceneAss::CreateCylinder(float baseRadius, float apexRadius, float height,
+                                                const Diligent::float3& axis)
 {
     std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
@@ -761,7 +692,7 @@ std::shared_ptr<Scene> SceneAss::CreateCone(float baseRadius, float height)
 }
 
 std::shared_ptr<Scene> SceneAss::CreateArrow(const Diligent::float3& tail,
-                                                 const Diligent::float3& head, float radius)
+                                             const Diligent::float3& head, float radius)
 {
     std::shared_ptr<SceneAss> scene = CreateScene();
     std::stringstream ss;
