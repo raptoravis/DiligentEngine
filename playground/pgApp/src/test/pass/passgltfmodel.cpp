@@ -340,7 +340,7 @@ void PassGltf::Render(Pipeline* pipeline)
     if (m_bLoaded) {
         RenderEventArgs& e = App::s_eventArgs;
 
-        float4x4 CameraView = e.pCamera->getViewMatrix();
+        float4x4 CameraView = e.pCamera->GetViewMatrix();
 
         float4x4 CameraWorld = CameraView.Inverse();
         float3 CameraWorldPos = float3::MakeVector(CameraWorld[3]);

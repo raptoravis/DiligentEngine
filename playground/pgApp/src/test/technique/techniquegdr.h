@@ -37,20 +37,17 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
     std::shared_ptr<ade::Buffer> m_indirectBuffer;
 
-    std::shared_ptr<ade::Pipeline> m_programMainPass;
-    std::shared_ptr<ade::Pipeline> m_programOcclusionPass;
-    std::shared_ptr<ade::Pipeline> m_programCopyZ;
-    std::shared_ptr<ade::Pipeline> m_programDownscaleHiZ;
-    std::shared_ptr<ade::Pipeline> m_programOccludeProps;
-    std::shared_ptr<ade::Pipeline> m_programStreamCompaction;
+    std::shared_ptr<ade::Shader> m_programMainPass;
+    std::shared_ptr<ade::Shader> m_programOcclusionPass;
+    std::shared_ptr<ade::Shader> m_programCopyZ;
+    std::shared_ptr<ade::Shader> m_programDownscaleHiZ;
+    std::shared_ptr<ade::Shader> m_programOccludeProps;
+    std::shared_ptr<ade::Shader> m_programStreamCompaction;
 
     void createHiZBuffers();
 
-    std::shared_ptr<ade::Pipeline> loadProgram(const std::string& shader,
-                                               ade::Shader::ShaderType st,
-                                               std::shared_ptr<ade::RenderTarget> rt,
-                                               std::shared_ptr<ade::Scene> scene);
-	//////////////////////////////////////////////////////////////////////////
+    std::shared_ptr<ade::Shader> loadProgram(const std::string& shader, ade::Shader::ShaderType st);
+    //////////////////////////////////////////////////////////////////////////
     PosVertex* m_allPropVerticesDataCPU;
     uint32_t* m_allPropIndicesDataCPU;
     uint32_t* m_indirectBufferDataCPU;
@@ -61,6 +58,28 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Buffer> m_allPropsVertexbufferHandle;
     std::shared_ptr<ade::Buffer> m_allPropsIndexbufferHandle;
     std::shared_ptr<ade::Buffer> m_indirectBufferData;
+
+    uint32_t m_hiZwidth = 1024;
+    uint32_t m_hiZheight = 512;
+
+    Diligent::float4x4 m_occlusionProj;
+    Diligent::float4x4 m_mainView;
+
+    std::shared_ptr<ade::Pipeline> m_pipelineOccusionPass;
+    std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
+
+    // submit drawcalls for all passes
+    void renderOcclusionBufferPass();
+
+    void renderDownscalePass();
+
+    void renderOccludePropsPass();
+
+    void renderMainPass();
+
+    struct Data4Floats_t {
+        float data[4];
+    };
 
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);

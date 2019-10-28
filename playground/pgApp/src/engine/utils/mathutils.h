@@ -73,6 +73,17 @@ inline constexpr Ty clamp(const Ty& _a, const Ty& _min, const Ty& _max)
     return max(min(_a, _max), _min);
 }
 
+inline float pow(float _a, float _b)
+{
+    return std::pow(_a, _b);
+}
+
+inline float log(float _a)
+{
+    return std::log(_a);
+}
+
+
 inline float log2(float _a)
 {
     return std::log2(_a);

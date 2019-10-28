@@ -26,9 +26,9 @@ class CameraFly : public Camera
     virtual void update(Diligent::InputController* pInputController, float ElapsedTime,
                         float moveSpeed);
 
-    const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
+    const Diligent::float4x4& GetViewMatrix() const { return m_viewMatrix; }
 
-    const Diligent::float4x4& getProjectionMatrix() const { return m_projectionMatrix; }
+    const Diligent::float4x4& GetProjectionMatrix() const { return m_projectionMatrix; }
 };
 
 struct Mouse {
@@ -100,9 +100,9 @@ class CameraAlt : public Camera
     virtual void SetPos(const Diligent::float3& p);
     virtual void SetLookAt(const Diligent::float3& target);
 
-    const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
+    const Diligent::float4x4& GetViewMatrix() const { return m_viewMatrix; }
 
-    const Diligent::float4x4& getProjectionMatrix() const { return m_projectionMatrix; }
+    const Diligent::float4x4& GetProjectionMatrix() const { return m_projectionMatrix; }
 };
 
 

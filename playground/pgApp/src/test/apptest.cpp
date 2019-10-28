@@ -362,7 +362,7 @@ void AppTest::Update(double CurrTime, double ElapsedTime)
 
         ImGui::Separator();
 
-        Diligent::float4x4 camTt = m_pCamera->getViewMatrix();
+        Diligent::float4x4 camTt = m_pCamera->GetViewMatrix();
 
         // Quaternion rot = ade::mRot2Quat(camTt);
         Diligent::Quaternion rot = ade::calculateRotation(camTt);

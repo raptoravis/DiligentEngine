@@ -139,9 +139,9 @@ class Camera : public Object
     virtual void SetLookAt(const Diligent::float3& target);
     Diligent::float3 GetLookDir() const;
 
-    const Diligent::float4x4& getViewMatrix() const { return m_viewMatrix; }
+    const Diligent::float4x4& GetViewMatrix() const { return m_viewMatrix; }
 
-    const Diligent::float4x4& getProjectionMatrix() const { return m_projectionMatrix; }
+    const Diligent::float4x4& GetProjectionMatrix() const { return m_projectionMatrix; }
 };
 
 
@@ -1051,7 +1051,6 @@ class PassPilpeline : public Pass
     virtual void Render(Pipeline* pipeline);
 };
 
-class RenderPass;
 
 class Technique : public Object
 {

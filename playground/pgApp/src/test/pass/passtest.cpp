@@ -59,8 +59,8 @@ void TestPass::Visit(SceneNode& node, Pipeline* pipeline)
 
         // Diligent::float4x4 is column major,
         // in hlsl, when mul(mat, vec), the mat is column major like opengl
-        Diligent::float4x4 viewMatrix = camera->getViewMatrix();
-        Diligent::float4x4 projMatrix = camera->getProjectionMatrix();
+        Diligent::float4x4 viewMatrix = camera->GetViewMatrix();
+        Diligent::float4x4 projMatrix = camera->GetProjectionMatrix();
 
         const Diligent::float4x4 nodeTransform = node.GetWorldTransfom();
 

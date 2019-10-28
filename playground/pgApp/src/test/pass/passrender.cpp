@@ -53,7 +53,7 @@ void PassRender::BindMaterialConstantBuffer(std::shared_ptr<Shader> shader)
 
 void PassRender::SetLightsBufferData(std::vector<Light>& lights)
 {
-    const float4x4 viewMatrix = App::s_eventArgs.pCamera->getViewMatrix();
+    const float4x4 viewMatrix = App::s_eventArgs.pCamera->GetViewMatrix();
 
     // Update the viewspace vectors of the light.
     for (uint32_t i = 0; i < lights.size(); i++) {
@@ -126,13 +126,13 @@ void PassRender::Visit(SceneNode& node, Pipeline* pipeline)
 {
     RenderEventArgs& e = App::s_eventArgs;
 
-    const float4x4 view = e.pCamera->getViewMatrix();
+    const float4x4 view = e.pCamera->GetViewMatrix();
     // TODO: change to use world
     const float4x4 local = node.GetLocalTransform();
 
     // Set cube world view matrix
     float4x4 worldViewMatrix = local * view;
-    auto& Proj = e.pCamera->getProjectionMatrix();
+    auto& Proj = e.pCamera->GetProjectionMatrix();
     // Compute world-view-projection matrix
     float4x4 worldViewProjMatrix = worldViewMatrix * Proj;
 

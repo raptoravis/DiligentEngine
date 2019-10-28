@@ -116,7 +116,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const Light& li
             perObjectData.ModelViewProjection = othoMat;
             perObjectData.ModelView = float4x4::Identity();
         } else {
-            auto& Proj = e.pCamera->getProjectionMatrix();
+            auto& Proj = e.pCamera->GetProjectionMatrix();
             // const float4x4 nodeTransform = e.pSceneNode->GetLocalTransform();
             const float4x4 nodeTransform = Diligent::float4x4::Identity();
 
@@ -142,7 +142,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const Light& li
                 Diligent::float4x4::Scale(Diligent::float3(scaleX, scaleY, scaleZ));
 
             Diligent::float4x4 modelViewMat =
-                nodeTransform * scale * rotation * translation * e.pCamera->getViewMatrix();
+                nodeTransform * scale * rotation * translation * e.pCamera->GetViewMatrix();
             perObjectData.ModelView = modelViewMat;
             perObjectData.ModelViewProjection = modelViewMat * Proj;
         }
@@ -161,7 +161,7 @@ void PassLight::updateScreenToViewParams()
 
         ScreenToViewParams screenToViewParamsData;
 
-        auto& Proj = e.pCamera->getProjectionMatrix();
+        auto& Proj = e.pCamera->GetProjectionMatrix();
         // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
         // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
         screenToViewParamsData.m_InverseProjectionMatrix = Proj.Inverse();
