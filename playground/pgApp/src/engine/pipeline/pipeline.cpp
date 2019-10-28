@@ -43,12 +43,9 @@ void Pipeline::InitPSODesc()
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_BACK;
-#if RIGHT_HANDED
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = RIGHT_HANDED_FRONT_CCW;
-#else
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = LEFT_HANDED_FRONT_CCW;
-#endif
 
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise =
+        RIGHT_HANDED ? RIGHT_HANDED_FRONT_CCW : LEFT_HANDED_FRONT_CCW;
 
     // Enable depth testing
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = Diligent::True;
@@ -145,11 +142,12 @@ Diligent::DepthStencilStateDesc& Pipeline::GetDepthStencilState()
     return m_PSODesc.GraphicsPipeline.DepthStencilDesc;
 }
 
-void Pipeline::SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements) {
+void Pipeline::SetInputLayout(Diligent::LayoutElement* pLayoutElements, uint32_t LayoutElements)
+{
     delete m_pLayoutElements;
 
     m_LayoutElements = LayoutElements;
-	m_pLayoutElements = new Diligent::LayoutElement[LayoutElements];
+    m_pLayoutElements = new Diligent::LayoutElement[LayoutElements];
     memcpy(m_pLayoutElements, pLayoutElements, sizeof(Diligent::LayoutElement) * LayoutElements);
 }
 

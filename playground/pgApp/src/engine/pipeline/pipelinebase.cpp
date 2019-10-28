@@ -40,11 +40,9 @@ void PipelineBase::InitPSODesc()
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_BACK;
 
-#if RIGHT_HANDED
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = RIGHT_HANDED_FRONT_CCW;
-#else
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = LEFT_HANDED_FRONT_CCW;
-#endif
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise =
+        RIGHT_HANDED ? RIGHT_HANDED_FRONT_CCW : LEFT_HANDED_FRONT_CCW;
+
 
     // Enable depth testing
     m_PSODesc.GraphicsPipeline.DepthStencilDesc.DepthEnable = True;

@@ -51,11 +51,8 @@ PassLight::PassLight(Technique* parentTechnique, std::shared_ptr<RenderTarget> p
 {
     m_pPointLightScene = SceneAss::CreateSphere(1.0f);
     m_pSpotLightScene = SceneAss::CreateCylinder(0.0f, 1.0f, 1.0f, float3(0, 0, 1));
-#if RIGHT_HANDED
+
     m_pDirectionalLightScene = SceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
-#else
-    m_pDirectionalLightScene = SceneAss::CreateScreenQuad(-1, 1, -1, 1, 1);
-#endif
 
     m_pTechniqueSphere = std::make_shared<Technique>(nullptr, nullptr);
     m_pTechniqueSpot = std::make_shared<Technique>(nullptr, nullptr);
@@ -113,11 +110,7 @@ void PassLight::updateLightParams(const LightParams& lightParam, const Light& li
 // CBConstants->ModelViewProjection = m_WorldViewProjMatrix.Transpose();
 // CBConstants->ModelView = m_WorldViewMatrix.Transpose();
 // bool IsGL = App::s_device->GetDeviceCaps().IsGLDevice();
-#if RIGHT_HANDED
-            bool IsGL = true;
-#else
-            bool IsGL = false;
-#endif
+            bool IsGL = RIGHT_HANDED;
             Diligent::float4x4 othoMat = Diligent::float4x4::Ortho(2.0f, 2.0f, 0.f, 1.f, IsGL);
 
             perObjectData.ModelViewProjection = othoMat;

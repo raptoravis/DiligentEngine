@@ -127,11 +127,7 @@ void TechniqueDeferred::init(const std::shared_ptr<Scene> scene, std::vector<Lig
     Diligent::ShaderMacroHelper shaderMacros;
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
 
-#if RIGHT_HANDED
     bool bRightHanded = false;
-#else
-    bool bRightHanded = false;
-#endif
     shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
 
     m_pVertexShader = std::make_shared<Shader>();
@@ -306,11 +302,7 @@ void TechniqueDeferred::initDebug()
     m_pDebugDepthTexturePipeline->SetShader(Shader::PixelShader, m_pDebugDepthTexturePixelShader);
     m_pDebugDepthTexturePipeline->SetDepthStencilState(DSStateDesc);
 
-#if RIGHT_HANDED
-    bool IsGL = true;
-#else
-    bool IsGL = false;
-#endif
+    bool IsGL = RIGHT_HANDED;
 
     Diligent::float4x4 orthographicProjection = Diligent::float4x4::Ortho(2.f, 2, 0.f, 1.f, IsGL);
 

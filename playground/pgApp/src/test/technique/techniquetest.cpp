@@ -33,25 +33,15 @@ TechniqueTest::TechniqueTest(std::shared_ptr<RenderTarget> rt, std::shared_ptr<T
         std::shared_ptr<MeshCube> meshCube = std::make_shared<MeshCube>();
         std::shared_ptr<MeshCubeTex> meshCubeTex = std::make_shared<MeshCubeTex>();
 
-#if RIGHT_HANDED
-        float z = 8.0f;
-#else
-        float z = 8.0f;
-#endif
-        float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 0.0f, z);
+        float4x4 trans1 = float4x4::RotationX(-PI_F * 0.1f) * float4x4::Translation(0.f, 3.0f, 0);
         std::shared_ptr<SceneNode> root1 = std::make_shared<SceneNode>(trans1);
         root1->AddMesh(meshCube);
         m_pSceneCube = std::make_shared<Scene>();
         m_pSceneCube->SetRootNode(root1);
 
-#if RIGHT_HANDED
-        z = 5.0f;
-#else
-        z = 5.0f;
-#endif
 
         float4x4 trans2 = float4x4::Scale(0.6f) * float4x4::RotationX(-PI_F * 0.1f) *
-                          float4x4::Translation(0.f, 0.0f, z);
+                          float4x4::Translation(0.f, -3.0f, 0);
         std::shared_ptr<SceneNode> root2 = std::make_shared<SceneNode>(trans2);
         root2->AddMesh(meshCubeTex);
         m_pSceneCubeTex = std::make_shared<Scene>();

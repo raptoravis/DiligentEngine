@@ -18,11 +18,9 @@ void PipelineLightBack::InitPSODesc()
     // Cull back faces
     m_PSODesc.GraphicsPipeline.RasterizerDesc.CullMode = CULL_MODE_FRONT;
     m_PSODesc.GraphicsPipeline.RasterizerDesc.DepthClipEnable = False;
-#if RIGHT_HANDED
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = RIGHT_HANDED_FRONT_CCW;
-#else
-    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise = LEFT_HANDED_FRONT_CCW;
-#endif
+
+    m_PSODesc.GraphicsPipeline.RasterizerDesc.FrontCounterClockwise =
+        RIGHT_HANDED ? RIGHT_HANDED_FRONT_CCW : LEFT_HANDED_FRONT_CCW;
 
 
     m_PSODesc.GraphicsPipeline.BlendDesc.RenderTargets[0].BlendEnable = True;

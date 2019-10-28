@@ -32,11 +32,8 @@ void TechniqueForward::init(std::shared_ptr<Scene> scene, std::vector<Light>* li
     Diligent::ShaderMacroHelper shaderMacros;
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
 
-#if RIGHT_HANDED
     bool bRightHanded = false;
-#else
-    bool bRightHanded = false;
-#endif
+
     shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
 
     m_pVertexShader = std::make_shared<Shader>();

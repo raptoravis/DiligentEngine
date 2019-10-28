@@ -125,11 +125,7 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
     shaderMacros.AddShaderMacro("NUM_LIGHTS", numLights);
     shaderMacros.AddShaderMacro("BLOCK_SIZE", m_LightCullingBlockSize);
 
-#if RIGHT_HANDED
     bool bRightHanded = false;
-#else
-    bool bRightHanded = false;
-#endif
     shaderMacros.AddShaderMacro("RIGHT_HANDED", bRightHanded);
 
     m_pVertexShader = std::make_shared<Shader>();
@@ -323,11 +319,8 @@ void TechniqueForwardPlus::init(const std::shared_ptr<Scene> scene, std::vector<
 
 void TechniqueForwardPlus::initDebug()
 {
-#if RIGHT_HANDED
-    bool IsGL = true;
-#else
-    bool IsGL = false;
-#endif
+    bool IsGL = RIGHT_HANDED;
+
     Diligent::DepthStencilStateDesc DSStateDesc;
     DSStateDesc.DepthEnable = False;
 

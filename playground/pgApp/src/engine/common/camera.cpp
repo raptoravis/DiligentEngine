@@ -61,11 +61,7 @@ Diligent::float3 Camera::GetLookDir() const
 
 CameraFly::CameraFly() : base()
 {
-#if RIGHT_HANDED
-    bool bIsGL = true;
-#else
-    bool bIsGL = false;
-#endif
+    bool bIsGL = RIGHT_HANDED;
     setProjectionMatrix(0.1f, 1000.f, bIsGL);
 }
 
@@ -385,6 +381,9 @@ void CameraAlt::moveKeyboard(Diligent::InputController* pInputController, float 
     float kMoveSpeed = (accelerate ? moveSpeed * 5.0f : moveSpeed) * _dt;
 
     if (moveForward) {
+		//matrix is column major, the 3rd column is in fact the 3rd row (in opengl's concept) 
+		//which is the forward as it is transposed 
+		//M * (0, 0, 1) => the 3rd column
         Diligent::float3 forward{ m_viewMatrix._13, m_viewMatrix._23, m_viewMatrix._33 };
         m_pos.dest += ade::mul(forward, kMoveSpeed);
     }
