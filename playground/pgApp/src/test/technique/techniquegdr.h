@@ -21,7 +21,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<SceneGdr> m_pSceneGdr;
     std::shared_ptr<ade::Pass> createPassGdr(std::shared_ptr<ade::Scene> scene);
     void SetColorsConstantBufferData(PassGdr::Colors& data);
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     std::shared_ptr<ade::Texture> m_hiZDepthBuffer;
     std::shared_ptr<ade::Texture> m_hiZBuffer;
     uint32_t m_noofHiZMips;
@@ -30,8 +30,21 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Buffer> m_instanceBoundingBoxes;
     std::shared_ptr<ade::Buffer> m_instanceBuffer;
     std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
+    std::shared_ptr<ade::Buffer> m_indirectBuffer;
+
+    std::shared_ptr<ade::Pipeline> m_programMainPass;
+    std::shared_ptr<ade::Pipeline> m_programOcclusionPass;
+    std::shared_ptr<ade::Pipeline> m_programCopyZ;
+    std::shared_ptr<ade::Pipeline> m_programDownscaleHiZ;
+    std::shared_ptr<ade::Pipeline> m_programOccludeProps;
+    std::shared_ptr<ade::Pipeline> m_programStreamCompaction;
 
     void createHiZBuffers();
+
+    std::shared_ptr<ade::Pipeline> loadProgram(const std::string& shader,
+                                               ade::Shader::ShaderType st,
+                                               std::shared_ptr<ade::RenderTarget> rt,
+                                               std::shared_ptr<ade::Scene> scene);
 
   public:
     TechniqueGdr(std::shared_ptr<ade::RenderTarget> rt, std::shared_ptr<ade::Texture> backBuffer);

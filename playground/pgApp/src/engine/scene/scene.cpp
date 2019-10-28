@@ -174,11 +174,10 @@ void Scene::Accept(Visitor& visitor, Pipeline* pipeline)
     }
 }
 
-std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
-                                                    uint16_t slices,
-                                                    Diligent::TEXTURE_FORMAT format,
-                                                    CPUAccess cpuAccess, bool gpuWrite,
-                                                    bool bGenerateMipmaps)
+std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height, uint16_t slices,
+                                                Diligent::TEXTURE_FORMAT format,
+                                                CPUAccess cpuAccess, bool gpuWrite,
+                                                bool bGenerateMipmaps)
 {
     Diligent::ITexture* texture = 0;
 
@@ -233,23 +232,28 @@ std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
 
 
 std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
-                                                          const float* data, uint32_t count,
-                                                          uint32_t stride)
+                                                       const float* data, uint32_t count,
+                                                       uint32_t stride)
 {
+    bool bDynamic = !data;
     // Create a vertex buffer that stores cube vertices
     Diligent::BufferDesc VertBuffDesc;
     VertBuffDesc.Name = "Float vertex buffer";
-    VertBuffDesc.Usage = Diligent::USAGE_STATIC;
+    VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
     VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
     VertBuffDesc.uiSizeInBytes = stride * count;
 
-    Diligent::BufferData VBData;
-    VBData.pData = data;
-    VBData.DataSize = stride * count;
-
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
-    device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
+    if (bDynamic) {
+        device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
+    } else {
+        Diligent::BufferData VBData;
+        VBData.pData = data;
+        VBData.DataSize = stride * count;
+
+        device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
+    }
 
     std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
 
@@ -257,7 +261,7 @@ std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* 
 }
 
 std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                        const uint32_t* data, uint32_t count)
+                                                     const uint32_t* data, uint32_t count)
 {
     bool bDynamic = !data;
 

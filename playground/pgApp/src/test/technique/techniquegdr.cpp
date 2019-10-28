@@ -257,4 +257,99 @@ void TechniqueGdr::createHiZBuffers()
         m_instancePredicates =
             ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr, s_maxNoofInstances);
     }
+
+    // bounding box for each instance, will be fed to the compute shader to calculate occlusion
+    {
+        // initialise the buffer with the bounding boxes of all instances
+        const int sizeOfBuffer = 2 * 4 * m_pSceneGdr->m_totalInstancesCount;
+        float* boundingBoxes = new float[sizeOfBuffer];
+
+        float* data = boundingBoxes;
+        for (uint16_t i = 0; i < m_pSceneGdr->m_noofProps; i++) {
+            Prop& prop = m_pSceneGdr->m_props[i];
+
+            const uint32_t numInstances = prop.m_noofInstances;
+
+            for (uint32_t j = 0; j < numInstances; j++) {
+                ade::memCopy(data, &prop.m_instances[j].m_bboxMin, 3 * sizeof(float));
+                data[3] =
+                    (float)i;    // store the drawcall ID here to avoid creating a separate buffer
+                data += 4;
+
+                ade::memCopy(data, &prop.m_instances[j].m_bboxMax, 3 * sizeof(float));
+                data += 4;
+            }
+        }
+
+        m_instanceBoundingBoxes = Scene::CreateFloatVertexBuffer(App::s_device, boundingBoxes,
+                                                                 m_pSceneGdr->m_totalInstancesCount,
+                                                                 sizeof(Diligent::float4) * 2);
+    }
+
+    // pre and post occlusion culling instance data buffers
+    {
+        // initialise the buffer with data for all instances
+        // Currently we only store a world matrix (16 floats)
+        const int sizeOfBuffer = 16 * m_pSceneGdr->m_totalInstancesCount;
+        float* instanceData = new float[sizeOfBuffer];
+
+        float* data = instanceData;
+        for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
+            Prop& prop = m_pSceneGdr->m_props[ii];
+
+            const uint32_t numInstances = prop.m_noofInstances;
+
+            for (uint32_t jj = 0; jj < numInstances; ++jj) {
+                ade::memCopy(data, &prop.m_instances[jj].m_world, 16 * sizeof(float));
+                data[3] =
+                    float(ii);    // store the drawcall ID here to avoid creating a separate buffer
+                data += 16;
+            }
+        }
+
+        // pre occlusion buffer
+        m_instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, instanceData,
+                                                          m_pSceneGdr->m_totalInstancesCount,
+                                                          sizeof(Diligent::float4));
+        // post occlusion buffer
+        m_culledInstanceBuffer = Scene::CreateFloatVertexBuffer(
+            App::s_device, nullptr, m_pSceneGdr->m_totalInstancesCount, sizeof(uint32_t));
+    }
+
+    // we use one "drawcall" per prop to render all its instances
+    const uint kCONFIG_DRAW_INDIRECT_STRIDE = 32;
+
+    m_indirectBuffer = Scene::CreateFloatVertexBuffer(
+        App::s_device, nullptr, m_pSceneGdr->m_noofProps, kCONFIG_DRAW_INDIRECT_STRIDE);
+
+
+    // Create programs from shaders for occlusion pass.
+    m_programOcclusionPass = loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader,
+                                         m_pRenderTarget, nullptr);
+    m_programCopyZ =
+        loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader, m_pRenderTarget, nullptr);
+
+    m_programDownscaleHiZ = loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader,
+                                        m_pRenderTarget, nullptr);
+    m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader,
+                                        m_pRenderTarget, nullptr);
+    m_programStreamCompaction = loadProgram("cs_gdr_stream_compaction.sh",
+                                            ade::Shader::ComputeShader, m_pRenderTarget, nullptr);
+}
+
+std::shared_ptr<ade::Pipeline> TechniqueGdr::loadProgram(const std::string& shader,
+                                                         ade::Shader::ShaderType st,
+                                                         std::shared_ptr<ade::RenderTarget> rt,
+                                                         std::shared_ptr<ade::Scene> scene)
+{
+    std::shared_ptr<Pipeline> pipeline = std::make_shared<Pipeline>(rt);
+
+    {
+        std::shared_ptr<Shader> sh = std::make_shared<ade::Shader>();
+        sh->LoadShaderFromFile(st, shader.c_str(), "main", "./gdr", false);
+
+        pipeline->SetShader(st, sh);
+    }
+
+    return pipeline;
 }

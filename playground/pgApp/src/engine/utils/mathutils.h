@@ -23,6 +23,17 @@ inline void swap(Ty& _a, Ty& _b)
     _b = tmp;
 }
 
+inline void memCopy(void* _dst, const void* _src, size_t _numBytes)
+{
+    ::memcpy(_dst, _src, _numBytes);
+}
+
+inline void memSet(void* _dst, uint8_t _ch, size_t _numBytes)
+{
+    ::memset(_dst, _ch, _numBytes);
+}
+
+
 #undef min
 #undef max
 
@@ -588,6 +599,5 @@ inline void mtxProj(float* _result, float _fovy, float _aspect, float _near, flo
     const float width = height * 1.0f / _aspect;
     mtxProjXYWH(_result, 0.0f, 0.0f, width, height, _near, _far, _homogeneousNdc, _handness);
 }
-
 
 }    // namespace ade
