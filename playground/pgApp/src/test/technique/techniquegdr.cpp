@@ -688,11 +688,11 @@ void TechniqueGdr::renderMainPass()
 {
     std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
     vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
-                           "vs_gdr_instanced_indirect_rendering.vsh", "main", "./gdr", false);
+                           "vs_gdr_instanced_indirect_rendering.sh", "main", "./gdr", false);
 
     std::shared_ptr<Shader> ps = std::make_shared<ade::Shader>();
     ps->LoadShaderFromFile(ade::Shader::Shader::PixelShader,
-                           "fs_gdr_instanced_indirect_rendering.psh", "main", "./gdr", false);
+                           "fs_gdr_instanced_indirect_rendering.sh", "main", "./gdr", false);
 
     m_pipelineMainPass = std::make_shared<Pipeline>(m_pRenderTarget);
 
