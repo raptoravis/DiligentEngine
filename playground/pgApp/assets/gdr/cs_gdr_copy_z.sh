@@ -1,26 +1,20 @@
-/*
- * Copyright 2018 Kostas Anagnostou. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
 
-#include "bgfx_compute.sh"
+#include "gdr_common.sh"
 
-SAMPLER2D(s_texOcclusionDepth, 0);
-IMAGE2D_WR(s_texOcclusionDepthOut, r32f, 1);
+Texture2D s_texOcclusionDepth : register( t0 );
+RWTexture2D<float4> u_texOcclusionDepthOut : register( u0 );
 
-uniform vec4 u_inputRTSize;
-
-NUM_THREADS(16, 16, 1)
-void main()
+[numthreads( 16, 16, 1 )]
+void main(ComputeShaderInput IN)
 {
 	// this shader can be used to both copy a mip over to the output and downscale it.
 
-	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+	uint2 coord = uint2(IN.dispatchThreadID.xy);
 
-	if (all(lessThan(coord.xy, u_inputRTSize.xy) ) )
+	if (all(coord.xy < u_inputRTSize.xy) )
 	{
-		float maxDepth = texelFetch(s_texOcclusionDepth, coord.xy, 0).x;
+		float maxDepth = s_texOcclusionDepth[coord.xy].x;
 
-		imageStore(s_texOcclusionDepthOut, coord, vec4(maxDepth,0,0,1) );
+		u_texOcclusionDepthOut[coord] = float4(maxDepth,0,0,1);
 	}
 }

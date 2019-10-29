@@ -28,6 +28,14 @@ static const uint16_t s_maxNoofInstances = 2048;
 #define RENDER_PASS_COMPACT_STREAM_ID 3
 #define RENDER_PASS_MAIN_ID 4
 
+uint8_t calcNumMips(uint32_t _width, uint32_t _height, uint32_t _depth = 1)
+{
+    const uint32_t max = ade::max(_width, _height, _depth);
+    const uint32_t num = 1 + uint32_t(ade::log2(float(max)));
+
+    return uint8_t(num);
+}
+
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
@@ -219,10 +227,10 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.Height = m_hiZheight;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_R32_TYPELESS;    // TEX_FORMAT_R24G8_TYPELESS;
-        DepthBufferDesc.SampleCount = 1;                     // App::s_desc.SamplesCount;
+        DepthBufferDesc.Format = TEX_FORMAT_R32_FLOAT;    // TEX_FORMAT_R24G8_TYPELESS;
+        DepthBufferDesc.SampleCount = 1;                  // App::s_desc.SamplesCount;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
-        DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
+        DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
         DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
         DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
 
@@ -231,24 +239,26 @@ void TechniqueGdr::createHiZBuffers()
         m_hiZDepthBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
     }
     {
-        // Create depth buffer
-        Diligent::TextureDesc DepthBufferDesc;
-        DepthBufferDesc.Name = "hiZBuffer";
-        DepthBufferDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-        DepthBufferDesc.Width = m_hiZwidth;
-        DepthBufferDesc.Height = m_hiZheight;
-        DepthBufferDesc.MipLevels = 1;
-        DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_R32_TYPELESS;
-        DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
-        DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
-        DepthBufferDesc.BindFlags = BIND_RENDER_TARGET;
-        DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
-        DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
+         Diligent::TextureDesc DepthBufferDesc;
+         DepthBufferDesc.Name = "hiZBuffer";
+         DepthBufferDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+         DepthBufferDesc.Width = m_hiZwidth;
+         DepthBufferDesc.Height = m_hiZheight;
+         DepthBufferDesc.MipLevels = (uint32_t)calcNumMips(m_hiZwidth, m_hiZheight);
+         DepthBufferDesc.ArraySize = 1;
+         DepthBufferDesc.Format = TEX_FORMAT_R32_FLOAT;
+         DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
+         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
+         DepthBufferDesc.BindFlags = BIND_SHADER_RESOURCE | BIND_UNORDERED_ACCESS;
+         DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+         DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
 
-        Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
-        App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
-        m_hiZBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+         Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
+         App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
+         m_hiZBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+
+        //m_hiZBuffer = Scene::CreateTexture2D((uint16_t)m_hiZwidth, (uint16_t)m_hiZheight, 1,
+        //                                     Diligent::TEX_FORMAT_R32_FLOAT, CPUAccess::None, true);
     }
 
     // how many mip will the Hi Z buffer have?
@@ -258,13 +268,14 @@ void TechniqueGdr::createHiZBuffers()
     u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
     u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
 
-    SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
-                                     FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
-                                     TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
+    // SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+    //                                 FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+    //                                 TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
 
-    StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth", linearRepeatSampler };
+    // StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth", linearRepeatSampler
+    // };
 
-    s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
+    // s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
 
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
@@ -342,9 +353,6 @@ void TechniqueGdr::createHiZBuffers()
 
 
     // Create programs from shaders for occlusion pass.
-    m_programCopyZ = loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader);
-
-    m_programDownscaleHiZ = loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader);
     m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
     m_programStreamCompaction =
         loadProgram("cs_gdr_stream_compaction.sh", ade::Shader::ComputeShader);
@@ -459,12 +467,12 @@ static void Submit(std::shared_ptr<Buffer> pBuffer, uint32_t instancesCount)
 // renders the occluders to a depth buffer
 void TechniqueGdr::renderOcclusionBufferPass()
 {
-    m_programOcclusionPass = loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
+    std::shared_ptr<Shader> programOcclusionPass =
+        loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
     m_pipelineOccusionPass = std::make_shared<Pipeline>(m_pRenderTarget);
 
     {
-        m_pipelineOccusionPass->SetShader(ade::Shader::Shader::VertexShader,
-                                          m_programOcclusionPass);
+        m_pipelineOccusionPass->SetShader(ade::Shader::Shader::VertexShader, programOcclusionPass);
 
         LayoutElement LayoutElems[] = {
             // Attribute 0 - vertex position
@@ -486,7 +494,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
     std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
     renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
 
-    m_programOcclusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
+    programOcclusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
     //////////////////////////////////////////////////////////////////////////
     uint32_t numInstances = 0;
     std::shared_ptr<Buffer> vertexBuffer;
@@ -510,8 +518,8 @@ void TechniqueGdr::renderOcclusionBufferPass()
 
                 for (uint32_t j = 0; j < numInstances; j++) {
                     // we only need the world matrix for the occlusion pass
-                    //Diligent::float4x4 worldMat = prop.m_instances[j].m_world.Transpose();
-                    //ade::memCopy(&data->m_world, &worldMat, sizeof(data->m_world));
+                    // Diligent::float4x4 worldMat = prop.m_instances[j].m_world.Transpose();
+                    // ade::memCopy(&data->m_world, &worldMat, sizeof(data->m_world));
                     ade::memCopy(&data->m_world, &prop.m_instances[j].m_world,
                                  sizeof(data->m_world));
                     data++;
@@ -574,9 +582,14 @@ void TechniqueGdr::renderDownscalePass()
         std::shared_ptr<ade::PipelineDispatch> dispatchPipeline =
             std::make_shared<ade::PipelineDispatch>(numThreadGroups);
 
-        dispatchPipeline->SetShader(Shader::ComputeShader, m_programCopyZ);
+        std::shared_ptr<ade::Shader> programCopyZ =
+            loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader);
+        dispatchPipeline->SetShader(Shader::ComputeShader, programCopyZ);
 
-        m_programCopyZ->GetShaderParameterByName("hiZDepthBuffer").Set(m_hiZDepthBuffer);
+        programCopyZ->GetShaderParameterByName("InputRTSize").Set(u_inputRTSize);
+
+        programCopyZ->GetShaderParameterByName("s_texOcclusionDepth").Set(m_hiZDepthBuffer);
+        programCopyZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(m_hiZBuffer);
 
         std::shared_ptr<PassDispatch> dispatchPass =
             std::make_shared<PassDispatch>(this, dispatchPipeline);
@@ -593,17 +606,21 @@ void TechniqueGdr::renderDownscalePass()
             width /= 2;
             height /= 2;
 
-            Diligent::uint3 numThreadGroups = Diligent::uint3(width / 16, height / 16, 1);
+            Diligent::uint3 numThreadGroups = Diligent::uint3(
+                ade::max((uint32_t)(width / 16), 1u), ade::max((uint32_t)(height / 16), 1u), 1u);
 
             std::shared_ptr<ade::PipelineDispatch> dispatchPipeline =
                 std::make_shared<ade::PipelineDispatch>(numThreadGroups);
 
-            dispatchPipeline->SetShader(Shader::ComputeShader, m_programCopyZ);
+            std::shared_ptr<Shader> programDownscaleHiZ =
+                loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader);
 
-            // bgfx::setImage(0, getTexture(m_hiZBuffer, 0), lod - 1, bgfx::Access::Read);
-            // bgfx::setImage(1, getTexture(m_hiZBuffer, 0), lod, bgfx::Access::Write);
+            dispatchPipeline->SetShader(Shader::ComputeShader, programDownscaleHiZ);
 
-            m_programCopyZ->GetShaderParameterByName("hiZDepthBuffer").Set(m_hiZDepthBuffer);
+            programDownscaleHiZ->GetShaderParameterByName("InputRTSize").Set(u_inputRTSize);
+            programDownscaleHiZ->GetShaderParameterByName("s_texOcclusionDepth").Set(m_hiZBuffer);
+            programDownscaleHiZ->GetShaderParameterByName("u_texOcclusionDepthOut")
+                .Set(m_hiZBuffer);
 
             std::shared_ptr<PassDispatch> dispatchPass =
                 std::make_shared<PassDispatch>(this, dispatchPipeline);
@@ -815,7 +832,7 @@ void TechniqueGdr::initGdr()
 
         renderOcclusionBufferPass();
 
-        // renderDownscalePass();
+        renderDownscalePass();
 
         // renderOccludePropsPass();
 
