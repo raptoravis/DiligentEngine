@@ -10,8 +10,6 @@ class PipelineDispatch : public Pipeline
     typedef Pipeline base;
 
   private:
-    std::shared_ptr<Shader> m_pComputeShader;
-
     // The number of groups to dispatch for the compute shader kernel.
     Diligent::uint3 m_NumGroups;
 

@@ -42,7 +42,7 @@ bool Texture::IsTransparent() const
     return false;
 }
 
-Texture::Texture(Diligent::ITexture* texture)
+Texture::Texture(Diligent::ITexture* texture) : m_mip((uint32_t)-1)
 {
     m_pTexture.Attach(texture);
     m_pTexture->AddRef();
@@ -62,10 +62,27 @@ Diligent::ITexture* Texture::GetTexture()
 
 Diligent::ITextureView* Texture::GetShaderResourceView()
 {
-    auto tex = m_pTexture;
 
-    auto srv = tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-    return srv;
+    if (m_mip != (uint32_t)-1) {
+        auto tex = m_parentTexture;
+
+        Diligent::TextureViewDesc ViewDesc;
+        ViewDesc.ViewType = Diligent::TEXTURE_VIEW_SHADER_RESOURCE;
+        auto ViewName = Diligent::FormatString("Mip SRV of texture");
+        ViewDesc.Name = ViewName.c_str();
+
+        ViewDesc.MostDetailedMip = m_mip;
+
+        Diligent::ITextureView* srv = 0;
+        tex->m_pTexture->CreateView(ViewDesc, &srv);
+
+        return srv;
+    } else {
+        auto tex = m_pTexture;
+
+        auto srv = tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+        return srv;
+    }
 }
 
 Diligent::ITextureView* Texture::GetDepthStencilView()
@@ -87,21 +104,43 @@ Diligent::ITextureView* Texture::GetRenderTargetView()
 
 Diligent::ITextureView* Texture::GetUnorderedAccessView()
 {
-    auto tex = m_pTexture;
+    if (m_mip != (uint32_t)-1) {
+        auto tex = m_parentTexture;
 
-    auto uav = tex->GetDefaultView(Diligent::TEXTURE_VIEW_UNORDERED_ACCESS);
-    return uav;
+        Diligent::TextureViewDesc ViewDesc;
+        ViewDesc.ViewType = Diligent::TEXTURE_VIEW_UNORDERED_ACCESS;
+        auto ViewName = Diligent::FormatString("Mip SRV of texture");
+        ViewDesc.Name = ViewName.c_str();
+
+        ViewDesc.MostDetailedMip = m_mip;
+
+        Diligent::ITextureView* uav = 0;
+        tex->m_pTexture->CreateView(ViewDesc, &uav);
+
+        return uav;
+    } else {
+        auto tex = m_pTexture;
+
+        auto uav = tex->GetDefaultView(Diligent::TEXTURE_VIEW_UNORDERED_ACCESS);
+        return uav;
+    }
 }
 
 
+Texture::Texture(std::shared_ptr<Texture> parentTexture, uint32_t mip)
+    : m_parentTexture(parentTexture), m_mip(mip)
+{
+    //
+}
+
 void Texture::Clear(ClearFlags clearFlags, const Diligent::float4& color, float depth,
-                      uint8_t stencil)
+                    uint8_t stencil)
 {
     if (((int)clearFlags & (int)ClearFlags::Color) != 0) {
         auto rtv = GetRenderTargetView();
         if (rtv) {
             App::s_ctx->ClearRenderTarget(rtv, &color.r,
-                                            Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+                                          Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
     }
 
@@ -116,8 +155,8 @@ void Texture::Clear(ClearFlags clearFlags, const Diligent::float4& color, float 
 
         if (dsv) {
             App::s_ctx->ClearDepthStencil(dsv, (Diligent::CLEAR_DEPTH_STENCIL_FLAGS)flags, depth,
-                                            stencil,
-                                            Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+                                          stencil,
+                                          Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
         }
     }
 }
@@ -134,14 +173,13 @@ void Texture::Copy(Texture* dstTexture)
     App::s_ctx->CopyTexture(CopyAttribs);
 }
 
-void Texture::Bind(uint32_t ID, Shader::ShaderType shaderType,
-                     ShaderParameter::Type parameterType)
+void Texture::Bind(uint32_t ID, Shader::ShaderType shaderType, ShaderParameter::Type parameterType)
 {
     //
 }
 
 void Texture::UnBind(uint32_t ID, Shader::ShaderType shaderType,
-                       ShaderParameter::Type parameterType)
+                     ShaderParameter::Type parameterType)
 {
     //
 }

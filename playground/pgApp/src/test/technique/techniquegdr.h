@@ -40,7 +40,10 @@ class TechniqueGdr : public ade::Technique
     void SetColorsConstantBufferData(PassGdr::Colors& data);
     //////////////////////////////////////////////////////////////////////////
     std::shared_ptr<ade::Texture> m_hiZDepthBuffer;
-    std::shared_ptr<ade::Texture> m_hiZBuffer;
+    //std::shared_ptr<ade::Texture> m_hiZBuffer;
+
+	std::vector<std::shared_ptr<ade::Texture>> m_hiZBuffers;
+
     uint32_t m_noofHiZMips;
     std::shared_ptr<ade::Buffer> m_drawcallInstanceCounts;
     std::shared_ptr<ade::Buffer> m_instancePredicates;
@@ -77,6 +80,8 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
 
     bool m_bDebug = false;
+
+	std::vector<std::shared_ptr<ade::Texture>> m_hizTexMips;
 
     // submit drawcalls for all passes
     void renderOcclusionBufferPass();

@@ -218,9 +218,21 @@ void Pipeline::Bind()
     //    }
     //}
 
+    Diligent::RESOURCE_STATE_TRANSITION_MODE transitionMode =
+        Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
+
+	bool bCheckUAVSRV = true;
+    if (m_Shaders.size() == 1) {
+        auto it = m_Shaders.begin();
+        auto shader = it->second;
+        if (shader->GetType() == Shader::ComputeShader) {
+            bCheckUAVSRV = false;
+        }
+    }
+
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
-    App::s_ctx->CommitShaderResources(m_pSRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+    App::s_ctx->CommitShaderResources(m_pSRB, transitionMode);
 }
 
 void Pipeline::UnBind()

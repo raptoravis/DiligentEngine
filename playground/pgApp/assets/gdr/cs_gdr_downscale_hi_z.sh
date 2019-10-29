@@ -4,7 +4,6 @@
 Texture2D s_texOcclusionDepth : register( t0 );
 RWTexture2D<float4> u_texOcclusionDepthOut : register( u0 );
 
-
 [numthreads( 16, 16, 1 )]
 void main(ComputeShaderInput IN)
 {

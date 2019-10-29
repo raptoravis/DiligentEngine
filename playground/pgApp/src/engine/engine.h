@@ -482,8 +482,12 @@ class Texture : public Resource
 {
   protected:
     Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
+    
+	std::shared_ptr<Texture> m_parentTexture;
+	uint32_t m_mip;
 
   public:
+    Texture(std::shared_ptr<Texture> parentTexture, uint32_t mip);
     Texture(Diligent::ITexture* texture);
     virtual ~Texture();
 
