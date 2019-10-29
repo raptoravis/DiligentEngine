@@ -68,6 +68,8 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Pipeline> m_pipelineOccusionPass;
     std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
 
+	bool m_bDebug = true;
+
     // submit drawcalls for all passes
     void renderOcclusionBufferPass();
 
@@ -76,6 +78,9 @@ class TechniqueGdr : public ade::Technique
     void renderOccludePropsPass();
 
     void renderMainPass();
+
+	void initDebug();
+    void initGdr();
 
     struct Data4Floats_t {
         float data[4];

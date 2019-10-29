@@ -1071,8 +1071,10 @@ class Technique : public Object
 
     // Add a pass to the technique. The ID of the added pass is returned
     // and can be used to retrieve the pass later.
-    unsigned int AddPass(std::shared_ptr<Pass> pass);
-    std::shared_ptr<Pass> GetPass(unsigned int ID) const;
+    uint32_t AddPass(std::shared_ptr<Pass> pass);
+    void RemovePass(std::shared_ptr<Pass> pass);
+    void ClearPasses();
+    std::shared_ptr<Pass> GetPass(uint32_t ID) const;
 
     void Set(const std::string& name, std::shared_ptr<Object> res);
     std::shared_ptr<Object> Get(const std::string& name);

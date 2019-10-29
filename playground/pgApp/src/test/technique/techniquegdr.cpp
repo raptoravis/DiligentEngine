@@ -28,12 +28,19 @@ static const uint16_t s_maxNoofInstances = 2048;
 #define RENDER_PASS_COMPACT_STREAM_ID 3
 #define RENDER_PASS_MAIN_ID 4
 
-const bool bUseNew = false;
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
 {
-    if (!bUseNew) {
+    m_pSceneGdr = std::make_shared<SceneGdr>();
+    m_pSceneGdr->create();
+
+    u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
+}
+
+void TechniqueGdr::initDebug()
+{
+    {
         std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
         AddPass(pSetRTPass);
 
@@ -41,15 +48,10 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
             std::make_shared<PassClearRT>(this, m_pRenderTarget);
         AddPass(pClearRTPass);
 
-        bool bUse = true;
-
-        if (bUse) {
-            m_pSceneGdr = std::make_shared<SceneGdr>();
-            m_pSceneGdr->create();
+        {
             //////////////////////////////////////////////////////////////////////////
             m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
             m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
-            u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 
             this->Set(PassGdr::kPerObjectName, m_PerObject);
             this->Set(PassGdr::kMaterialIdName, m_materialId);
@@ -198,9 +200,13 @@ void TechniqueGdr::Update()
 {
     ImGui::Separator();
 
-    bool bTemp = false;
-    ImGui::Checkbox("debug", &bTemp);
+    bool bDebug = m_bDebug;
+    ImGui::Checkbox("debug", &m_bDebug);
     ImGui::Separator();
+
+    if (bDebug != m_bDebug) {
+        init();
+    }
 }
 
 void TechniqueGdr::createHiZBuffers()
@@ -338,6 +344,7 @@ void TechniqueGdr::createHiZBuffers()
 
     // Create programs from shaders for occlusion pass.
     m_programOcclusionPass = loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
+
     m_programCopyZ = loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader);
 
     m_programDownscaleHiZ = loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader);
@@ -464,8 +471,18 @@ void TechniqueGdr::renderOcclusionBufferPass()
         LayoutElement LayoutElems[] = {
             // Attribute 0 - vertex position
             LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
-            // LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-            //               sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+
+            LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 5, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+
         };
 
         m_pipelineOccusionPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
@@ -768,12 +785,9 @@ void TechniqueGdr::renderMainPass()
     }));
 }
 
-void TechniqueGdr::init()
+void TechniqueGdr::initGdr()
 {
-    if (bUseNew) {
-        m_pSceneGdr = std::make_shared<SceneGdr>();
-        m_pSceneGdr->create();
-
+    {
         createHiZBuffers();
 
         std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
@@ -800,5 +814,16 @@ void TechniqueGdr::init()
                 std::make_shared<PassCopyTexture>(this, dstTexture, srcTexture);
             AddPass(pCopyTexPass);
         }
+    }
+}
+
+void TechniqueGdr::init()
+{
+    ClearPasses();
+
+    if (m_bDebug) {
+        initDebug();
+    } else {
+        initGdr();
     }
 }

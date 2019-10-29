@@ -13,20 +13,35 @@ Technique::~Technique()
     m_Passes.clear();
 }
 
-unsigned int Technique::AddPass(std::shared_ptr<Pass> pass)
+uint32_t Technique::AddPass(std::shared_ptr<Pass> pass)
 {
     // No check for duplicate passes (it may be intended to render the same pass multiple times?)
     m_Passes.push_back(pass);
     return static_cast<unsigned int>(m_Passes.size()) - 1;
 }
 
-std::shared_ptr<Pass> Technique::GetPass(unsigned int ID) const
+std::shared_ptr<Pass> Technique::GetPass(uint32_t ID) const
 {
     if (ID < m_Passes.size()) {
         return m_Passes[ID];
     }
 
     return 0;
+}
+
+void Technique::RemovePass(std::shared_ptr<Pass> pass) {
+    for (RenderPassList::iterator it = m_Passes.begin(); it != m_Passes.end(); ++it) {
+        auto p = *it;
+        if (p == pass) {
+            m_Passes.erase(it);
+            break;
+        }
+    }
+}
+
+void Technique::ClearPasses()
+{
+    m_Passes.clear();
 }
 
 
