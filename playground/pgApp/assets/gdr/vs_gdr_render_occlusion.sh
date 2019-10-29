@@ -1,20 +1,17 @@
-$input a_position, i_data0, i_data1, i_data2, i_data3, i_data4
 
-/*
- * Copyright 2018 Kostas Anagnostou. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
+#include "gdr_common.sh"
 
-#include "../common/common.sh"
-
-void main()
+float4 main(AppData IN) : SV_POSITION
 {
-	mat4 model;
-	model[0] = i_data0;
-	model[1] = i_data1;
-	model[2] = i_data2;
-	model[3] = i_data3;
+	float4x4 model;
+	model[0] = IN.i_data0;
+	model[1] = IN.i_data1;
+	model[2] = IN.i_data2;
+	model[3] = IN.i_data3;
 
-	vec4 worldPos = instMul(model, vec4(a_position, 1.0) );
-	gl_Position = mul(u_viewProj, worldPos);
+	//float4 worldPos = mul(model, float4(IN.position, 1.0) );
+	float4 worldPos = mul(float4(IN.position, 1.0), model );
+	float4 pos = mul(u_viewProj, worldPos);
+	
+	return pos;
 }

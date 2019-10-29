@@ -34,8 +34,6 @@ TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Tex
 {
     m_pSceneGdr = std::make_shared<SceneGdr>();
     m_pSceneGdr->create();
-
-    u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 }
 
 void TechniqueGdr::initDebug()
@@ -52,6 +50,7 @@ void TechniqueGdr::initDebug()
             //////////////////////////////////////////////////////////////////////////
             m_PerObject = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::PerObject));
             m_materialId = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::MaterialId));
+            u_colors = std::make_shared<ConstantBuffer>((uint32_t)sizeof(PassGdr::Colors));
 
             this->Set(PassGdr::kPerObjectName, m_PerObject);
             this->Set(PassGdr::kMaterialIdName, m_materialId);
@@ -343,8 +342,6 @@ void TechniqueGdr::createHiZBuffers()
 
 
     // Create programs from shaders for occlusion pass.
-    m_programOcclusionPass = loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
-
     m_programCopyZ = loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader);
 
     m_programDownscaleHiZ = loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader);
@@ -462,6 +459,7 @@ static void Submit(std::shared_ptr<Buffer> pBuffer, uint32_t instancesCount)
 // renders the occluders to a depth buffer
 void TechniqueGdr::renderOcclusionBufferPass()
 {
+    m_programOcclusionPass = loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
     m_pipelineOccusionPass = std::make_shared<Pipeline>(m_pRenderTarget);
 
     {
@@ -480,9 +478,6 @@ void TechniqueGdr::renderOcclusionBufferPass()
                            sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
             LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
                            sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
-            LayoutElement{ 5, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
-
         };
 
         m_pipelineOccusionPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
@@ -491,6 +486,50 @@ void TechniqueGdr::renderOcclusionBufferPass()
     std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
     renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
 
+    m_programOcclusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
+    //////////////////////////////////////////////////////////////////////////
+    uint32_t numInstances = 0;
+    std::shared_ptr<Buffer> vertexBuffer;
+    std::shared_ptr<Buffer> indexBuffer;
+
+    std::shared_ptr<Buffer> instanceBuffer;
+
+    const uint16_t instanceStride = sizeof(InstanceData);
+
+    // render all instances of the occluder meshes
+    for (uint16_t i = 0; i < m_pSceneGdr->m_noofProps; i++) {
+        Prop& prop = m_pSceneGdr->m_props[i];
+
+        if (prop.m_renderPass & RenderPass::Occlusion) {
+            numInstances = prop.m_noofInstances;
+
+            // render instances to the occlusion buffer
+            {
+                InstanceData* pData = new InstanceData[numInstances];
+                InstanceData* data = pData;
+
+                for (uint32_t j = 0; j < numInstances; j++) {
+                    // we only need the world matrix for the occlusion pass
+                    //Diligent::float4x4 worldMat = prop.m_instances[j].m_world.Transpose();
+                    //ade::memCopy(&data->m_world, &worldMat, sizeof(data->m_world));
+                    ade::memCopy(&data->m_world, &prop.m_instances[j].m_world,
+                                 sizeof(data->m_world));
+                    data++;
+                }
+
+                instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, (float*)pData,
+                                                                numInstances, instanceStride);
+
+                delete pData;
+            }
+
+            vertexBuffer = prop.m_vertexbufferHandle;
+            indexBuffer = prop.m_indexbufferHandle;
+
+            break;
+        }
+    }
+
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         // Setup the occlusion pass projection
         ade::mtxProj((float*)m_occlusionProj.m, 60.0f, float(m_hiZwidth) / float(m_hiZheight), 0.1f,
@@ -498,48 +537,22 @@ void TechniqueGdr::renderOcclusionBufferPass()
 
         m_mainView = App::s_eventArgs.pCamera->GetViewMatrix();
 
+        Diligent::float4x4 viewProj = m_mainView * m_occlusionProj;
+        u_viewProj->Set(viewProj);
+
         m_pipelineOccusionPass->Bind();
-        renderTarget->Bind();
 
         // bgfx::setViewFrameBuffer(RENDER_PASS_HIZ_ID, m_hiZDepthBuffer);
         // bgfx::setViewRect(RENDER_PASS_HIZ_ID, 0, 0, uint16_t(m_hiZwidth), uint16_t(m_hiZheight));
         // App::s_backBuffer->SetViewports();
+        // Set vertex and index buffer.
+        SetVertexBuffer(0, vertexBuffer);
+        // SetIndexBuffer(prop.m_indexbufferHandle);
 
-        const uint16_t instanceStride = sizeof(InstanceData);
+        // Set instance data buffer.
+        SetInstanceBuffer(1, instanceBuffer);
 
-        // render all instances of the occluder meshes
-        for (uint16_t i = 0; i < m_pSceneGdr->m_noofProps; i++) {
-            Prop& prop = m_pSceneGdr->m_props[i];
-
-            if (prop.m_renderPass & RenderPass::Occlusion) {
-                const uint32_t numInstances = prop.m_noofInstances;
-
-                // render instances to the occlusion buffer
-                {
-                    InstanceData* data = new InstanceData[numInstances];
-
-                    for (uint32_t j = 0; j < numInstances; j++) {
-                        // we only need the world matrix for the occlusion pass
-                        ade::memCopy(&data->m_world, &prop.m_instances[j].m_world,
-                                     sizeof(data->m_world));
-                        data++;
-                    }
-
-                    std::shared_ptr<Buffer> instanceBuffer = Scene::CreateFloatVertexBuffer(
-                        App::s_device, (float*)data, numInstances, instanceStride);
-
-
-                    // Set vertex and index buffer.
-                    SetVertexBuffer(0, prop.m_vertexbufferHandle);
-                    // SetIndexBuffer(prop.m_indexbufferHandle);
-
-                    // Set instance data buffer.
-                    SetInstanceBuffer(1, instanceBuffer);
-
-                    Submit(prop.m_indexbufferHandle, numInstances);
-                }
-            }
-        }
+        Submit(indexBuffer, numInstances);
     }));
 }
 
@@ -728,8 +741,8 @@ void TechniqueGdr::renderMainPass()
         const uint16_t instanceStride = sizeof(InstanceData);
 
         // Set "material" data (currently a color only)
-        u_colors->Set(m_pSceneGdr->m_materials,
-                      sizeof(m_pSceneGdr->m_materials[0]) * m_pSceneGdr->m_noofMaterials);
+        u_color->Set(m_pSceneGdr->m_materials,
+                     sizeof(m_pSceneGdr->m_materials[0]) * m_pSceneGdr->m_noofMaterials);
 
         // We can't use indirect drawing for the first frame because the content of
         // m_drawcallInstanceCounts is initially undefined.
@@ -788,6 +801,9 @@ void TechniqueGdr::renderMainPass()
 void TechniqueGdr::initGdr()
 {
     {
+        u_viewProj = std::make_shared<ConstantBuffer>((uint32_t)sizeof(CBMatrix));
+        u_color = std::make_shared<ConstantBuffer>((uint32_t)sizeof(CBColors));
+
         createHiZBuffers();
 
         std::shared_ptr<PassSetRT> pSetRTPass = std::make_shared<PassSetRT>(this, m_pRenderTarget);
@@ -799,11 +815,11 @@ void TechniqueGdr::initGdr()
 
         renderOcclusionBufferPass();
 
-        renderDownscalePass();
+        // renderDownscalePass();
 
-        renderOccludePropsPass();
+        // renderOccludePropsPass();
 
-        renderMainPass();
+        // renderMainPass();
 
         //
         {

@@ -246,6 +246,8 @@ std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* 
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
     if (bDynamic) {
+        VertBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
         device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
     } else {
         Diligent::BufferData VBData;
@@ -274,6 +276,8 @@ std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* de
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
     if (bDynamic) {
+        IndBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
         device->CreateBuffer(IndBuffDesc, nullptr, &pBuffer);
     } else {
         Diligent::BufferData IBData;

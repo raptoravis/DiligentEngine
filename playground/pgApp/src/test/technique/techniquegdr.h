@@ -11,6 +11,15 @@ using namespace Diligent;
 
 class SceneGdr;
 
+__declspec(align(16)) struct CBColors {
+    Diligent::float4 colors[32];
+};
+
+__declspec(align(16)) struct CBMatrix {
+    Diligent::float4x4 u_viewProj;
+};
+
+
 class TechniqueGdr : public ade::Technique
 {
     typedef ade::Technique base;
@@ -18,6 +27,9 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::ConstantBuffer> m_PerObject;
     std::shared_ptr<ade::ConstantBuffer> m_materialId;
     std::shared_ptr<ade::ConstantBuffer> u_colors;
+
+    std::shared_ptr<ade::ConstantBuffer> u_viewProj;
+    std::shared_ptr<ade::ConstantBuffer> u_color;
 
     std::shared_ptr<ade::ConstantBuffer> u_inputRTSize;
     std::shared_ptr<ade::ConstantBuffer> u_cullingConfig;
@@ -37,7 +49,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
     std::shared_ptr<ade::Buffer> m_indirectBuffer;
 
-    //std::shared_ptr<ade::Shader> m_programMainPass;
+    // std::shared_ptr<ade::Shader> m_programMainPass;
     std::shared_ptr<ade::Shader> m_programOcclusionPass;
     std::shared_ptr<ade::Shader> m_programCopyZ;
     std::shared_ptr<ade::Shader> m_programDownscaleHiZ;
@@ -68,7 +80,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Pipeline> m_pipelineOccusionPass;
     std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
 
-	bool m_bDebug = true;
+    bool m_bDebug = false;
 
     // submit drawcalls for all passes
     void renderOcclusionBufferPass();
@@ -79,7 +91,7 @@ class TechniqueGdr : public ade::Technique
 
     void renderMainPass();
 
-	void initDebug();
+    void initDebug();
     void initGdr();
 
     struct Data4Floats_t {
