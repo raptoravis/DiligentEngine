@@ -31,7 +31,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::ConstantBuffer> u_viewProj;
     std::shared_ptr<ade::ConstantBuffer> u_color;
 
-    std::shared_ptr<ade::ConstantBuffer> u_inputRTSize;
+    std::vector<std::shared_ptr<ade::ConstantBuffer>> u_inputRTSize;
     std::shared_ptr<ade::ConstantBuffer> u_cullingConfig;
     std::shared_ptr<ade::SamplerState> s_texOcclusionDepth;
 

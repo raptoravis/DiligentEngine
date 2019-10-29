@@ -227,8 +227,8 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.Height = m_hiZheight;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_R32_FLOAT;    // TEX_FORMAT_R24G8_TYPELESS;
-        DepthBufferDesc.SampleCount = 1;                  // App::s_desc.SamplesCount;
+        DepthBufferDesc.Format = TEX_FORMAT_R24G8_TYPELESS;    // TEX_FORMAT_R24G8_TYPELESS;
+        DepthBufferDesc.SampleCount = 1;                       // App::s_desc.SamplesCount;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
         DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
@@ -273,7 +273,7 @@ void TechniqueGdr::createHiZBuffers()
     }
 
     // Create uniforms and samplers.
-    u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+    // u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
     u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
 
     // SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
@@ -582,8 +582,10 @@ void TechniqueGdr::renderDownscalePass()
     // We can't currently use blit as it requires same format and CopyResource is not exposed.
     {
         Data4Floats_t inputRendertargetSize{ (float)width, (float)height, 0.0f, 0.0f };
-
-        u_inputRTSize->Set(inputRendertargetSize);
+        std::shared_ptr<ade::ConstantBuffer> inputRTSize =
+            std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+        inputRTSize->Set(inputRendertargetSize);
+        u_inputRTSize.push_back(inputRTSize);
 
         Diligent::uint3 numThreadGroups = Diligent::uint3(width / 16, height / 16, 1);
 
@@ -594,9 +596,9 @@ void TechniqueGdr::renderDownscalePass()
             loadProgram("cs_gdr_copy_z.sh", ade::Shader::ComputeShader);
         dispatchPipeline->SetShader(Shader::ComputeShader, programCopyZ);
 
-        programCopyZ->GetShaderParameterByName("InputRTSize").Set(u_inputRTSize);
+        programCopyZ->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
-		auto hiZBuffer = m_hiZBuffers[0];
+        auto hiZBuffer = m_hiZBuffers[0];
 
         programCopyZ->GetShaderParameterByName("s_texOcclusionDepth").Set(m_hiZDepthBuffer);
         programCopyZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(hiZBuffer);
@@ -610,7 +612,13 @@ void TechniqueGdr::renderDownscalePass()
     {
         for (uint8_t lod = 1; lod < m_noofHiZMips; ++lod) {
             Data4Floats_t inputRendertargetSize{ (float)width, (float)height, 2.0f, 2.0f };
-            u_inputRTSize->Set(inputRendertargetSize);
+
+            std::shared_ptr<ade::ConstantBuffer> inputRTSize =
+                std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+            inputRTSize->Set(inputRendertargetSize);
+            u_inputRTSize.push_back(inputRTSize);
+
+            inputRTSize->Set(inputRendertargetSize);
 
             // down scale mip 1 onwards
             width /= 2;
@@ -627,14 +635,14 @@ void TechniqueGdr::renderDownscalePass()
 
             dispatchPipeline->SetShader(Shader::ComputeShader, programDownscaleHiZ);
 
-            programDownscaleHiZ->GetShaderParameterByName("InputRTSize").Set(u_inputRTSize);
+            programDownscaleHiZ->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
             std::shared_ptr<Texture> texLasMip = m_hiZBuffers[lod - 1];
             std::shared_ptr<Texture> texMip = m_hiZBuffers[lod];
 
             //// hold it
-            //m_hizTexMips.push_back(texLasMip);
-            //m_hizTexMips.push_back(texMip);
+            // m_hizTexMips.push_back(texLasMip);
+            // m_hizTexMips.push_back(texMip);
 
             programDownscaleHiZ->GetShaderParameterByName("s_texOcclusionDepth").Set(texLasMip);
             programDownscaleHiZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(texMip);
@@ -686,7 +694,13 @@ void TechniqueGdr::renderOccludePropsPass()
 
         Data4Floats_t inputRendertargetSize{ (float)m_hiZwidth, (float)m_hiZheight,
                                              1.0f / m_hiZwidth, 1.0f / m_hiZheight };
-        u_inputRTSize->Set(inputRendertargetSize);
+
+        std::shared_ptr<ade::ConstantBuffer> inputRTSize =
+            std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
+
+		u_inputRTSize.push_back(inputRTSize);
+
+        inputRTSize->Set(inputRendertargetSize);
 
         u_cullingConfig->Set(cullingConfig);
 
