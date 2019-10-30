@@ -1,33 +1,44 @@
-/*
- * Copyright 2018 Kostas Anagnostou. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
 
-#include "bgfx_compute.sh"
+#include "gdr_common.sh"
 
 //the per drawcall data that is constant (noof indices and offsets to vertex/index buffers)
-BUFFER_RO(drawcallConstData, uint, 0);
+Buffer<uint>  drawcallConstData : register( t0 );
+
 //instance data for all instances (pre culling)
-BUFFER_RO(instanceDataIn, vec4, 1);
+Buffer<uint>  instanceDataIn : register( t1 );
+
 //per instance visibility (output of culling pass)
-BUFFER_RO(instancePredicates, bool, 2);
+Buffer<bool>  instancePredicates : register( t2 );
+
 
 //how many instances per drawcall
-BUFFER_RW(drawcallInstanceCount, uint, 3);
-//drawcall data that will drive drawIndirect
-BUFFER_RW(drawcallData, uvec4, 4);
-//culled instance data
-BUFFER_WR(instanceDataOut, vec4, 5);
+RWBuffer<uint> drawcallInstanceCount : register(u0);
 
-uniform vec4 u_cullingConfig;
+//drawcall data that will drive drawIndirect
+RWBuffer<uint4> drawcallData : register(u1);
+
+//culled instance data
+RWBuffer<float4> instanceDataOut : register(u2);
 
 // Based on Parallel Prefix Sum (Scan) with CUDA by Mark Harris
-SHARED uint temp[2048];
+groupshared uint temp[2048];
 
-NUM_THREADS(1024, 1, 1)
-void main()
+#define drawIndexedIndirect( \
+	  _buffer                \
+	, _offset                \
+	, _numIndices            \
+	, _numInstances          \
+	, _startIndex            \
+	, _startVertex           \
+	, _startInstance         \
+	)                        \
+	_buffer[_offset*2+0] = uint4(_numIndices, _numInstances, _startIndex, _startVertex); \
+	_buffer[_offset*2+1] = uint4(_startInstance, 0u, 0u, 0u)
+
+[numthreads( 1024, 1, 1 )]
+void main(ComputeShaderInput IN)
 {
-	uint tID = gl_GlobalInvocationID.x;
+	uint tID = IN.dispatchThreadID.x;
 	int NoofInstancesPowOf2 = int(u_cullingConfig.y);
 	int NoofDrawcalls = int(u_cullingConfig.w);
 
@@ -40,7 +51,7 @@ void main()
 	//perform reduction
 	for (d = NoofInstancesPowOf2 >> 1; d > 0; d >>= 1)
 	{
-		barrier();
+		GroupMemoryBarrierWithGroupSync();
 
 		if (tID < d)
 		{
@@ -63,7 +74,7 @@ void main()
 	{
 		offset >>= 1;
 
-		barrier();
+		GroupMemoryBarrierWithGroupSync();
 
 		if (tID < d)
 		{
@@ -75,7 +86,7 @@ void main()
 		}
 	}
 
-	barrier();
+	GroupMemoryBarrierWithGroupSync();
 
 	int index = int(2 * tID);
 

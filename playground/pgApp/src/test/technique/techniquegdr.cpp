@@ -727,6 +727,7 @@ void TechniqueGdr::renderOccludePropsPass()
     }
 
     {
+        // perform stream compaction to remove occluded instances
         m_programStreamCompaction =
             loadProgram("cs_gdr_stream_compaction.sh", ade::Shader::ComputeShader);
 
@@ -737,36 +738,24 @@ void TechniqueGdr::renderOccludePropsPass()
 
         dispatchPipeline->SetShader(Shader::ComputeShader, m_programStreamCompaction);
 
-        m_programStreamCompaction->GetShaderParameterByName("m_indirectBufferData")
-            .Set(m_indirectBufferData);
-        m_programStreamCompaction->GetShaderParameterByName("m_instanceBuffer")
-            .Set(m_instanceBuffer);
-        m_programStreamCompaction->GetShaderParameterByName("m_instancePredicates")
-            .Set(m_instancePredicates);
-
-        m_programStreamCompaction->GetShaderParameterByName("m_drawcallInstanceCounts")
-            .Set(m_drawcallInstanceCounts);
-        m_programStreamCompaction->GetShaderParameterByName("m_indirectBuffer")
-            .Set(m_indirectBuffer);
-        m_programStreamCompaction->GetShaderParameterByName("m_culledInstanceBuffer")
-            .Set(m_culledInstanceBuffer);
-
-        // perform stream compaction to remove occluded instances
-
         // the per drawcall data that is constant (noof indices/vertices and offsets to vertex/index
         // buffers)
-        // bgfx::setBuffer(0, m_indirectBufferData, bgfx::Access::Read);
+        m_programStreamCompaction->GetShaderParameterByName("drawcallConstData")
+            .Set(m_indirectBufferData);
         //// instance data for all instances (pre culling)
-        // bgfx::setBuffer(1, m_instanceBuffer, bgfx::Access::Read);
+        m_programStreamCompaction->GetShaderParameterByName("instanceDataIn").Set(m_instanceBuffer);
         //// per instance visibility (output of culling pass)
-        // bgfx::setBuffer(2, m_instancePredicates, bgfx::Access::Read);
-
+        m_programStreamCompaction->GetShaderParameterByName("instancePredicates")
+            .Set(m_instancePredicates);
         //// how many instances per drawcall
-        // bgfx::setBuffer(3, m_drawcallInstanceCounts, bgfx::Access::ReadWrite);
+        m_programStreamCompaction->GetShaderParameterByName("drawcallInstanceCount")
+            .Set(m_drawcallInstanceCounts);
         //// drawcall data that will drive drawIndirect
-        // bgfx::setBuffer(4, m_indirectBuffer, bgfx::Access::ReadWrite);
+        m_programStreamCompaction->GetShaderParameterByName("drawcallData").Set(m_indirectBuffer);
         //// culled instance data
-        // bgfx::setBuffer(5, m_culledInstanceBuffer, bgfx::Access::Write);
+        m_programStreamCompaction->GetShaderParameterByName("instanceDataOut")
+            .Set(m_culledInstanceBuffer);
+        m_programStreamCompaction->GetShaderParameterByName("CullingConfig").Set(u_cullingConfig);
 
         u_cullingConfig->Set(cullingConfig);
 
