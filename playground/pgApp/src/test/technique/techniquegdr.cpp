@@ -362,12 +362,6 @@ void TechniqueGdr::createHiZBuffers()
     m_indirectBuffer = Scene::CreateFloatVertexBuffer(
         App::s_device, nullptr, m_pSceneGdr->m_noofProps, kCONFIG_DRAW_INDIRECT_STRIDE);
 
-
-    // Create programs from shaders for occlusion pass.
-    m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
-    m_programStreamCompaction =
-        loadProgram("cs_gdr_stream_compaction.sh", ade::Shader::ComputeShader);
-
     //////////////////////////////////////////////////////////////////////////
     // Calculate how many vertices/indices the master buffers will need.
     uint16_t totalNoofVertices = 0;
@@ -684,6 +678,9 @@ void TechniqueGdr::renderOccludePropsPass()
         numThreadGroups.y = 1;
         numThreadGroups.z = 1;
 
+        // Create programs from shaders for occlusion pass.
+        m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
+
         std::shared_ptr<ade::PipelineDispatch> dispatchPipeline =
             std::make_shared<ade::PipelineDispatch>(numThreadGroups);
 
@@ -696,13 +693,14 @@ void TechniqueGdr::renderOccludePropsPass()
         // bgfx::setBuffer(2, m_drawcallInstanceCounts, bgfx::Access::ReadWrite);
         // bgfx::setBuffer(3, m_instancePredicates, bgfx::Access::Write);
         auto hiZBuffer = m_hiZBuffers[0];
-        m_programOccludeProps->GetShaderParameterByName("m_hiZBuffer").Set(hiZBuffer);
-        m_programOccludeProps->GetShaderParameterByName("m_instanceBoundingBoxes")
+        m_programOccludeProps->GetShaderParameterByName("s_texOcclusionDepth").Set(hiZBuffer);
+        m_programOccludeProps->GetShaderParameterByName("instanceDataIn")
             .Set(m_instanceBoundingBoxes);
-        m_programOccludeProps->GetShaderParameterByName("m_drawcallInstanceCounts")
+        m_programOccludeProps->GetShaderParameterByName("drawcallInstanceCount")
             .Set(m_drawcallInstanceCounts);
-        m_programOccludeProps->GetShaderParameterByName("m_instancePredicates")
+        m_programOccludeProps->GetShaderParameterByName("instancePredicates")
             .Set(m_instancePredicates);
+        m_programOccludeProps->GetShaderParameterByName("CullingConfig").Set(u_cullingConfig);
 
         Data4Floats_t inputRendertargetSize{ (float)m_hiZwidth, (float)m_hiZheight,
                                              1.0f / m_hiZwidth, 1.0f / m_hiZheight };
@@ -711,6 +709,8 @@ void TechniqueGdr::renderOccludePropsPass()
             std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
 
         u_inputRTSize.push_back(inputRTSize);
+
+        m_programOccludeProps->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
         inputRTSize->Set(inputRendertargetSize);
 
@@ -727,6 +727,9 @@ void TechniqueGdr::renderOccludePropsPass()
     }
 
     {
+        m_programStreamCompaction =
+            loadProgram("cs_gdr_stream_compaction.sh", ade::Shader::ComputeShader);
+
         Diligent::uint3 numThreadGroups = Diligent::uint3(1, 1, 1);
 
         std::shared_ptr<ade::PipelineDispatch> dispatchPipeline =
@@ -878,7 +881,7 @@ void TechniqueGdr::initGdr()
 
         renderDownscalePass();
 
-        // renderOccludePropsPass();
+        renderOccludePropsPass();
 
         // renderMainPass();
 

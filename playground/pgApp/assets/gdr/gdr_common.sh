@@ -26,6 +26,12 @@ cbuffer InputRTSize : register( b1 )
 	float4 u_inputRTSize;
 }
 
+
+cbuffer CullingConfig : register( b2 )
+{
+	float4 u_cullingConfig;
+}
+
 struct ComputeShaderInput
 {
     uint3 groupID           : SV_GroupID;           // 3D index of the thread group in the dispatch.

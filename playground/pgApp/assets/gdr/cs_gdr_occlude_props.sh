@@ -1,55 +1,48 @@
-/*
- * Copyright 2018 Kostas Anagnostou. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
 
-#include "bgfx_compute.sh"
+#include "gdr_common.sh"
 
-SAMPLER2D(s_texOcclusionDepth, 0);
+Texture2D s_texOcclusionDepth : register( t0 );
 
-BUFFER_RO(instanceDataIn, vec4, 1);
-BUFFER_RW(drawcallInstanceCount, uint, 2);
-BUFFER_WR(instancePredicates, bool, 3);
+Buffer<float4>  instanceDataIn : register( t1 );
 
-uniform vec4 u_inputRTSize;
-uniform vec4 u_cullingConfig;
+RWBuffer<uint> drawcallInstanceCount : register(u0);
+RWBuffer<bool> instancePredicates : register(u1);
 
-NUM_THREADS(64, 1, 1)
-void main()
+[numthreads( 64, 1, 1 )]
+void main(ComputeShaderInput IN)
 {
 	bool predicate = false;
 
 	//make sure that we not processing more instances than available
-	if (gl_GlobalInvocationID.x < uint(u_cullingConfig.x) )
+	if (IN.dispatchThreadID.x < uint(u_cullingConfig.x) )
 	{
 		//get the bounding box for this instance
-		vec4 bboxMin = instanceDataIn[2 * gl_GlobalInvocationID.x] ;
-		vec3 bboxMax = instanceDataIn[2 * gl_GlobalInvocationID.x + 1].xyz;
+		float4 bboxMin = instanceDataIn[2 * IN.dispatchThreadID.x] ;
+		float3 bboxMax = instanceDataIn[2 * IN.dispatchThreadID.x + 1].xyz;
 
 		int drawcallID = int(bboxMin.w);
 
 		//Adapted from http://blog.selfshadow.com/publications/practical-visibility/
-		vec3 bboxSize = bboxMax.xyz - bboxMin.xyz;
+		float3 bboxSize = bboxMax.xyz - bboxMin.xyz;
 
-		vec3 boxCorners[] = {
+		float3 boxCorners[] = {
 			bboxMin.xyz,
-			bboxMin.xyz + vec3(bboxSize.x,0,0),
-			bboxMin.xyz + vec3(0, bboxSize.y,0),
-			bboxMin.xyz + vec3(0, 0, bboxSize.z),
-			bboxMin.xyz + vec3(bboxSize.xy,0),
-			bboxMin.xyz + vec3(0, bboxSize.yz),
-			bboxMin.xyz + vec3(bboxSize.x, 0, bboxSize.z),
+			bboxMin.xyz + float3(bboxSize.x,0,0),
+			bboxMin.xyz + float3(0, bboxSize.y,0),
+			bboxMin.xyz + float3(0, 0, bboxSize.z),
+			bboxMin.xyz + float3(bboxSize.xy,0),
+			bboxMin.xyz + float3(0, bboxSize.yz),
+			bboxMin.xyz + float3(bboxSize.x, 0, bboxSize.z),
 			bboxMin.xyz + bboxSize.xyz
 		};
 		float minZ = 1.0;
-		vec2 minXY = vec2(1.0, 1.0);
-		vec2 maxXY = vec2(0.0, 0.0);
+		float2 minXY = float2(1.0, 1.0);
+		float2 maxXY = float2(0.0, 0.0);
 
-		UNROLL
 		for (int i = 0; i < 8; i++)
 		{
 			//transform World space aaBox to NDC
-			vec4 clipPos = mul( u_viewProj, vec4(boxCorners[i], 1) );
+			float4 clipPos = mul( u_viewProj, float4(boxCorners[i], 1) );
 
 #if BGFX_SHADER_LANGUAGE_GLSL 
 			clipPos.z = 0.5 * ( clipPos.z + clipPos.w );
@@ -59,7 +52,7 @@ void main()
 			clipPos.xyz = clipPos.xyz / clipPos.w;
 
 			clipPos.xy = clamp(clipPos.xy, -1, 1);
-			clipPos.xy = clipPos.xy * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+			clipPos.xy = clipPos.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
 
 			minXY = min(clipPos.xy, minXY);
 			maxXY = max(clipPos.xy, maxXY);
@@ -67,20 +60,20 @@ void main()
 			minZ = saturate(min(minZ, clipPos.z));
 		}
 
-		vec4 boxUVs = vec4(minXY, maxXY);
+		float4 boxUVs = float4(minXY, maxXY);
 
 		// Calculate hi-Z buffer mip
-		ivec2 size = ivec2( (maxXY - minXY) * u_inputRTSize.xy);
+		float2 size = float2( (maxXY - minXY) * u_inputRTSize.xy);
 		float mip = ceil(log2(max(size.x, size.y)));
 
 		mip = clamp(mip, 0, u_cullingConfig.z);
 
 		// Texel footprint for the lower (finer-grained) level
 		float level_lower = max(mip - 1, 0);
-		vec2 scale = vec2_splat(exp2(-level_lower) );
-		vec2 a = floor(boxUVs.xy*scale);
-		vec2 b = ceil(boxUVs.zw*scale);
-		vec2 dims = b - a;
+		float2 scale = float2(exp2(-level_lower), exp2(-level_lower));
+		float2 a = floor(boxUVs.xy*scale);
+		float2 b = ceil(boxUVs.zw*scale);
+		float2 dims = b - a;
 
 		// Use the lower level if we only touch <= 2 texels in both dimensions
 		if (dims.x <= 2 && dims.y <= 2)
@@ -91,12 +84,12 @@ void main()
 		boxUVs.w = 1.0 - boxUVs.w;
 #endif
 		//load depths from high z buffer
-		vec4 depth =
+		float4 depth =
 		{
-			texture2DLod(s_texOcclusionDepth, boxUVs.xy, mip).x,
-			texture2DLod(s_texOcclusionDepth, boxUVs.zy, mip).x,
-			texture2DLod(s_texOcclusionDepth, boxUVs.xw, mip).x,
-			texture2DLod(s_texOcclusionDepth, boxUVs.zw, mip).x,
+			s_texOcclusionDepth.Load(uint3(boxUVs.xy, mip)).x,
+			s_texOcclusionDepth.Load(uint3(boxUVs.zy, mip)).x,
+			s_texOcclusionDepth.Load(uint3(boxUVs.xw, mip)).x,
+			s_texOcclusionDepth.Load(uint3(boxUVs.zw, mip)).x,
 		};
 
 		//find the max depth
@@ -107,9 +100,10 @@ void main()
 			predicate = true;
 
 			//increase instance count for this particular prop type
-			atomicAdd(drawcallInstanceCount[ drawcallID ], 1);
+			uint value;
+			InterlockedAdd(drawcallInstanceCount[ drawcallID ], 1, value);
 		}
 	}
 
-	instancePredicates[gl_GlobalInvocationID.x] = predicate;
+	instancePredicates[IN.dispatchThreadID.x] = predicate;
 }
