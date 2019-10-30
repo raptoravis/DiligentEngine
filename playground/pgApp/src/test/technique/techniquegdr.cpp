@@ -219,6 +219,9 @@ void TechniqueGdr::Update()
 void TechniqueGdr::createHiZBuffers()
 {
     {
+        Diligent::TEXTURE_FORMAT dsvFormat =
+            TEX_FORMAT_D24_UNORM_S8_UINT;    // TEX_FORMAT_R24G8_TYPELESS;
+
         // Create depth buffer
         Diligent::TextureDesc DepthBufferDesc;
         DepthBufferDesc.Name = "hiZDepthBuffer";
@@ -227,8 +230,8 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.Height = m_hiZheight;
         DepthBufferDesc.MipLevels = 1;
         DepthBufferDesc.ArraySize = 1;
-        DepthBufferDesc.Format = TEX_FORMAT_R24G8_TYPELESS;    // TEX_FORMAT_R24G8_TYPELESS;
-        DepthBufferDesc.SampleCount = 1;                       // App::s_desc.SamplesCount;
+        DepthBufferDesc.Format = dsvFormat;
+        DepthBufferDesc.SampleCount = 1;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE;
         DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
@@ -475,9 +478,20 @@ static void Submit(std::shared_ptr<Buffer> pBuffer, uint32_t instancesCount)
 // renders the occluders to a depth buffer
 void TechniqueGdr::renderOcclusionBufferPass()
 {
+    std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
+    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
+    // renderTarget->AttachTexture(
+    //    RenderTarget::AttachmentPoint::DepthStencil,
+    //    m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil));
+
+
     std::shared_ptr<Shader> programOcclusionPass =
         loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
-    m_pipelineOccusionPass = std::make_shared<Pipeline>(m_pRenderTarget);
+    m_pipelineOccusionPass = std::make_shared<Pipeline>(renderTarget);
+
+    // Diligent::TEXTURE_FORMAT RTFormat = Diligent::TEX_FORMAT_UNKNOWN;
+    // Diligent::TEXTURE_FORMAT DSFormat = m_hiZDepthBuffer->GetTexture()->GetDesc().Format;
+    // m_pipelineOccusionPass->SetRenderTargetFormat(RTFormat, DSFormat);
 
     {
         m_pipelineOccusionPass->SetShader(ade::Shader::Shader::VertexShader, programOcclusionPass);
@@ -498,9 +512,6 @@ void TechniqueGdr::renderOcclusionBufferPass()
 
         m_pipelineOccusionPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
     }
-
-    std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
-    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
 
     programOcclusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
     //////////////////////////////////////////////////////////////////////////
@@ -557,6 +568,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
         u_viewProj->Set(viewProj);
 
         m_pipelineOccusionPass->Bind();
+        renderTarget->Clear();
 
         // bgfx::setViewFrameBuffer(RENDER_PASS_HIZ_ID, m_hiZDepthBuffer);
         // bgfx::setViewRect(RENDER_PASS_HIZ_ID, 0, 0, uint16_t(m_hiZwidth), uint16_t(m_hiZheight));
@@ -698,7 +710,7 @@ void TechniqueGdr::renderOccludePropsPass()
         std::shared_ptr<ade::ConstantBuffer> inputRTSize =
             std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
 
-		u_inputRTSize.push_back(inputRTSize);
+        u_inputRTSize.push_back(inputRTSize);
 
         inputRTSize->Set(inputRendertargetSize);
 

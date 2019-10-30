@@ -1004,6 +1004,7 @@ class Pipeline : public Object
 
     // void SetRenderTarget(std::shared_ptr<RenderTarget> renderTarget);
     std::shared_ptr<RenderTarget> GetRenderTarget() const;
+    //void SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat, Diligent::TEXTURE_FORMAT DSFormat);
 
     virtual void Bind();
     virtual void UnBind();

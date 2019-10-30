@@ -26,7 +26,7 @@ void Pipeline::InitPSODesc()
 
     auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
     auto color0Format =
-        color0 ? color0->GetTexture()->GetDesc().Format : App::s_desc.ColorBufferFormat;
+        color0 ? color0->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
 
     auto ds = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil);
     auto dsFormat = ds ? ds->GetTexture()->GetDesc().Format : Diligent::TEX_FORMAT_UNKNOWN;
@@ -38,7 +38,8 @@ void Pipeline::InitPSODesc()
     m_PSODesc.GraphicsPipeline.RTVFormats[0] = color0Format;
     // Set depth buffer format which is the format of the swap chain's back buffer
     m_PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
-
+	
+    // Set render target format which is the format of the swap chain's color buffer
     // Primitive topology defines what kind of primitives will be rendered by this pipeline state
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     // Cull back faces
@@ -172,6 +173,19 @@ std::shared_ptr<RenderTarget> Pipeline::GetRenderTarget() const
 {
     return m_pRenderTarget;
 }
+
+//void Pipeline::SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat,
+//                                   Diligent::TEXTURE_FORMAT DSFormat)
+//{
+//    if (!m_bInited) {
+//        m_bInited = true;
+//        InitPSODesc();
+//    }
+//
+//    m_PSODesc.GraphicsPipeline.RTVFormats[0] = RTFormat;
+//    // Set depth buffer format which is the format of the swap chain's back buffer
+//    m_PSODesc.GraphicsPipeline.DSVFormat = DSFormat;
+//}
 
 void Pipeline::Bind()
 {
