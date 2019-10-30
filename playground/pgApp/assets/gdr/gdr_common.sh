@@ -32,6 +32,11 @@ cbuffer CullingConfig : register( b2 )
 	float4 u_cullingConfig;
 }
 
+cbuffer MaterialColors : register( b3 )
+{
+	float4 u_color[32];
+};
+
 struct ComputeShaderInput
 {
     uint3 groupID           : SV_GroupID;           // 3D index of the thread group in the dispatch.

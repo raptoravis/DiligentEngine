@@ -479,7 +479,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
     //    m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::DepthStencil));
 
 
-    std::shared_ptr<Shader> programOcclusionPass =
+    std::shared_ptr<ade::Shader> shaderOccusionPass =
         loadProgram("vs_gdr_render_occlusion.sh", ade::Shader::VertexShader);
     m_pipelineOccusionPass = std::make_shared<Pipeline>(renderTarget);
 
@@ -488,7 +488,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
     // m_pipelineOccusionPass->SetRenderTargetFormat(RTFormat, DSFormat);
 
     {
-        m_pipelineOccusionPass->SetShader(ade::Shader::Shader::VertexShader, programOcclusionPass);
+        m_pipelineOccusionPass->SetShader(ade::Shader::Shader::VertexShader, shaderOccusionPass);
 
         LayoutElement LayoutElems[] = {
             // Attribute 0 - vertex position
@@ -507,7 +507,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
         m_pipelineOccusionPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
     }
 
-    programOcclusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
+    shaderOccusionPass->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
     //////////////////////////////////////////////////////////////////////////
     uint32_t numInstances = 0;
     std::shared_ptr<Buffer> vertexBuffer;
@@ -769,6 +769,11 @@ void TechniqueGdr::renderOccludePropsPass()
 // render the unoccluded props to the screen
 void TechniqueGdr::renderMainPass()
 {
+    std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
+    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
+    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
+
     std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
     vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
                            "vs_gdr_instanced_indirect_rendering.sh", "main", "./gdr", false);
@@ -777,36 +782,93 @@ void TechniqueGdr::renderMainPass()
     ps->LoadShaderFromFile(ade::Shader::Shader::PixelShader,
                            "fs_gdr_instanced_indirect_rendering.sh", "main", "./gdr", false);
 
-    m_pipelineMainPass = std::make_shared<Pipeline>(m_pRenderTarget);
+    vs->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
+    ps->GetShaderParameterByName("MaterialColors").Set(u_color);
+
+
+    m_pipelineMainPass = std::make_shared<Pipeline>(renderTarget);
 
     m_pipelineMainPass->SetShader(Shader::VertexShader, vs);
     m_pipelineMainPass->SetShader(Shader::VertexShader, ps);
 
+
+    LayoutElement LayoutElems[] = {
+        // Attribute 0 - vertex position
+        LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
+
+        LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+    };
+
+    m_pipelineMainPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
+
+    uint32_t numInstances = 0;
+    std::shared_ptr<Buffer> vertexBuffer;
+    std::shared_ptr<Buffer> indexBuffer;
+
+    std::shared_ptr<Buffer> instanceBuffer;
+
+    for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
+        Prop& prop = m_pSceneGdr->m_props[ii];
+
+        if (prop.m_renderPass & RenderPass::MainPass) {
+            numInstances = prop.m_noofInstances;
+
+            {
+                const uint16_t instanceStride = sizeof(InstanceData);
+
+                InstanceData* pData = new InstanceData[numInstances];
+                InstanceData* data = pData;
+
+                for (uint32_t jj = 0; jj < numInstances; ++jj) {
+                    // copy world matrix
+                    ade::memCopy(&data->m_world, &prop.m_instances[jj].m_world,
+                                 sizeof(data->m_world));
+                    // pack the material ID into the world transform
+                    data->m_world._14 = float(prop.m_materialID);
+                    data++;
+                }
+
+                instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, (float*)data,
+                                                                numInstances, instanceStride);
+                delete pData;
+
+                // Set vertex and index buffer.
+                vertexBuffer = prop.m_vertexbufferHandle;
+                indexBuffer = prop.m_indexbufferHandle;
+
+                break;
+            }
+        }
+    }
+
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
-        // Set view and projection matrix for view 0.
-        //{
-        //    bgfx::setViewTransform(RENDER_PASS_MAIN_ID, m_mainView, m_mainProj);
-
-        //    // Set view 0 default viewport.
-        //    bgfx::setViewRect(RENDER_PASS_MAIN_ID, 0, 0, uint16_t(m_width), uint16_t(m_height));
-        //}
-
         const uint16_t instanceStride = sizeof(InstanceData);
 
         // Set "material" data (currently a color only)
         u_color->Set(m_pSceneGdr->m_materials,
                      sizeof(m_pSceneGdr->m_materials[0]) * m_pSceneGdr->m_noofMaterials);
 
+        Diligent::float4x4 projMat = App::s_eventArgs.pCamera->GetProjectionMatrix();
+        m_mainView = App::s_eventArgs.pCamera->GetViewMatrix();
+
+        Diligent::float4x4 viewProj = m_mainView * projMat;
+        u_viewProj->Set(viewProj);
+
+        m_pipelineMainPass->Bind();
+
         // We can't use indirect drawing for the first frame because the content of
         // m_drawcallInstanceCounts is initially undefined.
         if (m_useIndirect && !m_firstFrame) {
-            m_pipelineMainPass->Bind();
-
             // Set vertex and index buffer.
             SetVertexBuffer(0, m_allPropsVertexbufferHandle);
-            SetVertexBuffer(0, m_indirectBuffer);
-
-            SetIndexBuffer(m_allPropsIndexbufferHandle);
+            SetVertexBuffer(1, m_indirectBuffer);
 
             // Set instance data buffer.
             SetInstanceBuffer(1, m_culledInstanceBuffer);
@@ -814,39 +876,14 @@ void TechniqueGdr::renderMainPass()
             Submit(m_allPropsIndexbufferHandle, 1);
         } else {
             // render all props using regular instancing
-            for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
-                Prop& prop = m_pSceneGdr->m_props[ii];
+            // Set vertex and index buffer.
+            SetVertexBuffer(0, vertexBuffer);
+            // Set instance data buffer.
+            SetInstanceBuffer(1, instanceBuffer);
 
-                if (prop.m_renderPass & RenderPass::MainPass) {
-                    const uint32_t numInstances = prop.m_noofInstances;
-
-                    {
-                        InstanceData* data = new InstanceData[numInstances];
-
-                        for (uint32_t jj = 0; jj < numInstances; ++jj) {
-                            // copy world matrix
-                            ade::memCopy(&data->m_world, &prop.m_instances[jj].m_world,
-                                         sizeof(data->m_world));
-                            // pack the material ID into the world transform
-                            data->m_world._14 = float(prop.m_materialID);
-                            data++;
-                        }
-
-                        std::shared_ptr<Buffer> instanceBuffer = Scene::CreateFloatVertexBuffer(
-                            App::s_device, (float*)data, numInstances, instanceStride);
-
-
-                        // Set vertex and index buffer.
-                        SetVertexBuffer(0, prop.m_vertexbufferHandle);
-
-                        // Set instance data buffer.
-                        SetInstanceBuffer(1, instanceBuffer);
-
-                        Submit(prop.m_indexbufferHandle, numInstances);
-                    }
-                }
-            }
+            Submit(indexBuffer, numInstances);
         }
+
         m_firstFrame = false;
     }));
 }
@@ -872,7 +909,7 @@ void TechniqueGdr::initGdr()
 
         renderOccludePropsPass();
 
-        // renderMainPass();
+        renderMainPass();
 
         //
         {

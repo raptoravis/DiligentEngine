@@ -1,23 +1,20 @@
-$input a_position, i_data0, i_data1, i_data2, i_data3
-$output v_materialID
 
-/*
- * Copyright 2018 Kostas Anagnostou. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx#license-bsd-2-clause
- */
+#include "gdr_common.sh"
 
-#include "../common/common.sh"
-
-void main()
+VertexShaderOutput main(AppData IN)
 {
-	mat4 model;
-	model[0] = vec4(i_data0.xyz, 0.0);
-	model[1] = i_data1;
-	model[2] = i_data2;
-	model[3] = i_data3;
+	VertexShaderOutput OUT;
+	
+	float4x4 model;
+	model[0] = float4(IN.i_data0.xyz, 0.0);
+	model[1] = IN.i_data1;
+	model[2] = IN.i_data2;
+	model[3] = IN.i_data3;
 
-	v_materialID = i_data0.w;
+	OUT.materialID = IN.i_data0.w;
 
-	vec4 worldPos = instMul(model, vec4(a_position, 1.0) );
-	gl_Position = mul(u_viewProj, worldPos);
+	float4 worldPos = mul(float4(IN.position, 1.0), model );
+	OUT.position = mul(u_viewProj, worldPos);
+	
+	return OUT;
 }
