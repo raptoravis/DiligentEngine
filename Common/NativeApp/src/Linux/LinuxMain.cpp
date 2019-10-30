@@ -213,14 +213,15 @@ int xcb_main()
     std::unique_ptr<NativeAppBase> TheApp(CreateApplication());
 
     std::string Title = TheApp->GetAppTitle();
-    Title += " (Vulkan)";
     auto xcbInfo = InitXCBConnectionAndWindow(Title);
-    TheApp->InitVulkan(xcbInfo.connection, xcbInfo.window);
+    if(!TheApp->InitVulkan(xcbInfo.connection, xcbInfo.window))
+        return -1;
 
     xcb_flush(xcbInfo.connection);
 
     Timer timer;
     auto PrevTime = timer.GetElapsedTime();
+    Title = TheApp->GetAppTitle();
     WindowTitleHelper TitleHelper(Title);
 
     while (true)
@@ -417,7 +418,6 @@ int x_main()
     glXMakeCurrent(display, win, ctx);
     TheApp->OnGLContextCreated(display, win);
     std::string Title = TheApp->GetAppTitle();
-    Title += " (OpenGL)";
  
     Timer timer;
     auto PrevTime = timer.GetElapsedTime();
@@ -510,7 +510,15 @@ int main (int argc, char ** argv)
 
     if (UseVulkan)
     {
-        return xcb_main();
+        auto ret = xcb_main();
+        if (ret >= 0)
+        {
+            return ret;
+        }
+        else
+        {
+            LOG_ERROR_MESSAGE("Failed to initialize the engine in Vulkan mode. Attempting to use OpenGL");
+        }
     }
 #endif
 
