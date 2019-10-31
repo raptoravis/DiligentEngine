@@ -1,12 +1,10 @@
 
-git fetch ups
-git merge ups/master
+echo get the latest core...
 
-rem git submodule update --recursive --remote
+git pull
 git submodule update --recursive
 
-git push
-
+echo get the latest core(ups)...
 
 cd DiligentCore
 git fetch ups
@@ -15,8 +13,18 @@ git push
 
 cd ..
 
+echo get the latest(ups) ...
 
-echo done
+git fetch ups
+git merge ups/master
+
+rem git submodule update --recursive --remote
+git submodule update --recursive
+
+rem git push
+
+
+echo check and to push...
 
 pause
 
