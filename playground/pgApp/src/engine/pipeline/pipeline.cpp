@@ -263,6 +263,11 @@ void Pipeline::UnBind()
     //}
 }
 
+void Pipeline::TransitionShaderResources()
+{
+    App::s_ctx->TransitionShaderResources(m_pPSO, m_pSRB);
+}
+
 void Pipeline::SetStaticVariables()
 {
     // Static variables never change and are bound directly through the pipeline state object.

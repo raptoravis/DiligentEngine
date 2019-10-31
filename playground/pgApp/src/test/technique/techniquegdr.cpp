@@ -662,16 +662,17 @@ void TechniqueGdr::renderDownscalePass()
 
             std::shared_ptr<PassDispatch> dispatchPass =
                 std::make_shared<PassDispatch>(this, dispatchPipeline);
+            // dispatchPass->SetTransitionResources(true);
 
             AddPass(dispatchPass);
         }
     };
 
-    AddPass(std::make_shared<ade::PassInvokeFunction>(this, [=] {
-        //auto hiZBuffer = CreateTextureFromTextures(m_hiZBuffers);
+    // AddPass(std::make_shared<ade::PassInvokeFunction>(this, [=] {
+    //    auto hiZBuffer = CreateTextureFromTextures(m_hiZBuffers);
 
-        //m_hiZBuffer = std::make_shared<ade::Texture>(hiZBuffer);
-    }));
+    //    m_hiZBuffer = std::make_shared<ade::Texture>(hiZBuffer);
+    //}));
 }
 
 // perform the occlusion using the mip chain

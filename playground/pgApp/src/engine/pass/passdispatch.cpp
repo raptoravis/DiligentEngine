@@ -5,7 +5,7 @@ namespace ade
 {
 
 PassDispatch::PassDispatch(Technique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline)
-    : base(parentTechnique, nullptr, pipeline)
+    : base(parentTechnique, nullptr, pipeline), m_bTransitionResources(false)
 {
 }
 
@@ -16,6 +16,10 @@ void PassDispatch::PreRender()
     base::PreRender();
 }
 
+void PassDispatch::SetTransitionResources(bool bTransitionResources)
+{
+    m_bTransitionResources = bTransitionResources;
+}
 
 void PassDispatch::Render(Pipeline* pipeline)
 {
@@ -32,6 +36,10 @@ void PassDispatch::Render(Pipeline* pipeline)
     DispatAttribs.ThreadGroupCountZ = numGroups.z;
 
     App::s_ctx->DispatchCompute(DispatAttribs);
+
+    if (m_bTransitionResources) {
+        m_pPipeline->TransitionShaderResources();
+    }
 }
 
 void PassDispatch::Dispatch()

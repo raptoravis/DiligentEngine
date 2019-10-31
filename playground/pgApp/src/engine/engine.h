@@ -1028,6 +1028,8 @@ class Pipeline : public Object
     // void SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat, Diligent::TEXTURE_FORMAT
     // DSFormat);
 
+    void TransitionShaderResources();
+
     virtual void Bind();
     virtual void UnBind();
 };
