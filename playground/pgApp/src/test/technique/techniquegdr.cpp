@@ -290,12 +290,14 @@ void TechniqueGdr::createHiZBuffers()
 
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
-        m_drawcallInstanceCounts = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr,
-                                                                     s_maxNoofProps, false, true);
+        m_drawcallInstanceCounts = ade::Scene::CreateFormatBuffer(
+            ade::App::s_device, nullptr, Diligent::VALUE_TYPE::VT_UINT32, s_maxNoofProps,
+            sizeof(uint32_t), false, true);
 
         // the compute shader will write the result of the occlusion test for each instance here
-        m_instancePredicates = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr,
-                                                                 s_maxNoofInstances, true, true);
+        m_instancePredicates = ade::Scene::CreateFormatBuffer(
+            ade::App::s_device, nullptr, Diligent::VALUE_TYPE::VT_UINT32, s_maxNoofInstances,
+            sizeof(uint32_t), true, true);
     }
 
     // bounding box for each instance, will be fed to the compute shader to calculate occlusion
@@ -322,9 +324,9 @@ void TechniqueGdr::createHiZBuffers()
         }
 
         // bSRV
-        m_instanceBoundingBoxes = Scene::CreateFloatVertexBuffer(
-            App::s_device, boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2,
-            sizeof(Diligent::float4), true);
+        m_instanceBoundingBoxes = std::make_shared<ade::StructuredBuffer>(
+            boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2,
+            (uint32_t)sizeof(Diligent::float4), CPUAccess::None, false);
     }
 
     // pre and post occlusion culling instance data buffers
@@ -349,21 +351,20 @@ void TechniqueGdr::createHiZBuffers()
         }
 
         // pre occlusion buffer
-        m_instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, instanceData,
-                                                          m_pSceneGdr->m_totalInstancesCount,
-                                                          sizeof(Diligent::float4), true);
+        m_instanceBuffer = std::make_shared<ade::StructuredBuffer>(
+            instanceData, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
+            CPUAccess::None, false);
+
         // post occlusion buffer
-        m_culledInstanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, nullptr,
-                                                                m_pSceneGdr->m_totalInstancesCount,
-                                                                sizeof(uint32_t), false, true);
+        m_culledInstanceBuffer = std::make_shared<ade::StructuredBuffer>(
+            nullptr, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
+            CPUAccess::None, true);
     }
 
     // we use one "drawcall" per prop to render all its instances
-    const uint kCONFIG_DRAW_INDIRECT_STRIDE = 32;
-
-    m_indirectBuffer =
-        Scene::CreateFloatVertexBuffer(App::s_device, nullptr, m_pSceneGdr->m_noofProps,
-                                       kCONFIG_DRAW_INDIRECT_STRIDE, false, true);
+    m_indirectBuffer = std::make_shared<ade::StructuredBuffer>(nullptr, m_pSceneGdr->m_noofProps,
+                                                               (uint32_t)sizeof(Diligent::uint4),
+                                                               CPUAccess::None, true);
 
     //////////////////////////////////////////////////////////////////////////
     // Calculate how many vertices/indices the master buffers will need.
@@ -414,9 +415,9 @@ void TechniqueGdr::createHiZBuffers()
         App::s_device, m_allPropIndicesDataCPU, totalNoofIndices * sizeof(uint32_t));
 
     // Create buffer with const drawcall data which will be copied to the indirect buffer later.
-    m_indirectBufferData =
-        Scene::CreateFloatVertexBuffer(App::s_device, (float*)m_indirectBufferDataCPU,
-                                       m_pSceneGdr->m_noofProps, 3 * sizeof(uint32_t), true);
+    m_indirectBufferData = Scene::CreateFormatBuffer(
+        App::s_device, m_indirectBufferDataCPU, Diligent::VALUE_TYPE::VT_UINT32,
+        m_pSceneGdr->m_noofProps * 3, sizeof(uint32_t), true);
 
     m_useIndirect = true;
     m_firstFrame = true;
@@ -773,10 +774,11 @@ void TechniqueGdr::renderOccludePropsPass()
 // render the unoccluded props to the screen
 void TechniqueGdr::renderMainPass()
 {
-    std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
-    auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
-    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
-    renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
+    // std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
+    // auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
+    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
+    std::shared_ptr<ade::RenderTarget> renderTarget = m_pRenderTarget;
 
     std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
     vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
@@ -793,7 +795,7 @@ void TechniqueGdr::renderMainPass()
     m_pipelineMainPass = std::make_shared<Pipeline>(renderTarget);
 
     m_pipelineMainPass->SetShader(Shader::VertexShader, vs);
-    m_pipelineMainPass->SetShader(Shader::VertexShader, ps);
+    m_pipelineMainPass->SetShader(Shader::PixelShader, ps);
 
 
     LayoutElement LayoutElems[] = {

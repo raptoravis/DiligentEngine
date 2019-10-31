@@ -337,7 +337,7 @@ class Buffer : public Resource
     bool m_bIsBound;
 
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
-
+    Diligent::VALUE_TYPE m_valueType = Diligent::VALUE_TYPE::VT_UNDEFINED; 
   public:
     enum BufferType { Unknown = 0, VertexBuffer, IndexBuffer, StructuredBuffer, ConstantBuffer };
 
@@ -351,6 +351,8 @@ class Buffer : public Resource
 
     Diligent::IBufferView* GetUnorderedAccessView();
     Diligent::IBufferView* GetShaderResourceView();
+
+	void SetBufferFormat(Diligent::VALUE_TYPE ValueType);
 
     // Bind the buffer for rendering.
     virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
@@ -935,13 +937,14 @@ class Scene : public Object
     //////////////////////////////////////////////////////////////////////////
     static std::shared_ptr<Buffer> CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
                                                            float* data, uint32_t count,
-                                                           uint32_t stride, bool bSRV = false,
-                                                           bool bGPUWrite = false);
+                                                           uint32_t stride);
     static std::shared_ptr<Buffer> CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                         const uint32_t* data, uint32_t sizeInBytes,
-                                                         bool bSRV = false, bool bGPUWrite = false);
-    // static std::shared_ptr<Buffer> CreateUInt16IndexBuffer(Diligent::IRenderDevice* device,
-    //                                                       const uint16_t* data, uint32_t count);
+                                                         uint32_t* data, uint32_t sizeInBytes);
+
+    static std::shared_ptr<Buffer> CreateFormatBuffer(Diligent::IRenderDevice* device, void* data,
+                                                      Diligent::VALUE_TYPE ValueType,
+                                                      uint32_t count, uint32_t stride,
+                                                      bool bSRV = false, bool bGPUWrite = false);
 
 
     static std::shared_ptr<Texture> CreateTexture2D(uint16_t width, uint16_t height,

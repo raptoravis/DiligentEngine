@@ -232,29 +232,14 @@ std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
 
 
 std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* device, float* data,
-                                                       uint32_t count, uint32_t stride, bool bSRV,
-                                                       bool bGPUWrite)
+                                                       uint32_t count, uint32_t stride)
 {
     bool bDynamic = !data;
     // Create a vertex buffer that stores cube vertices
     Diligent::BufferDesc VertBuffDesc;
     VertBuffDesc.Name = "Float vertex buffer";
 
-    if (bSRV) {
-        VertBuffDesc.Mode = Diligent::BUFFER_MODE_RAW;
-        VertBuffDesc.ElementByteStride = stride;
-        VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        VertBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    }
-
-    if (bGPUWrite) {
-        VertBuffDesc.Mode = Diligent::BUFFER_MODE_RAW;
-        VertBuffDesc.ElementByteStride = stride;
-        VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        VertBuffDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
-    }
-
-    if (!bSRV && !bGPUWrite) {
+    {
         VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
         VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
     }
@@ -281,29 +266,14 @@ std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* 
 }
 
 std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                     const uint32_t* data, uint32_t count,
-                                                     bool bSRV, bool bGPUWrite)
+                                                     uint32_t* data, uint32_t count)
 {
     bool bDynamic = !data;
 
     Diligent::BufferDesc IndBuffDesc;
     IndBuffDesc.Name = "UInt index buffer";
 
-    if (bSRV) {
-        IndBuffDesc.Mode = Diligent::BUFFER_MODE_RAW;
-        IndBuffDesc.ElementByteStride = sizeof(uint32_t);
-        IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        IndBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    }
-
-    if (bGPUWrite) {
-        IndBuffDesc.Mode = Diligent::BUFFER_MODE_RAW;
-        IndBuffDesc.ElementByteStride = sizeof(uint32_t);
-        IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        IndBuffDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
-    }
-
-    if (!bSRV && !bGPUWrite) {
+    {
         IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
         IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
     }
@@ -330,28 +300,50 @@ std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* de
     return buffer;
 }
 
-// std::shared_ptr<Buffer> Scene::CreateUInt16IndexBuffer(Diligent::IRenderDevice* device,
-//                                                        const uint16_t* data, uint32_t count)
-//{
-//    Diligent::BufferDesc IndBuffDesc;
-//    IndBuffDesc.Name = "UInt16 index buffer";
-//    IndBuffDesc.Usage = Diligent::USAGE_STATIC;
-//    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-//    IndBuffDesc.uiSizeInBytes = sizeof(uint16_t) * count;
-//
-//    Diligent::BufferData IBData;
-//    IBData.pData = data;
-//    IBData.DataSize = sizeof(uint16_t) * count;
-//
-//    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
-//    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
-//
-//    std::shared_ptr<Buffer> buffer =
-//        std::make_shared<Buffer>((uint32_t)sizeof(uint16_t), count, pBuffer);
-//
-//    return buffer;
-//}
-//
+std::shared_ptr<Buffer> Scene::CreateFormatBuffer(Diligent::IRenderDevice* device, void* data,
+                                                  Diligent::VALUE_TYPE ValueType, uint32_t count,
+                                                  uint32_t stride, bool bSRV, bool bGPUWrite)
+{
+    bool bDynamic = !data;
+
+    Diligent::BufferDesc BuffDesc;
+    BuffDesc.Name = "format buffer";
+
+    if (bSRV) {
+        BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+        BuffDesc.ElementByteStride = stride;
+        BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+        BuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    }
+
+    if (bGPUWrite) {
+        BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+        BuffDesc.ElementByteStride = stride;
+        BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+        BuffDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
+    }
+
+    BuffDesc.uiSizeInBytes = stride * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    if (bDynamic) {
+        BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+        device->CreateBuffer(BuffDesc, nullptr, &pBuffer);
+    } else {
+        Diligent::BufferData IBData;
+        IBData.pData = data;
+        IBData.DataSize = sizeof(uint32_t) * count;
+
+        device->CreateBuffer(BuffDesc, &IBData, &pBuffer);
+    }
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    buffer->SetBufferFormat(ValueType);
+
+    return buffer;
+}
 
 
 }    // namespace ade

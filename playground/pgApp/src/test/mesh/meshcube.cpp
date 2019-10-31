@@ -63,5 +63,5 @@ void MeshCube::CreateIndexBuffer()
     const Uint32 Indices[] = { 2, 0, 1, 2, 3, 0, 4, 6, 5, 4, 7, 6, 0, 7, 4, 0, 3, 7,
                                1, 0, 4, 1, 4, 5, 1, 5, 2, 5, 6, 2, 3, 6, 7, 3, 2, 6 };
 
-    m_pIndexBuffer = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, Indices, 36);
+    m_pIndexBuffer = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, (uint32_t*)Indices, 36);
 }

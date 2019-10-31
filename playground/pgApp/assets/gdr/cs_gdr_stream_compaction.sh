@@ -15,10 +15,10 @@ Buffer<bool>  instancePredicates : register( t2 );
 RWBuffer<uint> drawcallInstanceCount : register(u0);
 
 //drawcall data that will drive drawIndirect
-RWBuffer<uint4> drawcallData : register(u1);
+RWStructuredBuffer<uint4> drawcallData : register(u1);
 
 //culled instance data
-RWBuffer<float4> instanceDataOut : register(u2);
+RWStructuredBuffer<float4> instanceDataOut : register(u2);
 
 // Based on Parallel Prefix Sum (Scan) with CUDA by Mark Harris
 groupshared uint temp[2048];

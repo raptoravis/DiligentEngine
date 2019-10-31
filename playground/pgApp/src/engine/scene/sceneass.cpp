@@ -479,7 +479,7 @@ std::shared_ptr<Buffer> SceneAss::CreateFloatVertexBuffer(const float* data, uin
 
 std::shared_ptr<Buffer> SceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
 {
-    return Scene::CreateUIntIndexBuffer(App::s_device, data, count);
+    return Scene::CreateUIntIndexBuffer(App::s_device, (uint32_t*)data, count);
 }
 
 std::shared_ptr<SceneAss> SceneAss::CreateScene()

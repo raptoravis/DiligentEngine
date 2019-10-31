@@ -3,7 +3,7 @@
 
 Texture2D s_texOcclusionDepth : register( t0 );
 
-Buffer<float4>  instanceDataIn : register( t1 );
+StructuredBuffer<float4>  instanceDataIn : register( t1 );
 
 RWBuffer<uint> drawcallInstanceCount : register(u0);
 RWBuffer<bool> instancePredicates : register(u1);
