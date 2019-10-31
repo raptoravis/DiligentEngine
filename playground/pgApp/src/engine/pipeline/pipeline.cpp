@@ -246,7 +246,7 @@ void Pipeline::Bind()
 
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
-    App::s_ctx->CommitShaderResources(m_pSRB, transitionMode);
+    App::s_ctx->CommitShaderResources(m_pSRB, transitionMode, bCheckUAVSRV);
 }
 
 void Pipeline::UnBind()

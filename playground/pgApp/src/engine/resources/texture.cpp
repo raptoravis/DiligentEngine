@@ -68,10 +68,11 @@ Diligent::ITextureView* Texture::GetShaderResourceView()
 
         Diligent::TextureViewDesc ViewDesc;
         ViewDesc.ViewType = Diligent::TEXTURE_VIEW_SHADER_RESOURCE;
-        auto ViewName = Diligent::FormatString("Mip SRV of texture");
+        auto ViewName = Diligent::FormatString("Mip ", m_mip, " SRV of texture");
         ViewDesc.Name = ViewName.c_str();
 
         ViewDesc.MostDetailedMip = m_mip;
+        ViewDesc.NumMipLevels = 1;
 
         Diligent::ITextureView* srv = 0;
         tex->m_pTexture->CreateView(ViewDesc, &srv);
@@ -109,10 +110,11 @@ Diligent::ITextureView* Texture::GetUnorderedAccessView()
 
         Diligent::TextureViewDesc ViewDesc;
         ViewDesc.ViewType = Diligent::TEXTURE_VIEW_UNORDERED_ACCESS;
-        auto ViewName = Diligent::FormatString("Mip SRV of texture");
+        auto ViewName = Diligent::FormatString("Mip ", m_mip, " UAV of texture");
         ViewDesc.Name = ViewName.c_str();
 
         ViewDesc.MostDetailedMip = m_mip;
+        ViewDesc.NumMipLevels = 1;
 
         Diligent::ITextureView* uav = 0;
         tex->m_pTexture->CreateView(ViewDesc, &uav);

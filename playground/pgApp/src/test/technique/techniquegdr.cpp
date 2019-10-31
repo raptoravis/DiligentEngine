@@ -248,13 +248,14 @@ void TechniqueGdr::createHiZBuffers()
     uint32_t hiZwidth = m_hiZwidth;
     uint32_t hiZheight = m_hiZheight;
 
-    for (uint32_t i = 0; i < m_noofHiZMips; ++i) {
+    // for (uint32_t i = 0; i < m_noofHiZMips; ++i)
+    {
         Diligent::TextureDesc DepthBufferDesc;
         DepthBufferDesc.Name = "hiZBuffer";
         DepthBufferDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
         DepthBufferDesc.Width = hiZwidth;
         DepthBufferDesc.Height = hiZheight;
-        DepthBufferDesc.MipLevels = 1;
+        DepthBufferDesc.MipLevels = m_noofHiZMips;
         DepthBufferDesc.ArraySize = 1;
         DepthBufferDesc.Format = TEX_FORMAT_R32_FLOAT;
         DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
@@ -265,9 +266,9 @@ void TechniqueGdr::createHiZBuffers()
 
         Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
         App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
-        auto hiZBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
+        m_hiZBuffer = std::make_shared<ade::Texture>(pDepthStencilTexture);
 
-        m_hiZBuffers.push_back(hiZBuffer);
+        // m_hiZBuffers.push_back(hiZBuffer);
         // m_hiZBuffer = Scene::CreateTexture2D((uint16_t)m_hiZwidth, (uint16_t)m_hiZheight, 1,
         //                                     Diligent::TEX_FORMAT_R32_FLOAT, CPUAccess::None,
         //                                     true);
@@ -611,10 +612,13 @@ void TechniqueGdr::renderDownscalePass()
 
         programCopyZ->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
-        auto hiZBuffer = m_hiZBuffers[0];
+        std::shared_ptr<Texture> texMip = std::make_shared<ade::Texture>(m_hiZBuffer, 0);
+
+        // hold it
+        m_hizTexMips.push_back(texMip);
 
         programCopyZ->GetShaderParameterByName("s_texOcclusionDepth").Set(m_hiZDepthBuffer);
-        programCopyZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(hiZBuffer);
+        programCopyZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(texMip);
 
         std::shared_ptr<PassDispatch> dispatchPass =
             std::make_shared<PassDispatch>(this, dispatchPipeline);
@@ -650,12 +654,13 @@ void TechniqueGdr::renderDownscalePass()
 
             programDownscaleHiZ->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
-            std::shared_ptr<Texture> texLasMip = m_hiZBuffers[lod - 1];
-            std::shared_ptr<Texture> texMip = m_hiZBuffers[lod];
+            std::shared_ptr<Texture> texLasMip =
+                std::make_shared<ade::Texture>(m_hiZBuffer, lod - 1);
+            std::shared_ptr<Texture> texMip = std::make_shared<ade::Texture>(m_hiZBuffer, lod);
 
-            //// hold it
-            // m_hizTexMips.push_back(texLasMip);
-            // m_hizTexMips.push_back(texMip);
+            // hold it
+            m_hizTexMips.push_back(texLasMip);
+            m_hizTexMips.push_back(texMip);
 
             programDownscaleHiZ->GetShaderParameterByName("s_texOcclusionDepth").Set(texLasMip);
             programDownscaleHiZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(texMip);
@@ -707,7 +712,7 @@ void TechniqueGdr::renderOccludePropsPass()
         // bgfx::setBuffer(1, m_instanceBoundingBoxes, bgfx::Access::Read);
         // bgfx::setBuffer(2, m_drawcallInstanceCounts, bgfx::Access::ReadWrite);
         // bgfx::setBuffer(3, m_instancePredicates, bgfx::Access::Write);
-        auto hiZBuffer = m_hiZBuffers[0];
+        auto hiZBuffer = m_hiZBuffer;
         m_programOccludeProps->GetShaderParameterByName("s_texOcclusionDepth").Set(hiZBuffer);
         m_programOccludeProps->GetShaderParameterByName("instanceDataIn")
             .Set(m_instanceBoundingBoxes);
