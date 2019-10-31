@@ -36,6 +36,7 @@ uint8_t calcNumMips(uint32_t _width, uint32_t _height, uint32_t _depth = 1)
     return uint8_t(num);
 }
 
+ITexture* CreateTextureFromTextures(std::vector<std::shared_ptr<ade::Texture>> textures);
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
     : base(rt, backBuffer)
@@ -259,8 +260,8 @@ void TechniqueGdr::createHiZBuffers()
         DepthBufferDesc.SampleCount = 1;    // App::s_desc.SamplesCount;
         DepthBufferDesc.Usage = Diligent::USAGE_DEFAULT;
         DepthBufferDesc.BindFlags = BIND_SHADER_RESOURCE | BIND_UNORDERED_ACCESS;
-        DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
-        DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_GENERATE_MIPS;
+        DepthBufferDesc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
+        DepthBufferDesc.MiscFlags = Diligent::MISC_TEXTURE_FLAG_NONE;
 
         Diligent::RefCntAutoPtr<Diligent::ITexture> pDepthStencilTexture;
         App::s_device->CreateTexture(DepthBufferDesc, nullptr, &pDepthStencilTexture);
@@ -323,7 +324,8 @@ void TechniqueGdr::createHiZBuffers()
 
         // bSRV
         m_instanceBoundingBoxes = ade::Scene::CreateVertexBufferFloat(
-            ade::App::s_device, boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2, sizeof(Diligent::float4), 4);
+            ade::App::s_device, boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2,
+            sizeof(Diligent::float4), 4);
     }
 
     // pre and post occlusion culling instance data buffers
@@ -664,6 +666,12 @@ void TechniqueGdr::renderDownscalePass()
             AddPass(dispatchPass);
         }
     };
+
+    AddPass(std::make_shared<ade::PassInvokeFunction>(this, [=] {
+        //auto hiZBuffer = CreateTextureFromTextures(m_hiZBuffers);
+
+        //m_hiZBuffer = std::make_shared<ade::Texture>(hiZBuffer);
+    }));
 }
 
 // perform the occlusion using the mip chain
@@ -939,4 +947,49 @@ void TechniqueGdr::init()
     } else {
         initGdr();
     }
+}
+
+
+ITexture* CreateTextureFromTextures(std::vector<std::shared_ptr<ade::Texture>> textures)
+{
+    auto tex0 = textures[0];
+    auto texDesc = tex0->GetTexture()->GetDesc();
+
+    TextureDesc TexDesc;
+
+    TexDesc.Name = "texture";
+    TexDesc.Type = RESOURCE_DIM_TEX_2D;
+    TexDesc.Width = texDesc.Width;
+    TexDesc.Height = texDesc.Height;
+
+    TexDesc.MipLevels = calcNumMips(TexDesc.Width, TexDesc.Height);
+    TexDesc.Usage = USAGE_DEFAULT;
+    TexDesc.BindFlags = texDesc.BindFlags;
+    TexDesc.Format = texDesc.Format;
+    TexDesc.CPUAccessFlags = texDesc.CPUAccessFlags;
+
+    std::vector<TextureSubResData> pSubResources(TexDesc.MipLevels);
+    std::vector<std::vector<Uint8>> Mips(TexDesc.MipLevels);
+
+    for (Uint32 m = 0; m < TexDesc.MipLevels; ++m) {
+        auto texture = textures[m]->GetTexture();
+
+        MappedTextureSubresource TexData;
+        ade::App::s_ctx->MapTextureSubresource(texture, 0, 0, MAP_READ, MAP_FLAG_DO_NOT_SYNCHRONIZE,
+                                               nullptr, TexData);
+        ade::App::s_ctx->UnmapTextureSubresource(texture, 0, 0);
+
+        pSubResources[m].pData = TexData.pData;
+        pSubResources[m].Stride = TexData.Stride;
+    }
+
+    TextureData TexData;
+    TexData.pSubResources = pSubResources.data();
+    TexData.NumSubresources = TexDesc.MipLevels;
+
+    ITexture* pTexture = 0;
+
+    ade::App::s_device->CreateTexture(TexDesc, &TexData, &pTexture);
+
+    return pTexture;
 }

@@ -44,6 +44,9 @@ class TechniqueGdr : public ade::Technique
 
     std::vector<std::shared_ptr<ade::Texture>> m_hiZBuffers;
 
+    std::shared_ptr<ade::Texture> m_hiZBuffer;
+
+
     uint32_t m_noofHiZMips;
     std::shared_ptr<ade::Buffer> m_drawcallInstanceCounts;
     std::shared_ptr<ade::Buffer> m_instancePredicates;
@@ -81,7 +84,7 @@ class TechniqueGdr : public ade::Technique
 
     bool m_bDebug = false;
 
-    std::vector<std::shared_ptr<ade::Texture>> m_hizTexMips;
+    //std::vector<std::shared_ptr<ade::Texture>> m_hizTexMips;
 
     // submit drawcalls for all passes
     void renderOcclusionBufferPass();
