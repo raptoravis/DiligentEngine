@@ -322,9 +322,8 @@ void TechniqueGdr::createHiZBuffers()
         }
 
         // bSRV
-        m_instanceBoundingBoxes = std::make_shared<ade::StructuredBuffer>(
-            boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2,
-            (uint32_t)sizeof(Diligent::float4), CPUAccess::None, false);
+        m_instanceBoundingBoxes = ade::Scene::CreateVertexBufferFloat(
+            ade::App::s_device, boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2, sizeof(Diligent::float4), 4);
     }
 
     // pre and post occlusion culling instance data buffers

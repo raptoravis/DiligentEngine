@@ -5,10 +5,10 @@
 Buffer<uint>  drawcallConstData : register( t0 );
 
 //instance data for all instances (pre culling)
-Buffer<uint>  instanceDataIn : register( t1 );
+Buffer<float>  instanceDataIn : register( t1 );
 
 //per instance visibility (output of culling pass)
-Buffer<bool>  instancePredicates : register( t2 );
+Buffer<uint>  instancePredicates : register( t2 );
 
 
 //how many instances per drawcall
@@ -91,7 +91,7 @@ void main(ComputeShaderInput IN)
 	int index = int(2 * tID);
 
 	// scatter results
-	if (instancePredicates[index])
+	if (instancePredicates[index] > 0)
 	{
 		instanceDataOut[4 * temp[index]    ] = instanceDataIn[4 * index    ];
 		instanceDataOut[4 * temp[index] + 1] = instanceDataIn[4 * index + 1];
@@ -101,7 +101,7 @@ void main(ComputeShaderInput IN)
 
 	index = int(2 * tID + 1);
 
-	if (instancePredicates[index])
+	if (instancePredicates[index] > 0)
 	{
 		instanceDataOut[4 * temp[index]    ] = instanceDataIn[4 * index    ];
 		instanceDataOut[4 * temp[index] + 1] = instanceDataIn[4 * index + 1];

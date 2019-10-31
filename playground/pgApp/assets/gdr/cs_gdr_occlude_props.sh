@@ -6,12 +6,12 @@ Texture2D s_texOcclusionDepth : register( t0 );
 Buffer<float4>  instanceDataIn : register( t1 );
 
 RWBuffer<uint> drawcallInstanceCount : register(u0);
-RWBuffer<bool> instancePredicates : register(u1);
+RWBuffer<uint> instancePredicates : register(u1);
 
 [numthreads( 64, 1, 1 )]
 void main(ComputeShaderInput IN)
 {
-	bool predicate = false;
+	uint predicate = 0;
 
 	//make sure that we not processing more instances than available
 	if (IN.dispatchThreadID.x < uint(u_cullingConfig.x) )
@@ -97,7 +97,7 @@ void main(ComputeShaderInput IN)
 
 		if ( minZ <= maxDepth )
 		{
-			predicate = true;
+			predicate = 1;
 
 			//increase instance count for this particular prop type
 			uint value;
