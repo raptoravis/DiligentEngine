@@ -482,9 +482,9 @@ class Texture : public Resource
 {
   protected:
     Diligent::RefCntAutoPtr<Diligent::ITexture> m_pTexture;
-    
-	std::shared_ptr<Texture> m_parentTexture;
-	uint32_t m_mip;
+
+    std::shared_ptr<Texture> m_parentTexture;
+    uint32_t m_mip;
 
   public:
     Texture(std::shared_ptr<Texture> parentTexture, uint32_t mip);
@@ -932,13 +932,14 @@ class Scene : public Object
 
     virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     static std::shared_ptr<Buffer> CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
                                                            float* data, uint32_t count,
-                                                           uint32_t stride);
+                                                           uint32_t stride, bool bSRV = false,
+                                                           bool bGPUWrite = false);
     static std::shared_ptr<Buffer> CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                         const uint32_t* data,
-                                                         uint32_t sizeInBytes);
+                                                         const uint32_t* data, uint32_t sizeInBytes,
+                                                         bool bSRV = false, bool bGPUWrite = false);
     // static std::shared_ptr<Buffer> CreateUInt16IndexBuffer(Diligent::IRenderDevice* device,
     //                                                       const uint16_t* data, uint32_t count);
 
@@ -1004,7 +1005,8 @@ class Pipeline : public Object
 
     // void SetRenderTarget(std::shared_ptr<RenderTarget> renderTarget);
     std::shared_ptr<RenderTarget> GetRenderTarget() const;
-    //void SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat, Diligent::TEXTURE_FORMAT DSFormat);
+    // void SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat, Diligent::TEXTURE_FORMAT
+    // DSFormat);
 
     virtual void Bind();
     virtual void UnBind();

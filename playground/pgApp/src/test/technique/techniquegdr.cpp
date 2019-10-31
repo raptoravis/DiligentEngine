@@ -290,12 +290,12 @@ void TechniqueGdr::createHiZBuffers()
 
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
-        m_drawcallInstanceCounts =
-            ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr, s_maxNoofProps);
+        m_drawcallInstanceCounts = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr,
+                                                                     s_maxNoofProps, false, true);
 
         // the compute shader will write the result of the occlusion test for each instance here
-        m_instancePredicates =
-            ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr, s_maxNoofInstances);
+        m_instancePredicates = ade::Scene::CreateUIntIndexBuffer(ade::App::s_device, nullptr,
+                                                                 s_maxNoofInstances, true, true);
     }
 
     // bounding box for each instance, will be fed to the compute shader to calculate occlusion
@@ -321,9 +321,10 @@ void TechniqueGdr::createHiZBuffers()
             }
         }
 
-        m_instanceBoundingBoxes = Scene::CreateFloatVertexBuffer(App::s_device, boundingBoxes,
-                                                                 m_pSceneGdr->m_totalInstancesCount,
-                                                                 sizeof(Diligent::float4) * 2);
+        // bSRV
+        m_instanceBoundingBoxes = Scene::CreateFloatVertexBuffer(
+            App::s_device, boundingBoxes, m_pSceneGdr->m_totalInstancesCount * 2,
+            sizeof(Diligent::float4), true);
     }
 
     // pre and post occlusion culling instance data buffers
@@ -350,17 +351,19 @@ void TechniqueGdr::createHiZBuffers()
         // pre occlusion buffer
         m_instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, instanceData,
                                                           m_pSceneGdr->m_totalInstancesCount,
-                                                          sizeof(Diligent::float4));
+                                                          sizeof(Diligent::float4), true);
         // post occlusion buffer
-        m_culledInstanceBuffer = Scene::CreateFloatVertexBuffer(
-            App::s_device, nullptr, m_pSceneGdr->m_totalInstancesCount, sizeof(uint32_t));
+        m_culledInstanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, nullptr,
+                                                                m_pSceneGdr->m_totalInstancesCount,
+                                                                sizeof(uint32_t), false, true);
     }
 
     // we use one "drawcall" per prop to render all its instances
     const uint kCONFIG_DRAW_INDIRECT_STRIDE = 32;
 
-    m_indirectBuffer = Scene::CreateFloatVertexBuffer(
-        App::s_device, nullptr, m_pSceneGdr->m_noofProps, kCONFIG_DRAW_INDIRECT_STRIDE);
+    m_indirectBuffer =
+        Scene::CreateFloatVertexBuffer(App::s_device, nullptr, m_pSceneGdr->m_noofProps,
+                                       kCONFIG_DRAW_INDIRECT_STRIDE, false, true);
 
     //////////////////////////////////////////////////////////////////////////
     // Calculate how many vertices/indices the master buffers will need.
@@ -413,7 +416,7 @@ void TechniqueGdr::createHiZBuffers()
     // Create buffer with const drawcall data which will be copied to the indirect buffer later.
     m_indirectBufferData =
         Scene::CreateFloatVertexBuffer(App::s_device, (float*)m_indirectBufferDataCPU,
-                                       m_pSceneGdr->m_noofProps, 3 * sizeof(uint32_t));
+                                       m_pSceneGdr->m_noofProps, 3 * sizeof(uint32_t), true);
 
     m_useIndirect = true;
     m_firstFrame = true;
@@ -686,6 +689,7 @@ void TechniqueGdr::renderOccludePropsPass()
 
         dispatchPipeline->SetShader(Shader::ComputeShader, m_programOccludeProps);
 
+        m_programOccludeProps->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
         // run the computer shader to determine visibility of each instance
         // bgfx::setTexture(0, s_texOcclusionDepth, bgfx::getTexture(m_hiZBuffer, 0));
 
