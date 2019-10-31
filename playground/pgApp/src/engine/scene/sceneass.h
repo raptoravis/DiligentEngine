@@ -53,9 +53,9 @@ class SceneAss : public Scene
   protected:
     friend class ProgressHandler;
 
-    std::shared_ptr<Buffer> CreateFloatVertexBuffer(const float* data, uint32_t count,
+    std::shared_ptr<Buffer> CreateVertexBufferFloat(const float* data, uint32_t count,
                                                     uint32_t stride);
-    std::shared_ptr<Buffer> CreateUIntIndexBuffer(const uint32_t* data, uint32_t count);
+    std::shared_ptr<Buffer> CreateIndexBufferUInt(const uint32_t* data, uint32_t count);
 
     std::shared_ptr<Mesh> CreateMesh();
     std::shared_ptr<Material> CreateMaterial();

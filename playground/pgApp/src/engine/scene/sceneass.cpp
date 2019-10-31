@@ -309,29 +309,29 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
 
     if (mesh.HasPositions()) {
         std::shared_ptr<Buffer> positions =
-            CreateFloatVertexBuffer(&(mesh.mVertices[0].x), mesh.mNumVertices, sizeof(aiVector3D));
+            CreateVertexBufferFloat(&(mesh.mVertices[0].x), mesh.mNumVertices, sizeof(aiVector3D));
         pMesh->AddVertexBuffer(BufferBinding("POSITION", 0), positions);
     }
 
     if (mesh.HasNormals()) {
         std::shared_ptr<Buffer> normals =
-            CreateFloatVertexBuffer(&(mesh.mNormals[0].x), mesh.mNumVertices, sizeof(aiVector3D));
+            CreateVertexBufferFloat(&(mesh.mNormals[0].x), mesh.mNumVertices, sizeof(aiVector3D));
         pMesh->AddVertexBuffer(BufferBinding("NORMAL", 0), normals);
     }
 
     if (mesh.HasTangentsAndBitangents()) {
         std::shared_ptr<Buffer> tangents =
-            CreateFloatVertexBuffer(&(mesh.mTangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
+            CreateVertexBufferFloat(&(mesh.mTangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
         pMesh->AddVertexBuffer(BufferBinding("TANGENT", 0), tangents);
 
-        std::shared_ptr<Buffer> bitangents = CreateFloatVertexBuffer(
+        std::shared_ptr<Buffer> bitangents = CreateVertexBufferFloat(
             &(mesh.mBitangents[0].x), mesh.mNumVertices, sizeof(aiVector3D));
         pMesh->AddVertexBuffer(BufferBinding("BINORMAL", 0), bitangents);
     }
 
     for (uint32_t i = 0; mesh.HasVertexColors(i); ++i) {
         std::shared_ptr<Buffer> colors =
-            CreateFloatVertexBuffer(&(mesh.mColors[i][0].r), mesh.mNumVertices, sizeof(aiColor4D));
+            CreateVertexBufferFloat(&(mesh.mColors[i][0].r), mesh.mNumVertices, sizeof(aiColor4D));
         pMesh->AddVertexBuffer(BufferBinding("COLOR", i), colors);
     }
 
@@ -343,7 +343,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
             for (uint32_t j = 0; j < mesh.mNumVertices; ++j) {
                 texcoods1D[j] = mesh.mTextureCoords[i][j].x;
             }
-            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateVertexBufferFloat(
                 texcoods1D.data(), (uint32_t)texcoods1D.size(), sizeof(float));
             pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
@@ -354,7 +354,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
                 texcoods2D[j] =
                     aiVector2D(mesh.mTextureCoords[i][j].x, mesh.mTextureCoords[i][j].y);
             }
-            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateVertexBufferFloat(
                 &(texcoods2D[0].x), (uint32_t)texcoods2D.size(), sizeof(aiVector2D));
             pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
@@ -364,7 +364,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
             for (uint32_t j = 0; j < mesh.mNumVertices; ++j) {
                 texcoods3D[j] = mesh.mTextureCoords[i][j];
             }
-            std::shared_ptr<Buffer> texcoords = CreateFloatVertexBuffer(
+            std::shared_ptr<Buffer> texcoords = CreateVertexBufferFloat(
                 &(texcoods3D[0].x), (uint32_t)texcoods3D.size(), sizeof(aiVector3D));
             pMesh->AddVertexBuffer(BufferBinding("TEXCOORD", i), texcoords);
         } break;
@@ -385,7 +385,7 @@ void SceneAss::ImportMesh(const aiMesh& mesh)
         }
         if (indices.size() > 0) {
             std::shared_ptr<Buffer> indexBuffer =
-                CreateUIntIndexBuffer(indices.data(), (uint32_t)indices.size());
+                CreateIndexBufferUInt(indices.data(), (uint32_t)indices.size());
             pMesh->SetIndexBuffer(indexBuffer);
         }
     }
@@ -471,15 +471,15 @@ std::shared_ptr<Texture> SceneAss::CreateTexture2D(uint16_t width, uint16_t heig
     return tex;
 }
 
-std::shared_ptr<Buffer> SceneAss::CreateFloatVertexBuffer(const float* data, uint32_t count,
+std::shared_ptr<Buffer> SceneAss::CreateVertexBufferFloat(const float* data, uint32_t count,
                                                           uint32_t stride)
 {
-    return Scene::CreateFloatVertexBuffer(App::s_device, (float*)data, count, stride);
+    return Scene::CreateVertexBufferFloat(App::s_device, (float*)data, count, stride);
 }
 
-std::shared_ptr<Buffer> SceneAss::CreateUIntIndexBuffer(const uint32_t* data, uint32_t count)
+std::shared_ptr<Buffer> SceneAss::CreateIndexBufferUInt(const uint32_t* data, uint32_t count)
 {
-    return Scene::CreateUIntIndexBuffer(App::s_device, (uint32_t*)data, count);
+    return Scene::CreateIndexBufferUInt(App::s_device, (uint32_t*)data, count);
 }
 
 std::shared_ptr<SceneAss> SceneAss::CreateScene()

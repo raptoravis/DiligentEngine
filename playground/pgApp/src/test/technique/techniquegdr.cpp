@@ -290,14 +290,12 @@ void TechniqueGdr::createHiZBuffers()
 
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
-        m_drawcallInstanceCounts = ade::Scene::CreateFormatBuffer(
-            ade::App::s_device, nullptr, Diligent::VALUE_TYPE::VT_UINT32, s_maxNoofProps,
-            sizeof(uint32_t), false, true);
+        m_drawcallInstanceCounts = ade::Scene::CreateDynamicIndexBuffer(
+            ade::App::s_device, s_maxNoofProps, Diligent::VALUE_TYPE::VT_UINT32);
 
         // the compute shader will write the result of the occlusion test for each instance here
-        m_instancePredicates = ade::Scene::CreateFormatBuffer(
-            ade::App::s_device, nullptr, Diligent::VALUE_TYPE::VT_UINT32, s_maxNoofInstances,
-            sizeof(uint32_t), true, true);
+        m_instancePredicates = ade::Scene::CreateDynamicIndexBuffer(
+            ade::App::s_device, s_maxNoofInstances, Diligent::VALUE_TYPE::VT_UINT32);
     }
 
     // bounding box for each instance, will be fed to the compute shader to calculate occlusion
@@ -351,20 +349,25 @@ void TechniqueGdr::createHiZBuffers()
         }
 
         // pre occlusion buffer
-        m_instanceBuffer = std::make_shared<ade::StructuredBuffer>(
-            instanceData, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
-            CPUAccess::None, false);
+        m_instanceBuffer = ade::Scene::CreateVertexBufferFloat(
+            ade::App::s_device, instanceData, m_pSceneGdr->m_totalInstancesCount,
+            (uint32_t)sizeof(Diligent::float4), 4);
 
         // post occlusion buffer
-        m_culledInstanceBuffer = std::make_shared<ade::StructuredBuffer>(
-            nullptr, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
-            CPUAccess::None, true);
+        // m_culledInstanceBuffer = std::make_shared<ade::StructuredBuffer>(
+        //    nullptr, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
+        //    CPUAccess::None, true);
+        m_culledInstanceBuffer = ade::Scene::CreateDynamicVertexBuffer(
+            ade::App::s_device, m_pSceneGdr->m_totalInstancesCount,
+            (uint32_t)sizeof(Diligent::float4), Diligent::VALUE_TYPE::VT_FLOAT32, 4);
     }
 
     // we use one "drawcall" per prop to render all its instances
-    m_indirectBuffer = std::make_shared<ade::StructuredBuffer>(nullptr, m_pSceneGdr->m_noofProps,
-                                                               (uint32_t)sizeof(Diligent::uint4),
-                                                               CPUAccess::None, true);
+    // m_indirectBuffer = std::make_shared<ade::StructuredBuffer>(nullptr, m_pSceneGdr->m_noofProps,
+    //                                                           (uint32_t)sizeof(Diligent::uint4),
+    //                                                           CPUAccess::None, true);
+    m_indirectBuffer =
+        ade::Scene::CreateIndirectBuffer(ade::App::s_device, m_pSceneGdr->m_noofProps);
 
     //////////////////////////////////////////////////////////////////////////
     // Calculate how many vertices/indices the master buffers will need.
@@ -407,17 +410,16 @@ void TechniqueGdr::createHiZBuffers()
     }
 
     // Create master vertex buffer
-    m_allPropsVertexbufferHandle = Scene::CreateFloatVertexBuffer(
+    m_allPropsVertexbufferHandle = Scene::CreateVertexBufferFloat(
         App::s_device, (float*)m_allPropVerticesDataCPU, totalNoofVertices, 3 * sizeof(PosVertex));
 
     // Create master index buffer.
-    m_allPropsIndexbufferHandle = Scene::CreateUIntIndexBuffer(
+    m_allPropsIndexbufferHandle = Scene::CreateIndexBufferUInt(
         App::s_device, m_allPropIndicesDataCPU, totalNoofIndices * sizeof(uint32_t));
 
     // Create buffer with const drawcall data which will be copied to the indirect buffer later.
-    m_indirectBufferData = Scene::CreateFormatBuffer(
-        App::s_device, m_indirectBufferDataCPU, Diligent::VALUE_TYPE::VT_UINT32,
-        m_pSceneGdr->m_noofProps * 3, sizeof(uint32_t), true);
+    m_indirectBufferData = Scene::CreateIndexBufferUInt(App::s_device, m_indirectBufferDataCPU,
+                                                        m_pSceneGdr->m_noofProps * 3, true);
 
     m_useIndirect = true;
     m_firstFrame = true;
@@ -542,7 +544,7 @@ void TechniqueGdr::renderOcclusionBufferPass()
                     data++;
                 }
 
-                instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, (float*)pData,
+                instanceBuffer = Scene::CreateVertexBufferFloat(App::s_device, (float*)pData,
                                                                 numInstances, instanceStride);
 
                 delete pData;
@@ -841,7 +843,7 @@ void TechniqueGdr::renderMainPass()
                     data++;
                 }
 
-                instanceBuffer = Scene::CreateFloatVertexBuffer(App::s_device, (float*)data,
+                instanceBuffer = Scene::CreateVertexBufferFloat(App::s_device, (float*)data,
                                                                 numInstances, instanceStride);
                 delete pData;
 

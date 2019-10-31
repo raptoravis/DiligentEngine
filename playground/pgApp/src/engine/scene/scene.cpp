@@ -231,17 +231,29 @@ std::shared_ptr<Texture> Scene::CreateTexture2D(uint16_t width, uint16_t height,
 }
 
 
-std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* device, float* data,
-                                                       uint32_t count, uint32_t stride)
+std::shared_ptr<Buffer> Scene::CreateVertexBufferFloat(Diligent::IRenderDevice* device, float* data,
+                                                       uint32_t count, uint32_t stride,
+                                                       uint8_t componentsCount)
 {
+    bool bSRV = componentsCount > 0;
     bool bDynamic = !data;
     // Create a vertex buffer that stores cube vertices
     Diligent::BufferDesc VertBuffDesc;
     VertBuffDesc.Name = "Float vertex buffer";
 
+    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+
+    if (bSRV) {
+        CHECK_ERR(stride == sizeof(float) * componentsCount, "invalid components count");
+
+        VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+        VertBuffDesc.ElementByteStride = stride;
+        VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+        VertBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    }
+
     {
         VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
-        VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
     }
 
     VertBuffDesc.uiSizeInBytes = stride * count;
@@ -261,21 +273,33 @@ std::shared_ptr<Buffer> Scene::CreateFloatVertexBuffer(Diligent::IRenderDevice* 
     }
 
     std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    if (bSRV) {
+        Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_FLOAT32;
+        buffer->SetBufferFormat(ValueType, componentsCount);
+    }
 
     return buffer;
 }
 
-std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                     uint32_t* data, uint32_t count)
+std::shared_ptr<Buffer> Scene::CreateIndexBufferUInt(Diligent::IRenderDevice* device,
+                                                     uint32_t* data, uint32_t count, bool bSRV)
 {
     bool bDynamic = !data;
 
     Diligent::BufferDesc IndBuffDesc;
     IndBuffDesc.Name = "UInt index buffer";
 
+    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+
+    if (bSRV) {
+        IndBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+        IndBuffDesc.ElementByteStride = sizeof(uint32_t);
+        IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+        IndBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    }
+
     {
         IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
-        IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
     }
 
     IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
@@ -296,6 +320,11 @@ std::shared_ptr<Buffer> Scene::CreateUIntIndexBuffer(Diligent::IRenderDevice* de
 
     std::shared_ptr<Buffer> buffer =
         std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
+
+    if (bSRV) {
+        Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_UINT32;
+        buffer->SetBufferFormat(ValueType, 1);
+    }
 
     return buffer;
 }
@@ -340,7 +369,95 @@ std::shared_ptr<Buffer> Scene::CreateFormatBuffer(Diligent::IRenderDevice* devic
     }
 
     std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
-    buffer->SetBufferFormat(ValueType);
+    buffer->SetBufferFormat(ValueType, 0);
+
+    return buffer;
+}
+
+std::shared_ptr<Buffer> Scene::CreateDynamicVertexBuffer(Diligent::IRenderDevice* device,
+                                                         uint32_t count, uint32_t stride,
+                                                         Diligent::VALUE_TYPE ValueType,
+                                                         uint8_t valuesCount)
+{
+    // Create a vertex buffer that stores cube vertices
+    Diligent::BufferDesc VertBuffDesc;
+    VertBuffDesc.Name = "dynamic vertex buffer";
+
+    VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    VertBuffDesc.ElementByteStride = stride;
+
+    VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
+                             Diligent::BIND_UNORDERED_ACCESS;
+
+    VertBuffDesc.uiSizeInBytes = stride * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    buffer->SetBufferFormat(ValueType, valuesCount);
+
+    return buffer;
+}
+
+std::shared_ptr<Buffer> Scene::CreateDynamicIndexBuffer(Diligent::IRenderDevice* device,
+                                                        uint32_t count,
+                                                        Diligent::VALUE_TYPE ValueType)
+{
+    // Create a vertex buffer that stores cube vertices
+    Diligent::BufferDesc VertBuffDesc;
+    VertBuffDesc.Name = "dynamic index buffer";
+
+    CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_UINT32 ||
+                  ValueType == Diligent::VALUE_TYPE::VT_UINT16,
+              "only uint32 or uint16 is allowed");
+
+    uint32_t stride = ValueType == Diligent::VALUE_TYPE::VT_UINT32 ? 4 : 2;
+    uint8_t components = 1;
+
+    VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    VertBuffDesc.ElementByteStride = stride;
+
+    VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+    VertBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
+                             Diligent::BIND_UNORDERED_ACCESS;
+
+    VertBuffDesc.uiSizeInBytes = stride * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    buffer->SetBufferFormat(ValueType, components);
+
+    return buffer;
+}
+
+std::shared_ptr<Buffer> Scene::CreateIndirectBuffer(Diligent::IRenderDevice* device, uint32_t count)
+{
+    // Create a vertex buffer that stores cube vertices
+    Diligent::BufferDesc VertBuffDesc;
+    VertBuffDesc.Name = "indirect buffer";
+
+    uint32_t stride = sizeof(uint32_t) * 4;
+    VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    VertBuffDesc.ElementByteStride = stride;
+
+    VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
+                             Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS;
+
+    VertBuffDesc.uiSizeInBytes = stride * count;
+
+    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    buffer->SetBufferFormat(Diligent::VALUE_TYPE::VT_UINT32, 4);
 
     return buffer;
 }

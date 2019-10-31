@@ -337,7 +337,10 @@ class Buffer : public Resource
     bool m_bIsBound;
 
     Diligent::RefCntAutoPtr<Diligent::IBuffer> m_pBuffer;
-    Diligent::VALUE_TYPE m_valueType = Diligent::VALUE_TYPE::VT_UNDEFINED; 
+
+    Diligent::VALUE_TYPE m_valueType = Diligent::VALUE_TYPE::VT_UNDEFINED;
+    uint8_t m_valuesCount = 0;
+
   public:
     enum BufferType { Unknown = 0, VertexBuffer, IndexBuffer, StructuredBuffer, ConstantBuffer };
 
@@ -352,7 +355,7 @@ class Buffer : public Resource
     Diligent::IBufferView* GetUnorderedAccessView();
     Diligent::IBufferView* GetShaderResourceView();
 
-	void SetBufferFormat(Diligent::VALUE_TYPE ValueType);
+    void SetBufferFormat(Diligent::VALUE_TYPE ValueType, uint8_t valuesCount = 1);
 
     // Bind the buffer for rendering.
     virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
@@ -935,17 +938,31 @@ class Scene : public Object
     virtual void Accept(Visitor& visitor, Pipeline* pipeline);
 
     //////////////////////////////////////////////////////////////////////////
-    static std::shared_ptr<Buffer> CreateFloatVertexBuffer(Diligent::IRenderDevice* device,
+    static std::shared_ptr<Buffer> CreateVertexBufferFloat(Diligent::IRenderDevice* device,
                                                            float* data, uint32_t count,
-                                                           uint32_t stride);
-    static std::shared_ptr<Buffer> CreateUIntIndexBuffer(Diligent::IRenderDevice* device,
-                                                         uint32_t* data, uint32_t sizeInBytes);
+                                                           uint32_t stride,
+                                                           uint8_t componentsCount = 0);
+
+    static std::shared_ptr<Buffer> CreateIndexBufferUInt(Diligent::IRenderDevice* device,
+                                                         uint32_t* data, uint32_t sizeInBytes,
+                                                         bool bSRV = false);
 
     static std::shared_ptr<Buffer> CreateFormatBuffer(Diligent::IRenderDevice* device, void* data,
                                                       Diligent::VALUE_TYPE ValueType,
                                                       uint32_t count, uint32_t stride,
                                                       bool bSRV = false, bool bGPUWrite = false);
 
+    static std::shared_ptr<Buffer> CreateIndirectBuffer(Diligent::IRenderDevice* device,
+                                                        uint32_t count);
+
+    static std::shared_ptr<Buffer> CreateDynamicVertexBuffer(Diligent::IRenderDevice* device,
+                                                             uint32_t count, uint32_t stride,
+                                                             Diligent::VALUE_TYPE ValueType,
+                                                             uint8_t valuesCount);
+
+    static std::shared_ptr<Buffer>
+        CreateDynamicIndexBuffer(Diligent::IRenderDevice* device, uint32_t count,
+                                 Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_UINT32);
 
     static std::shared_ptr<Texture> CreateTexture2D(uint16_t width, uint16_t height,
                                                     uint16_t slices,

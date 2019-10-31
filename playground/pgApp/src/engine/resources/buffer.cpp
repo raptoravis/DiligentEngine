@@ -40,9 +40,10 @@ Buffer::BufferType Buffer::GetType() const
     return Buffer::Unknown;
 }
 
-void Buffer::SetBufferFormat(Diligent::VALUE_TYPE ValueType)
+void Buffer::SetBufferFormat(Diligent::VALUE_TYPE ValueType, uint8_t valuesCount)
 {
     m_valueType = ValueType;
+    m_valuesCount = valuesCount;
 }
 
 Diligent::IBufferView* Buffer::GetUnorderedAccessView()
@@ -51,7 +52,8 @@ Diligent::IBufferView* Buffer::GetUnorderedAccessView()
         Diligent::BufferViewDesc ViewDesc;
         ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
         ViewDesc.Format.ValueType = m_valueType;
-        ViewDesc.Format.NumComponents = 1;
+
+        ViewDesc.Format.NumComponents = m_valuesCount;
 
         Diligent::IBufferView* uav = 0;
         m_pBuffer->CreateView(ViewDesc, &uav);
@@ -71,7 +73,8 @@ Diligent::IBufferView* Buffer::GetShaderResourceView()
         Diligent::BufferViewDesc ViewDesc;
         ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
         ViewDesc.Format.ValueType = m_valueType;
-        ViewDesc.Format.NumComponents = 1;
+
+        ViewDesc.Format.NumComponents = m_valuesCount;
 
         Diligent::IBufferView* srv = 0;
         m_pBuffer->CreateView(ViewDesc, &srv);

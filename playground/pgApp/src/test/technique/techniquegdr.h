@@ -47,10 +47,10 @@ class TechniqueGdr : public ade::Technique
     uint32_t m_noofHiZMips;
     std::shared_ptr<ade::Buffer> m_drawcallInstanceCounts;
     std::shared_ptr<ade::Buffer> m_instancePredicates;
-    std::shared_ptr<ade::StructuredBuffer> m_instanceBoundingBoxes;
-    std::shared_ptr<ade::StructuredBuffer> m_instanceBuffer;
-    std::shared_ptr<ade::StructuredBuffer> m_culledInstanceBuffer;
-    std::shared_ptr<ade::StructuredBuffer> m_indirectBuffer;
+    std::shared_ptr<ade::Buffer> m_instanceBoundingBoxes;
+    std::shared_ptr<ade::Buffer> m_instanceBuffer;
+    std::shared_ptr<ade::Buffer> m_culledInstanceBuffer;
+    std::shared_ptr<ade::Buffer> m_indirectBuffer;
 
     std::shared_ptr<ade::Shader> m_programOccludeProps;
     std::shared_ptr<ade::Shader> m_programStreamCompaction;
