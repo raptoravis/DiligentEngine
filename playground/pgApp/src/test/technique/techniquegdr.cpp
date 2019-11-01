@@ -493,7 +493,7 @@ static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount
 
     SetIndexBuffer(pIndexBuffer);
 
-	auto buffer = pIndirectBuffer->GetBuffer();
+    auto buffer = pIndirectBuffer->GetBuffer();
 
     App::s_ctx->MultiDrawIndexedInstancedIndirect(numOfProps, buffer, 0,
                                                   CONFIG_DRAW_INDIRECT_STRIDE);
@@ -836,14 +836,14 @@ void TechniqueGdr::renderMainPass()
         // Attribute 0 - vertex position
         LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
 
-        LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-                       sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-                       sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-                       sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
-                       sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
+        LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
+                       LayoutElement::FREQUENCY_PER_INSTANCE },
     };
 
     m_pipelineMainPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
@@ -882,7 +882,9 @@ void TechniqueGdr::renderMainPass()
                 if (prop.m_renderPass & RenderPass::MainPass) {
                     uint32_t numInstances = prop.m_noofInstances;
 
-                    {
+                    std::shared_ptr<Buffer> instanceBuffer = prop.m_instancebufferHandle;
+
+                    if (!instanceBuffer) {
                         InstanceData* pData = new InstanceData[numInstances];
                         InstanceData* data = pData;
 
@@ -895,23 +897,25 @@ void TechniqueGdr::renderMainPass()
                             data++;
                         }
 
-                        std::shared_ptr<Buffer> instanceBuffer = Scene::CreateVertexBufferFloat(
-                            App::s_device, (float*)data, numInstances, instanceStride);
+                        instanceBuffer = Scene::CreateVertexBufferFloat(
+                            App::s_device, (float*)pData, numInstances, instanceStride);
                         delete pData;
 
+                        prop.m_instancebufferHandle = instanceBuffer;
+                    }
+
+                    // Set vertex and index buffer.
+                    std::shared_ptr<Buffer> vertexBuffer = prop.m_vertexbufferHandle;
+                    std::shared_ptr<Buffer> indexBuffer = prop.m_indexbufferHandle;
+
+                    {
                         // Set vertex and index buffer.
-                        std::shared_ptr<Buffer> vertexBuffer = prop.m_vertexbufferHandle;
-                        std::shared_ptr<Buffer> indexBuffer = prop.m_indexbufferHandle;
+                        SetVertexBuffer(0, vertexBuffer);
 
-                        {
-                            // Set vertex and index buffer.
-                            SetVertexBuffer(0, vertexBuffer);
+                        // Set instance data buffer.
+                        SetInstanceBuffer(1, instanceBuffer);
 
-                            // Set instance data buffer.
-                            SetInstanceBuffer(1, instanceBuffer);
-
-                            Submit(indexBuffer, numInstances);
-                        }
+                        Submit(indexBuffer, numInstances);
                     }
                 }
             }

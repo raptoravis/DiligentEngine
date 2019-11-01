@@ -34,6 +34,7 @@ struct Prop {
 
     std::shared_ptr<ade::Buffer> m_vertexbufferHandle;
     std::shared_ptr<ade::Buffer> m_indexbufferHandle;
+    std::shared_ptr<ade::Buffer> m_instancebufferHandle;
 
     uint16_t m_noofVertices;
     uint16_t m_noofIndices;
