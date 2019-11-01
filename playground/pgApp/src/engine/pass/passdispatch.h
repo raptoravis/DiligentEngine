@@ -13,7 +13,6 @@ class PassDispatch : public PassPilpeline
 {
     typedef PassPilpeline base;
 
-	bool m_bTransitionResources;
   public:
     PassDispatch(Technique* parentTechnique, std::shared_ptr<PipelineDispatch> pipeline);
     virtual ~PassDispatch();
@@ -23,6 +22,5 @@ class PassDispatch : public PassPilpeline
     virtual void PreRender();
     virtual void Render(Pipeline* pipeline);
 
-	void SetTransitionResources(bool bTransitionResources);
 };
 }    // namespace ade

@@ -989,6 +989,7 @@ class Pipeline : public Object
 
     std::shared_ptr<RenderTarget> m_pRenderTarget;
     bool m_bDirty;
+    bool m_bCheckSRVUAV;
 
     virtual void InitPSODesc();
 
@@ -1028,7 +1029,7 @@ class Pipeline : public Object
     // void SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat, Diligent::TEXTURE_FORMAT
     // DSFormat);
 
-    void TransitionShaderResources();
+	void SetCheckSRVUAV(bool bCheckSRVUAV);
 
     virtual void Bind();
     virtual void UnBind();

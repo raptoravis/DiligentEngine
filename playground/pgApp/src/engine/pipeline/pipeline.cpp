@@ -6,7 +6,8 @@ namespace ade
 {
 
 Pipeline::Pipeline(std::shared_ptr<RenderTarget> rt)
-    : m_pRenderTarget(rt), m_bDirty(true), m_pLayoutElements(nullptr), m_LayoutElements(0)
+    : m_pRenderTarget(rt), m_bDirty(true), m_bCheckSRVUAV(true), m_pLayoutElements(nullptr),
+      m_LayoutElements(0)
 {
     // virtual function can not be called in the constructor
     // InitPSODesc();
@@ -38,7 +39,7 @@ void Pipeline::InitPSODesc()
     m_PSODesc.GraphicsPipeline.RTVFormats[0] = color0Format;
     // Set depth buffer format which is the format of the swap chain's back buffer
     m_PSODesc.GraphicsPipeline.DSVFormat = dsFormat;
-	
+
     // Set render target format which is the format of the swap chain's color buffer
     // Primitive topology defines what kind of primitives will be rendered by this pipeline state
     m_PSODesc.GraphicsPipeline.PrimitiveTopology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -174,7 +175,7 @@ std::shared_ptr<RenderTarget> Pipeline::GetRenderTarget() const
     return m_pRenderTarget;
 }
 
-//void Pipeline::SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat,
+// void Pipeline::SetRenderTargetFormat(Diligent::TEXTURE_FORMAT RTFormat,
 //                                   Diligent::TEXTURE_FORMAT DSFormat)
 //{
 //    if (!m_bInited) {
@@ -186,6 +187,11 @@ std::shared_ptr<RenderTarget> Pipeline::GetRenderTarget() const
 //    // Set depth buffer format which is the format of the swap chain's back buffer
 //    m_PSODesc.GraphicsPipeline.DSVFormat = DSFormat;
 //}
+
+void Pipeline::SetCheckSRVUAV(bool bCheckSRVUAV)
+{
+    m_bCheckSRVUAV = bCheckSRVUAV;
+}
 
 void Pipeline::Bind()
 {
@@ -235,14 +241,14 @@ void Pipeline::Bind()
     Diligent::RESOURCE_STATE_TRANSITION_MODE transitionMode =
         Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
 
-	bool bCheckUAVSRV = true;
-    if (m_Shaders.size() == 1) {
-        auto it = m_Shaders.begin();
-        auto shader = it->second;
-        if (shader->GetType() == Shader::ComputeShader) {
-            bCheckUAVSRV = false;
-        }
-    }
+    bool bCheckUAVSRV = m_bCheckSRVUAV;
+    //if (m_Shaders.size() == 1) {
+    //    auto it = m_Shaders.begin();
+    //    auto shader = it->second;
+    //    if (shader->GetType() == Shader::ComputeShader) {
+    //        bCheckUAVSRV = false;
+    //    }
+    //}
 
     // Commit shader resources. RESOURCE_STATE_TRANSITION_MODE_TRANSITION mode
     // makes sure that resources are transitioned to required states.
@@ -261,11 +267,6 @@ void Pipeline::UnBind()
     //        pShader->UnBind();
     //    }
     //}
-}
-
-void Pipeline::TransitionShaderResources()
-{
-    App::s_ctx->TransitionShaderResources(m_pPSO, m_pSRB);
 }
 
 void Pipeline::SetStaticVariables()

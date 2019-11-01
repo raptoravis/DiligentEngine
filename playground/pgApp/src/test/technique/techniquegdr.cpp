@@ -651,6 +651,7 @@ void TechniqueGdr::renderDownscalePass()
                 loadProgram("cs_gdr_downscale_hi_z.sh", ade::Shader::ComputeShader);
 
             dispatchPipeline->SetShader(Shader::ComputeShader, programDownscaleHiZ);
+            dispatchPipeline->SetCheckSRVUAV(false);
 
             programDownscaleHiZ->GetShaderParameterByName("InputRTSize").Set(inputRTSize);
 
@@ -667,7 +668,6 @@ void TechniqueGdr::renderDownscalePass()
 
             std::shared_ptr<PassDispatch> dispatchPass =
                 std::make_shared<PassDispatch>(this, dispatchPipeline);
-            // dispatchPass->SetTransitionResources(true);
 
             AddPass(dispatchPass);
         }
