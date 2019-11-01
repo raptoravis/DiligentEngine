@@ -374,9 +374,8 @@ std::shared_ptr<Buffer> Scene::CreateFormatBuffer(Diligent::IRenderDevice* devic
     return buffer;
 }
 
-std::shared_ptr<Buffer> Scene::CreateDynamicVertexBuffer(Diligent::IRenderDevice* device,
-                                                         uint32_t count, uint32_t strideElement,
-                                                         Diligent::VALUE_TYPE ValueType,
+std::shared_ptr<Buffer> Scene::CreateDynamicVertexBufferFloat(Diligent::IRenderDevice* device,
+                                                         uint32_t count, uint32_t stride,
                                                          uint8_t valuesCount)
 {
     // Create a vertex buffer that stores cube vertices
@@ -386,7 +385,6 @@ std::shared_ptr<Buffer> Scene::CreateDynamicVertexBuffer(Diligent::IRenderDevice
     VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 
     uint32_t strideComponent = sizeof(float);
-    CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_FLOAT32, "unsupported dynamic vertex format");
 
     VertBuffDesc.ElementByteStride = strideComponent * valuesCount;
 
@@ -394,7 +392,7 @@ std::shared_ptr<Buffer> Scene::CreateDynamicVertexBuffer(Diligent::IRenderDevice
     VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
                              Diligent::BIND_UNORDERED_ACCESS;
 
-    const uint32_t size = count * strideElement;
+    const uint32_t size = count * stride;
 
     VertBuffDesc.uiSizeInBytes = size;
 
@@ -403,7 +401,8 @@ std::shared_ptr<Buffer> Scene::CreateDynamicVertexBuffer(Diligent::IRenderDevice
     device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
 
     uint32_t num = count;
-    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(strideElement, num, pBuffer);
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, num, pBuffer);
+    Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_FLOAT32;
     buffer->SetBufferFormat(ValueType, valuesCount);
 
     return buffer;

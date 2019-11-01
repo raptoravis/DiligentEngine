@@ -363,16 +363,16 @@ void TechniqueGdr::createHiZBuffers()
 
         // pre occlusion buffer
         m_instanceBuffer = ade::Scene::CreateVertexBufferFloat(
-            ade::App::s_device, instanceData, m_pSceneGdr->m_totalInstancesCount,
+            ade::App::s_device, instanceData, 4 * m_pSceneGdr->m_totalInstancesCount,
             (uint32_t)sizeof(Diligent::float4), 4);
 
         // post occlusion buffer
         // m_culledInstanceBuffer = std::make_shared<ade::StructuredBuffer>(
         //    nullptr, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
         //    CPUAccess::None, true);
-        m_culledInstanceBuffer = ade::Scene::CreateDynamicVertexBuffer(
-            ade::App::s_device, /*4 * */ m_pSceneGdr->m_totalInstancesCount,
-            (uint32_t)sizeof(Diligent::float4x4), Diligent::VALUE_TYPE::VT_FLOAT32, 4);
+        m_culledInstanceBuffer = ade::Scene::CreateDynamicVertexBufferFloat(
+            ade::App::s_device, 4 * m_pSceneGdr->m_totalInstancesCount,
+            (uint32_t)sizeof(Diligent::float4), 4);
     }
 
     // we use one "drawcall" per prop to render all its instances

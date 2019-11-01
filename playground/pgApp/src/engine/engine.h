@@ -960,9 +960,8 @@ class Scene : public Object
     static std::shared_ptr<Buffer> CreateIndirectBuffer(Diligent::IRenderDevice* device,
                                                         uint32_t count);
 
-    static std::shared_ptr<Buffer> CreateDynamicVertexBuffer(Diligent::IRenderDevice* device,
-                                                             uint32_t count, uint32_t strideElement,
-                                                             Diligent::VALUE_TYPE ValueType,
+    static std::shared_ptr<Buffer> CreateDynamicVertexBufferFloat(Diligent::IRenderDevice* device,
+                                                             uint32_t count, uint32_t stride,
                                                              uint8_t valuesCount);
 
     static std::shared_ptr<Buffer>
