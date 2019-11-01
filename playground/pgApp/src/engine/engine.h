@@ -40,6 +40,11 @@
 // Report an error message and throw an std::exception.
 #define ReportError(msg) ade::ReportErrorAndThrow(__FILE__, __LINE__, __FUNCTION__, (msg))
 
+#define ADE_ALIGN_MASK(_value, _mask) (((_value) + (_mask)) & ((~0) & (~(_mask))))
+#define ADE_ALIGN_16(_value) ADE_ALIGN_MASK(_value, 0xf)
+#define ADE_ALIGN_256(_value) ADE_ALIGN_MASK(_value, 0xff)
+#define ADE_ALIGN_4096(_value) ADE_ALIGN_MASK(_value, 0xfff)
+
 namespace ade
 {
 // Report an error to the Debug output in Visual Studio, display a message box with the error
@@ -956,7 +961,7 @@ class Scene : public Object
                                                         uint32_t count);
 
     static std::shared_ptr<Buffer> CreateDynamicVertexBuffer(Diligent::IRenderDevice* device,
-                                                             uint32_t count, uint32_t stride,
+                                                             uint32_t count, uint32_t strideElement,
                                                              Diligent::VALUE_TYPE ValueType,
                                                              uint8_t valuesCount);
 
