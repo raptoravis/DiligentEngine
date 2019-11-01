@@ -216,7 +216,10 @@ void TechniqueGdr::Update()
 {
     ImGui::Separator();
 
+    ImGui::Checkbox("direct", &m_bDirect);
+
     bool bDebug = m_bDebug;
+
     ImGui::Checkbox("debug", &m_bDebug);
     ImGui::Separator();
 
@@ -921,7 +924,11 @@ void TechniqueGdr::renderMainPass()
             }
         }
 
-        m_firstFrame = false;
+        if (!m_bDirect) {
+            m_firstFrame = false;
+        } else {
+            m_firstFrame = true;
+        }
     }));
 }
 

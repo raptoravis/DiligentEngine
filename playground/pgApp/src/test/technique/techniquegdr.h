@@ -78,6 +78,7 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Pipeline> m_pipelineOccusionPass;
     std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
 
+    bool m_bDirect = false;
     bool m_bDebug = false;
 
     std::vector<std::shared_ptr<ade::Texture>> m_hizTexMips;
