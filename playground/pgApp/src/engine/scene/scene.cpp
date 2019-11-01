@@ -450,13 +450,16 @@ std::shared_ptr<Buffer> Scene::CreateIndirectBuffer(Diligent::IRenderDevice* dev
     VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
                              Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_INDIRECT_DRAW_ARGS;
 
-    VertBuffDesc.uiSizeInBytes = stride * count;
+	const uint32_t CONFIG_DRAW_INDIRECT_STRIDE = 32;
+
+    VertBuffDesc.uiSizeInBytes = CONFIG_DRAW_INDIRECT_STRIDE * count;
 
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
     device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
 
-    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+	uint32_t num = VertBuffDesc.uiSizeInBytes / stride;
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, num, pBuffer);
     buffer->SetBufferFormat(Diligent::VALUE_TYPE::VT_UINT32, 4);
 
     return buffer;
