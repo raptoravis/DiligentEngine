@@ -5,7 +5,7 @@
 Buffer<uint>  drawcallConstData : register( t0 );
 
 //instance data for all instances (pre culling)
-Buffer<float>  instanceDataIn : register( t1 );
+Buffer<float4>  instanceDataIn : register( t1 );
 
 //per instance visibility (output of culling pass)
 Buffer<uint>  instancePredicates : register( t2 );
