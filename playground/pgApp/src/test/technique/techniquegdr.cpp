@@ -371,7 +371,7 @@ void TechniqueGdr::createHiZBuffers()
         //    nullptr, m_pSceneGdr->m_totalInstancesCount, (uint32_t)sizeof(Diligent::float4),
         //    CPUAccess::None, true);
         m_culledInstanceBuffer = ade::Scene::CreateDynamicVertexBuffer(
-            ade::App::s_device, /*4 * */m_pSceneGdr->m_totalInstancesCount,
+            ade::App::s_device, /*4 * */ m_pSceneGdr->m_totalInstancesCount,
             (uint32_t)sizeof(Diligent::float4x4), Diligent::VALUE_TYPE::VT_FLOAT32, 4);
     }
 
@@ -808,15 +808,9 @@ void TechniqueGdr::renderOccludePropsPass()
     }
 }
 
-// render the unoccluded props to the screen
-void TechniqueGdr::renderMainPass()
+std::shared_ptr<ade::Pipeline>
+    TechniqueGdr::createMainPassPipeline(std::shared_ptr<ade::RenderTarget> renderTarget)
 {
-    // std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
-    // auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
-    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
-    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
-    std::shared_ptr<ade::RenderTarget> renderTarget = m_pRenderTarget;
-
     std::shared_ptr<Shader> vs = std::make_shared<ade::Shader>();
     vs->LoadShaderFromFile(ade::Shader::Shader::VertexShader,
                            "vs_gdr_instanced_indirect_rendering.sh", "main", "./gdr", false);
@@ -829,27 +823,60 @@ void TechniqueGdr::renderMainPass()
     ps->GetShaderParameterByName("MaterialColors").Set(u_color);
 
 
-    m_pipelineMainPass = std::make_shared<Pipeline>(renderTarget);
+    std::shared_ptr<ade::Pipeline> pipelineMainPass = std::make_shared<Pipeline>(renderTarget);
 
-    m_pipelineMainPass->SetShader(Shader::VertexShader, vs);
-    m_pipelineMainPass->SetShader(Shader::PixelShader, ps);
+    pipelineMainPass->SetShader(Shader::VertexShader, vs);
+    pipelineMainPass->SetShader(Shader::PixelShader, ps);
 
+    return pipelineMainPass;
+}
 
-    LayoutElement LayoutElems[] = {
-        // Attribute 0 - vertex position
-        LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
+// render the unoccluded props to the screen
+void TechniqueGdr::renderMainPass()
+{
+    // std::shared_ptr<ade::RenderTarget> renderTarget = std::make_shared<ade::RenderTarget>();
+    // auto color0 = m_pRenderTarget->GetTexture(RenderTarget::AttachmentPoint::Color0);
+    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::Color0, color0);
+    // renderTarget->AttachTexture(RenderTarget::AttachmentPoint::DepthStencil, m_hiZDepthBuffer);
+    std::shared_ptr<ade::RenderTarget> renderTarget = m_pRenderTarget;
+    m_pipelineMainPassDirect = createMainPassPipeline(renderTarget);
 
-        LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
-                       LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
-                       LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
-                       LayoutElement::FREQUENCY_PER_INSTANCE },
-        LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset, sizeof(InstanceData),
-                       LayoutElement::FREQUENCY_PER_INSTANCE },
-    };
+    {
+        LayoutElement LayoutElems[] = {
+            // Attribute 0 - vertex position
+            LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
 
-    m_pipelineMainPass->SetInputLayout(LayoutElems, _countof(LayoutElems));
+            LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(InstanceData), LayoutElement::FREQUENCY_PER_INSTANCE },
+        };
+
+        m_pipelineMainPassDirect->SetInputLayout(LayoutElems, _countof(LayoutElems));
+    }
+
+    m_pipelineMainPassIndirect = createMainPassPipeline(renderTarget);
+    {
+        LayoutElement LayoutElems[] = {
+            // Attribute 0 - vertex position
+            LayoutElement{ 0, 0, 3, VT_FLOAT32, False },
+
+            LayoutElement{ 1, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 2, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 3, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
+            LayoutElement{ 4, 1, 4, VT_FLOAT32, False, LayoutElement::AutoOffset,
+                           sizeof(Diligent::float4x4), LayoutElement::FREQUENCY_PER_INSTANCE },
+        };
+
+        m_pipelineMainPassIndirect->SetInputLayout(LayoutElems, _countof(LayoutElems));
+    }
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
         const uint16_t instanceStride = sizeof(InstanceData);
@@ -864,11 +891,11 @@ void TechniqueGdr::renderMainPass()
         Diligent::float4x4 viewProj = m_mainView * projMat;
         u_viewProj->Set(viewProj);
 
-        m_pipelineMainPass->Bind();
-
         // We can't use indirect drawing for the first frame because the content of
         // m_drawcallInstanceCounts is initially undefined.
         if (m_useIndirect && !m_firstFrame) {
+            m_pipelineMainPassIndirect->Bind();
+
             // Set vertex and instance buffer.
             SetVertexBuffer(0, m_allPropsVertexbufferHandle);
 
@@ -878,6 +905,8 @@ void TechniqueGdr::renderMainPass()
             Submit(m_allPropsIndexbufferHandle, m_pSceneGdr->m_totalInstancesCount,
                    m_indirectBuffer, m_pSceneGdr->m_noofProps);
         } else {
+            m_pipelineMainPassDirect->Bind();
+
             // render all props using regular instancing
             for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
                 Prop& prop = m_pSceneGdr->m_props[ii];

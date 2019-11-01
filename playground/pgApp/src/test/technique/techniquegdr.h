@@ -76,7 +76,8 @@ class TechniqueGdr : public ade::Technique
     Diligent::float4x4 m_mainView;
 
     std::shared_ptr<ade::Pipeline> m_pipelineOccusionPass;
-    std::shared_ptr<ade::Pipeline> m_pipelineMainPass;
+    std::shared_ptr<ade::Pipeline> m_pipelineMainPassDirect;
+    std::shared_ptr<ade::Pipeline> m_pipelineMainPassIndirect;
 
     bool m_bDirect = false;
     bool m_bDebug = false;
@@ -91,6 +92,9 @@ class TechniqueGdr : public ade::Technique
     void renderOccludePropsPass();
 
     void renderMainPass();
+
+    std::shared_ptr<ade::Pipeline>
+        TechniqueGdr::createMainPassPipeline(std::shared_ptr<ade::RenderTarget> renderTarget);
 
     void initDebug();
     void initGdr();
