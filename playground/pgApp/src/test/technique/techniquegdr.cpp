@@ -1,3 +1,7 @@
+#include <d3d11.h>
+#undef max
+#undef min
+
 #include "techniquegdr.h"
 
 #include "engine/pass/passclearrt.h"
@@ -16,17 +20,21 @@
 
 #include "../scene/scenegdr.h"
 
-
 using namespace ade;
 
 static const uint16_t s_maxNoofProps = 10;
 static const uint16_t s_maxNoofInstances = 2048;
 
-#define RENDER_PASS_HIZ_ID 0
-#define RENDER_PASS_HIZ_DOWNSCALE_ID 1
-#define RENDER_PASS_OCCLUDE_PROPS_ID 2
-#define RENDER_PASS_COMPACT_STREAM_ID 3
-#define RENDER_PASS_MAIN_ID 4
+// typedef void (*MultiDrawIndirectFn)(uint32_t _numDrawIndirect, ID3D11Buffer* _ptr, uint32_t
+// _offset,
+//                                    uint32_t _stride);
+// static MultiDrawIndirectFn multiDrawInstancedIndirect;
+// static MultiDrawIndirectFn multiDrawIndexedInstancedIndirect;
+//
+// void nvapiMultiDrawInstancedIndirect(uint32_t _numDrawIndirect, ID3D11Buffer* _ptr,
+//                                     uint32_t _offset, uint32_t _stride);
+// void nvapiMultiDrawIndexedInstancedIndirect(uint32_t _numDrawIndirect, ID3D11Buffer* _ptr,
+//                                            uint32_t _offset, uint32_t _stride);
 
 uint8_t calcNumMips(uint32_t _width, uint32_t _height, uint32_t _depth = 1)
 {
@@ -479,19 +487,16 @@ static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount
 
 
 static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount,
-                   std::shared_ptr<Buffer> indirectBuffer, uint32_t numOfProps)
+                   std::shared_ptr<Buffer> pIndirectBuffer, uint32_t numOfProps)
 {
+    const uint32_t CONFIG_DRAW_INDIRECT_STRIDE = 32;
+
     SetIndexBuffer(pIndexBuffer);
 
-    {
-        DrawIndexedIndirectAttribs DrawAttrs;
-        DrawAttrs.IndexType = VT_UINT32;    // Index type
-        // Verify the state of vertex and index buffers
-        DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
+	auto buffer = pIndirectBuffer->GetBuffer();
 
-		auto indBuf = indirectBuffer->GetBuffer();
-        App::s_ctx->DrawIndexedIndirect(DrawAttrs, indBuf);
-    }
+    App::s_ctx->MultiDrawIndexedInstancedIndirect(numOfProps, buffer, 0,
+                                                  CONFIG_DRAW_INDIRECT_STRIDE);
 }
 
 
