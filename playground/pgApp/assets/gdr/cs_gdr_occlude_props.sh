@@ -1,7 +1,8 @@
 
 #include "gdr_common.sh"
 
-Texture2D s_texOcclusionDepth : register( t0 );
+Texture2D t_texOcclusionDepth : register( t0 );
+sampler t_texOcclusionDepth_sampler : register( s0 );
 
 Buffer<float4>  instanceDataIn : register( t1 );
 
@@ -39,6 +40,7 @@ void main(ComputeShaderInput IN)
 		float2 minXY = float2(1.0, 1.0);
 		float2 maxXY = float2(0.0, 0.0);
 
+		[unroll]
 		for (int i = 0; i < 8; i++)
 		{
 			//transform World space aaBox to NDC
@@ -86,10 +88,10 @@ void main(ComputeShaderInput IN)
 		//load depths from high z buffer
 		float4 depth =
 		{
-			s_texOcclusionDepth.Load(uint3(boxUVs.xy, mip)).x,
-			s_texOcclusionDepth.Load(uint3(boxUVs.zy, mip)).x,
-			s_texOcclusionDepth.Load(uint3(boxUVs.xw, mip)).x,
-			s_texOcclusionDepth.Load(uint3(boxUVs.zw, mip)).x,
+			t_texOcclusionDepth.SampleLevel(t_texOcclusionDepth_sampler, boxUVs.xy, mip).x,
+			t_texOcclusionDepth.SampleLevel(t_texOcclusionDepth_sampler, boxUVs.zy, mip).x,
+			t_texOcclusionDepth.SampleLevel(t_texOcclusionDepth_sampler, boxUVs.xw, mip).x,
+			t_texOcclusionDepth.SampleLevel(t_texOcclusionDepth_sampler, boxUVs.zw, mip).x,
 		};
 
 		//find the max depth

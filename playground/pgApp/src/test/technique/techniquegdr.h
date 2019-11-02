@@ -33,7 +33,8 @@ class TechniqueGdr : public ade::Technique
 
     std::vector<std::shared_ptr<ade::ConstantBuffer>> u_inputRTSize;
     std::shared_ptr<ade::ConstantBuffer> u_cullingConfig;
-    std::shared_ptr<ade::SamplerState> s_texOcclusionDepth;
+
+    std::shared_ptr<ade::SamplerState> t_texOcclusionDepth_sampler;
 
     std::shared_ptr<SceneGdr> m_pSceneGdr;
     std::shared_ptr<ade::Pass> createPassGdr(std::shared_ptr<ade::Scene> scene);

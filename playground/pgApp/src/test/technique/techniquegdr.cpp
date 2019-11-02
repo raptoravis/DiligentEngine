@@ -292,15 +292,6 @@ void TechniqueGdr::createHiZBuffers()
     // u_inputRTSize = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
     u_cullingConfig = std::make_shared<ConstantBuffer>((uint32_t)sizeof(Diligent::float4));
 
-    // SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
-    //                                 FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
-    //                                 TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
-
-    // StaticSamplerDesc samplerDesc{ SHADER_TYPE_PIXEL, "s_texOcclusionDepth", linearRepeatSampler
-    // };
-
-    // s_texOcclusionDepth = std::make_shared<SamplerState>(samplerDesc);
-
     {
         // The compute shader will write how many unoccluded instances per drawcall there are here
         m_drawcallInstanceCounts = ade::Scene::CreateDynamicIndexBuffer(
@@ -639,7 +630,7 @@ void TechniqueGdr::renderDownscalePass()
         // hold it
         m_hizTexMips.push_back(texMip);
 
-        programCopyZ->GetShaderParameterByName("s_texOcclusionDepth").Set(m_hiZDepthBuffer);
+        programCopyZ->GetShaderParameterByName("t_texOcclusionDepth").Set(m_hiZDepthBuffer);
         programCopyZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(texMip);
 
         std::shared_ptr<PassDispatch> dispatchPass =
@@ -685,7 +676,7 @@ void TechniqueGdr::renderDownscalePass()
             m_hizTexMips.push_back(texLasMip);
             m_hizTexMips.push_back(texMip);
 
-            programDownscaleHiZ->GetShaderParameterByName("s_texOcclusionDepth").Set(texLasMip);
+            programDownscaleHiZ->GetShaderParameterByName("t_texOcclusionDepth").Set(texLasMip);
             programDownscaleHiZ->GetShaderParameterByName("u_texOcclusionDepthOut").Set(texMip);
 
             std::shared_ptr<PassDispatch> dispatchPass =
@@ -720,7 +711,10 @@ void TechniqueGdr::renderOccludePropsPass()
         numThreadGroups.z = 1;
 
         // Create programs from shaders for occlusion pass.
-        m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
+        //m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
+        m_programOccludeProps = std::make_shared<ade::Shader>();
+        m_programOccludeProps->LoadShaderFromFile(ade::Shader::ComputeShader,
+                                                  "cs_gdr_occlude_props.sh", "main", "./gdr", true);
 
         std::shared_ptr<ade::PipelineDispatch> dispatchPipeline =
             std::make_shared<ade::PipelineDispatch>(numThreadGroups);
@@ -728,14 +722,25 @@ void TechniqueGdr::renderOccludePropsPass()
         dispatchPipeline->SetShader(Shader::ComputeShader, m_programOccludeProps);
 
         m_programOccludeProps->GetShaderParameterByName("CBMatrix").Set(u_viewProj);
-        // run the computer shader to determine visibility of each instance
-        // bgfx::setTexture(0, s_texOcclusionDepth, bgfx::getTexture(m_hiZBuffer, 0));
 
-        // bgfx::setBuffer(1, m_instanceBoundingBoxes, bgfx::Access::Read);
-        // bgfx::setBuffer(2, m_drawcallInstanceCounts, bgfx::Access::ReadWrite);
-        // bgfx::setBuffer(3, m_instancePredicates, bgfx::Access::Write);
+        // run the computer shader to determine visibility of each instance
         auto hiZBuffer = m_hiZBuffer;
-        m_programOccludeProps->GetShaderParameterByName("s_texOcclusionDepth").Set(hiZBuffer);
+        m_programOccludeProps->GetShaderParameterByName("t_texOcclusionDepth").Set(hiZBuffer);
+
+        {
+            SamplerDesc linearClampSampler{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
+                                            FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
+                                            TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
+
+            StaticSamplerDesc linearRepeatSamplerDesc{ SHADER_TYPE_COMPUTE,
+                                                       "t_texOcclusionDepth",
+                                                       linearClampSampler };
+            t_texOcclusionDepth_sampler =
+                std::make_shared<ade::SamplerState>(linearRepeatSamplerDesc);
+            m_programOccludeProps->GetShaderParameterByName("t_texOcclusionDepth_sampler")
+                .Set(t_texOcclusionDepth_sampler);
+        }
+
         m_programOccludeProps->GetShaderParameterByName("instanceDataIn")
             .Set(m_instanceBoundingBoxes);
         m_programOccludeProps->GetShaderParameterByName("drawcallInstanceCount")
