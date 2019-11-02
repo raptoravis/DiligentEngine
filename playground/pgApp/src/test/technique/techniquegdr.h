@@ -63,7 +63,9 @@ class TechniqueGdr : public ade::Technique
     uint32_t* m_allPropIndicesDataCPU;
     uint32_t* m_indirectBufferDataCPU;
 
+    bool m_bDebug;
     bool m_useIndirect;
+    bool m_useMultiDraw;
     bool m_firstFrame;
 
     std::shared_ptr<ade::Buffer> m_allPropsVertexbufferHandle;
@@ -80,9 +82,6 @@ class TechniqueGdr : public ade::Technique
     std::shared_ptr<ade::Pipeline> m_pipelineMainPassDirect;
     std::shared_ptr<ade::Pipeline> m_pipelineMainPassIndirect;
 
-    bool m_bDirect = false;
-    bool m_bDebug = false;
-
     std::vector<std::shared_ptr<ade::Texture>> m_hizTexMips;
 
     // submit drawcalls for all passes
@@ -94,8 +93,14 @@ class TechniqueGdr : public ade::Technique
 
     void renderMainPass();
 
+    void drawDirect();
+
     std::shared_ptr<ade::Pipeline>
         TechniqueGdr::createMainPassPipeline(std::shared_ptr<ade::RenderTarget> renderTarget);
+
+    void Submit(std::shared_ptr<ade::Buffer> pIndexBuffer, uint32_t instancesCount);
+    void Submit(std::shared_ptr<ade::Buffer> pIndexBuffer, uint32_t instancesCount,
+                std::shared_ptr<ade::Buffer> pIndirectBuffer, uint32_t numOfProps);
 
     void initDebug();
     void initGdr();

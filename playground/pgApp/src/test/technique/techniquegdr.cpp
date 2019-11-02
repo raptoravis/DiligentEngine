@@ -47,7 +47,8 @@ uint8_t calcNumMips(uint32_t _width, uint32_t _height, uint32_t _depth = 1)
 ITexture* CreateTextureFromTextures(std::vector<std::shared_ptr<ade::Texture>> textures);
 
 TechniqueGdr::TechniqueGdr(std::shared_ptr<RenderTarget> rt, std::shared_ptr<Texture> backBuffer)
-    : base(rt, backBuffer)
+    : base(rt, backBuffer), m_bDebug(false), m_useIndirect(true), m_firstFrame(true),
+      m_useMultiDraw(false)
 {
     m_pSceneGdr = std::make_shared<SceneGdr>();
     m_pSceneGdr->create();
@@ -216,7 +217,10 @@ void TechniqueGdr::Update()
 {
     ImGui::Separator();
 
-    ImGui::Checkbox("direct", &m_bDirect);
+    ImGui::Checkbox("indirect", &m_useIndirect);
+    if (m_useIndirect) {
+        ImGui::Checkbox("use multidraw", &m_useMultiDraw);
+    }
 
     bool bDebug = m_bDebug;
 
@@ -461,7 +465,7 @@ static void SetInstanceBuffer(uint32_t slot, std::shared_ptr<Buffer> pBuffer)
     SetVertexBuffer(slot, pBuffer);
 }
 
-static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount)
+void TechniqueGdr::Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount)
 {
     SetIndexBuffer(pIndexBuffer);
 
@@ -480,17 +484,49 @@ static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount
 }
 
 
-static void Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount,
-                   std::shared_ptr<Buffer> pIndirectBuffer, uint32_t numOfProps)
+void TechniqueGdr::Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instancesCount,
+                          std::shared_ptr<Buffer> pIndirectBuffer, uint32_t numOfProps)
 {
     const uint32_t CONFIG_DRAW_INDIRECT_STRIDE = 32;
 
     SetIndexBuffer(pIndexBuffer);
 
-    auto buffer = pIndirectBuffer->GetBuffer();
+    if (m_useMultiDraw) {
+        auto buffer = pIndirectBuffer->GetBuffer();
 
-    App::s_ctx->MultiDrawIndexedInstancedIndirect(numOfProps, buffer, 0,
-                                                  CONFIG_DRAW_INDIRECT_STRIDE);
+        App::s_ctx->MultiDrawIndexedInstancedIndirect(numOfProps, buffer, 0,
+                                                      CONFIG_DRAW_INDIRECT_STRIDE);
+    } else {
+        auto pIndBuffer = pIndirectBuffer->GetBuffer();
+        uint32_t bufferSize = pIndirectBuffer->GetSize();
+
+        const uint32_t kINDIRECT_ARGS_LENGTH = CONFIG_DRAW_INDIRECT_STRIDE / sizeof(uint32_t);
+
+        // std::shared_ptr<Buffer> dstBuffer = std::make_shared<StructuredBuffer>(
+        //    nullptr, m_pSceneGdr->m_noofProps * kINDIRECT_ARGS_LENGTH, (uint32_t)sizeof(uint32_t),
+        //    CPUAccess::Read, false);
+
+        // App::s_ctx->CopyBuffer(pIndBuffer, 0,
+        //                       Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+        //                       dstBuffer->GetBuffer(), 0, bufferSize,
+        //                       Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+        // PVoid CpuAddress = nullptr;
+        // App::s_ctx->MapBuffer(dstBuffer->GetBuffer(), MAP_READ, MAP_FLAG_NONE, CpuAddress);
+        // uint32_t* pMultiDrawArgs = (uint32_t*)CpuAddress;
+        // App::s_ctx->UnmapBuffer(dstBuffer->GetBuffer(), MAP_READ);
+        uint32_t numOfUints = bufferSize / sizeof(uint32_t);
+
+        for (uint32_t i = 0; i < numOfUints; i += kINDIRECT_ARGS_LENGTH) {
+            DrawIndexedIndirectAttribs DrawAttrs;
+            DrawAttrs.IndexType = VT_UINT32;    // Index type
+            DrawAttrs.IndirectDrawArgsOffset = i * sizeof(uint32_t);
+            // Verify the state of vertex and index buffers
+            DrawAttrs.Flags = DRAW_FLAG_VERIFY_ALL;
+
+            App::s_ctx->DrawIndexedIndirect(DrawAttrs, pIndBuffer);
+        }
+    }
 }
 
 
@@ -711,7 +747,8 @@ void TechniqueGdr::renderOccludePropsPass()
         numThreadGroups.z = 1;
 
         // Create programs from shaders for occlusion pass.
-        //m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh", ade::Shader::ComputeShader);
+        // m_programOccludeProps = loadProgram("cs_gdr_occlude_props.sh",
+        // ade::Shader::ComputeShader);
         m_programOccludeProps = std::make_shared<ade::Shader>();
         m_programOccludeProps->LoadShaderFromFile(ade::Shader::ComputeShader,
                                                   "cs_gdr_occlude_props.sh", "main", "./gdr", true);
@@ -732,8 +769,7 @@ void TechniqueGdr::renderOccludePropsPass()
                                             FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
                                             TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
 
-            StaticSamplerDesc linearRepeatSamplerDesc{ SHADER_TYPE_COMPUTE,
-                                                       "t_texOcclusionDepth",
+            StaticSamplerDesc linearRepeatSamplerDesc{ SHADER_TYPE_COMPUTE, "t_texOcclusionDepth",
                                                        linearClampSampler };
             t_texOcclusionDepth_sampler =
                 std::make_shared<ade::SamplerState>(linearRepeatSamplerDesc);
@@ -884,8 +920,6 @@ void TechniqueGdr::renderMainPass()
     }
 
     AddPass(std::make_shared<PassInvokeFunction>(this, [=]() {
-        const uint16_t instanceStride = sizeof(InstanceData);
-
         // Set "material" data (currently a color only)
         u_color->Set(m_pSceneGdr->m_materials,
                      sizeof(m_pSceneGdr->m_materials[0]) * m_pSceneGdr->m_noofMaterials);
@@ -898,7 +932,7 @@ void TechniqueGdr::renderMainPass()
 
         // We can't use indirect drawing for the first frame because the content of
         // m_drawcallInstanceCounts is initially undefined.
-        if (m_useIndirect && !m_firstFrame) {
+        if (m_useIndirect /* && !m_firstFrame*/) {
             m_pipelineMainPassIndirect->Bind();
 
             // Set vertex and instance buffer.
@@ -912,58 +946,61 @@ void TechniqueGdr::renderMainPass()
         } else {
             m_pipelineMainPassDirect->Bind();
 
-            // render all props using regular instancing
-            for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
-                Prop& prop = m_pSceneGdr->m_props[ii];
+            drawDirect();
+        }
 
-                if (prop.m_renderPass & RenderPass::MainPass) {
-                    uint32_t numInstances = prop.m_noofInstances;
+        m_firstFrame = false;
+    }));
+}
 
-                    std::shared_ptr<Buffer> instanceBuffer = prop.m_instancebufferHandle;
+void TechniqueGdr::drawDirect()
+{
+    const uint16_t instanceStride = sizeof(InstanceData);
 
-                    if (!instanceBuffer) {
-                        InstanceData* pData = new InstanceData[numInstances];
-                        InstanceData* data = pData;
+    // render all props using regular instancing
+    for (uint16_t ii = 0; ii < m_pSceneGdr->m_noofProps; ++ii) {
+        Prop& prop = m_pSceneGdr->m_props[ii];
 
-                        for (uint32_t jj = 0; jj < numInstances; ++jj) {
-                            // copy world matrix
-                            ade::memCopy(&data->m_world, &prop.m_instances[jj].m_world,
-                                         sizeof(data->m_world));
-                            // pack the material ID into the world transform
-                            data->m_world._14 = float(prop.m_materialID);
-                            data++;
-                        }
+        if (prop.m_renderPass & RenderPass::MainPass) {
+            uint32_t numInstances = prop.m_noofInstances;
 
-                        instanceBuffer = Scene::CreateVertexBufferFloat(
-                            App::s_device, (float*)pData, numInstances, instanceStride);
-                        delete pData;
+            std::shared_ptr<Buffer> instanceBuffer = prop.m_instancebufferHandle;
 
-                        prop.m_instancebufferHandle = instanceBuffer;
-                    }
+            if (!instanceBuffer) {
+                InstanceData* pData = new InstanceData[numInstances];
+                InstanceData* data = pData;
 
-                    // Set vertex and index buffer.
-                    std::shared_ptr<Buffer> vertexBuffer = prop.m_vertexbufferHandle;
-                    std::shared_ptr<Buffer> indexBuffer = prop.m_indexbufferHandle;
-
-                    {
-                        // Set vertex and index buffer.
-                        SetVertexBuffer(0, vertexBuffer);
-
-                        // Set instance data buffer.
-                        SetInstanceBuffer(1, instanceBuffer);
-
-                        Submit(indexBuffer, numInstances);
-                    }
+                for (uint32_t jj = 0; jj < numInstances; ++jj) {
+                    // copy world matrix
+                    ade::memCopy(&data->m_world, &prop.m_instances[jj].m_world,
+                                 sizeof(data->m_world));
+                    // pack the material ID into the world transform
+                    data->m_world._14 = float(prop.m_materialID);
+                    data++;
                 }
+
+                instanceBuffer = Scene::CreateVertexBufferFloat(App::s_device, (float*)pData,
+                                                                numInstances, instanceStride);
+                delete pData;
+
+                prop.m_instancebufferHandle = instanceBuffer;
+            }
+
+            // Set vertex and index buffer.
+            std::shared_ptr<Buffer> vertexBuffer = prop.m_vertexbufferHandle;
+            std::shared_ptr<Buffer> indexBuffer = prop.m_indexbufferHandle;
+
+            {
+                // Set vertex and index buffer.
+                SetVertexBuffer(0, vertexBuffer);
+
+                // Set instance data buffer.
+                SetInstanceBuffer(1, instanceBuffer);
+
+                Submit(indexBuffer, numInstances);
             }
         }
-
-        if (!m_bDirect) {
-            m_firstFrame = false;
-        } else {
-            m_firstFrame = true;
-        }
-    }));
+    }
 }
 
 void TechniqueGdr::initGdr()
