@@ -32,6 +32,15 @@ IndexBuffer::IndexBuffer(const void* data, uint32_t count, uint32_t stride, bool
         CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_UINT32, "only uint32 is supported");
         uint8_t componentsCount = (uint8_t)stride / sizeof(uint32_t);
         SetBufferFormat(ValueType, componentsCount);
+    } else {
+        bool bDynamic = !data;
+        if (bDynamic) {
+            BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+            BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+        } else {
+            BuffDesc.Usage = Diligent::USAGE_STATIC;
+            //BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+        }
     }
 
     BuffDesc.BindFlags |= Diligent::BIND_INDEX_BUFFER;

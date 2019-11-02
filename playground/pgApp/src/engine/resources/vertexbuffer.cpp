@@ -29,14 +29,24 @@ VertexBuffer::VertexBuffer(const void* data, uint32_t count, uint32_t stride, bo
             }
         }
 
-		CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_FLOAT32, "only float is supported");
+        CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_FLOAT32, "only float is supported");
         uint8_t componentsCount = (uint8_t)stride / sizeof(float);
         SetBufferFormat(ValueType, componentsCount);
+
+        BuffDesc.ElementByteStride = stride;
+    } else {
+        bool bDynamic = !data;
+        if (bDynamic) {
+            BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+            BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+        } else {
+            BuffDesc.Usage = Diligent::USAGE_STATIC;
+            // BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+        }
     }
 
     BuffDesc.BindFlags |= Diligent::BIND_VERTEX_BUFFER;
 
-    BuffDesc.ElementByteStride = stride;
     BuffDesc.uiSizeInBytes = stride * count;
 
     Diligent::BufferData VBData;
