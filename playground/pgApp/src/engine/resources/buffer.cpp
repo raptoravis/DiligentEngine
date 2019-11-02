@@ -89,7 +89,7 @@ Diligent::IBufferView* Buffer::GetShaderResourceView()
 }
 
 // Bind the buffer for rendering.
-bool Buffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
+bool Buffer::Bind(uint32_t slot, Shader::ShaderType shaderType,
                   ShaderParameter::Type parameterType)
 {
     auto buffer = m_pBuffer;
@@ -106,7 +106,7 @@ bool Buffer::Bind(unsigned int slot, Shader::ShaderType shaderType,
 }
 
 // Unbind the buffer for rendering.
-void Buffer::UnBind(unsigned int id, Shader::ShaderType shaderType,
+void Buffer::UnBind(uint32_t id, Shader::ShaderType shaderType,
                     ShaderParameter::Type parameterType)
 {
     //

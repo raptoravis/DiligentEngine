@@ -18,18 +18,18 @@ Buffer::BufferType ConstantBuffer::GetType() const
     return Buffer::ConstantBuffer;
 }
 
-unsigned int ConstantBuffer::GetElementCount() const
+uint32_t ConstantBuffer::GetElementCount() const
 {
     return 1;
 }
 
-bool ConstantBuffer::Bind(unsigned int id, Shader::ShaderType shaderType,
+bool ConstantBuffer::Bind(uint32_t id, Shader::ShaderType shaderType,
                           ShaderParameter::Type parameterType)
 {
     return true;
 }
 
-void ConstantBuffer::UnBind(unsigned int id, Shader::ShaderType shaderType,
+void ConstantBuffer::UnBind(uint32_t id, Shader::ShaderType shaderType,
                             ShaderParameter::Type parameterType)
 {
     //

@@ -3,14 +3,14 @@
 namespace ade
 {
 
-StructuredBuffer::StructuredBuffer(const void* data, uint32_t count, uint32_t stride,
+IndexBuffer::IndexBuffer(const void* data, uint32_t count, uint32_t stride,
                                    CPUAccess cpuAccess, bool bUAV)
     : base(stride, count, nullptr)
 {
     Diligent::BufferDesc BuffDesc;
-    BuffDesc.Name = "StructuredBuffer";
+    BuffDesc.Name = "IndexBuffer";
 
-    BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+    BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 
     if ((cpuAccess & CPUAccess::Read) != 0) {
         BuffDesc.Usage = Diligent::USAGE_STAGING;
@@ -38,48 +38,35 @@ StructuredBuffer::StructuredBuffer(const void* data, uint32_t count, uint32_t st
     App::s_device->CreateBuffer(BuffDesc, &VBData, &m_pBuffer);
 }
 
-StructuredBuffer::~StructuredBuffer()
+IndexBuffer::~IndexBuffer()
 {
     //
 }
 
-bool StructuredBuffer::Bind(uint32_t ID, Shader::ShaderType shaderType,
+bool IndexBuffer::Bind(uint32_t ID, Shader::ShaderType shaderType,
                             ShaderParameter::Type parameterType)
 {
     return true;
 }
 
-void StructuredBuffer::UnBind(uint32_t ID, Shader::ShaderType shaderType,
+void IndexBuffer::UnBind(uint32_t ID, Shader::ShaderType shaderType,
                               ShaderParameter::Type parameterType)
 {
 }
 
-void StructuredBuffer::SetData(void* data, size_t elementSize, size_t offset, size_t numElements)
+void IndexBuffer::Copy(std::shared_ptr<IndexBuffer> other) {}
+
+Buffer::BufferType IndexBuffer::GetType() const
 {
-    struct dummy_t {
-        char m;
-    };
-
-    size_t size = elementSize * numElements;
-
-    Diligent::MapHelper<dummy_t> buffer(App::s_ctx, GetBuffer(), Diligent::MAP_WRITE,
-                                        Diligent::MAP_FLAG_DISCARD);
-    auto p = (&buffer->m + offset);
-    memcpy((char*)p, data, size);
+    return Buffer::IndexBuffer;
 }
 
-void StructuredBuffer::Copy(std::shared_ptr<StructuredBuffer> other) {}
-
-void StructuredBuffer::Clear() {}
-
-Buffer::BufferType StructuredBuffer::GetType() const
-{
-    return Buffer::StructuredBuffer;
-}
-
-uint32_t StructuredBuffer::GetElementCount() const
+uint32_t IndexBuffer::GetElementCount() const
 {
     return m_uiCount;
 }
+
+void IndexBuffer::Set(const void* data, size_t size) {}
+
 
 }    // namespace ade

@@ -250,9 +250,7 @@ std::shared_ptr<Buffer> Scene::CreateVertexBufferFloat(Diligent::IRenderDevice* 
         VertBuffDesc.ElementByteStride = stride;
         VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
         VertBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    }
-
-    {
+    } else {
         VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
     }
 
@@ -296,9 +294,7 @@ std::shared_ptr<Buffer> Scene::CreateIndexBufferUInt(Diligent::IRenderDevice* de
         IndBuffDesc.ElementByteStride = sizeof(uint32_t);
         IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
         IndBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    }
-
-    {
+    } else {
         IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
     }
 
@@ -375,8 +371,8 @@ std::shared_ptr<Buffer> Scene::CreateFormatBuffer(Diligent::IRenderDevice* devic
 }
 
 std::shared_ptr<Buffer> Scene::CreateDynamicVertexBufferFloat(Diligent::IRenderDevice* device,
-                                                         uint32_t count, uint32_t stride,
-                                                         uint8_t valuesCount)
+                                                              uint32_t count, uint32_t stride,
+                                                              uint8_t valuesCount)
 {
     // Create a vertex buffer that stores cube vertices
     Diligent::BufferDesc VertBuffDesc;
@@ -430,14 +426,14 @@ std::shared_ptr<Buffer> Scene::CreateDynamicIndexBuffer(Diligent::IRenderDevice*
     VertBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER | Diligent::BIND_SHADER_RESOURCE |
                              Diligent::BIND_UNORDERED_ACCESS;
 
-    //VertBuffDesc.uiSizeInBytes = ADE_ALIGN_16(stride * count);
+    // VertBuffDesc.uiSizeInBytes = ADE_ALIGN_16(stride * count);
     VertBuffDesc.uiSizeInBytes = stride * count;
 
     Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
     device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
 
-    //uint32_t num = VertBuffDesc.uiSizeInBytes / stride;
+    // uint32_t num = VertBuffDesc.uiSizeInBytes / stride;
     uint32_t num = count;
     std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, num, pBuffer);
     buffer->SetBufferFormat(ValueType, components);

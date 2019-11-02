@@ -182,7 +182,7 @@ class RenderEventArgs
 struct BufferBinding {
     BufferBinding() : Index(0) {}
 
-    BufferBinding(const std::string& name, unsigned int index) : Name(name), Index(index) {}
+    BufferBinding(const std::string& name, uint32_t index) : Name(name), Index(index) {}
 
     // Provide the < operator for STL containers.
     bool operator<(const BufferBinding& rhs) const
@@ -202,7 +202,7 @@ struct BufferBinding {
     }
 
     std::string Name;
-    unsigned int Index;
+    uint32_t Index;
 };
 
 
@@ -363,10 +363,10 @@ class Buffer : public Resource
     void SetBufferFormat(Diligent::VALUE_TYPE ValueType, uint8_t valuesCount = 1);
 
     // Bind the buffer for rendering.
-    virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
+    virtual bool Bind(uint32_t id, Shader::ShaderType shaderType,
                       ShaderParameter::Type parameterType);
     // Unbind the buffer for rendering.
-    virtual void UnBind(unsigned int id, Shader::ShaderType shaderType,
+    virtual void UnBind(uint32_t id, Shader::ShaderType shaderType,
                         ShaderParameter::Type parameterType);
 
     // Copy the contents of another buffer to this one.
@@ -376,7 +376,7 @@ class Buffer : public Resource
     // Is this an index buffer or an attribute/vertex buffer?
     BufferType GetType() const;
     // How many elements does this buffer contain?
-    unsigned int GetElementCount() const { return m_uiCount; }
+    uint32_t GetElementCount() const { return m_uiCount; }
 };
 
 class ConstantBuffer : public Buffer
@@ -397,11 +397,11 @@ class ConstantBuffer : public Buffer
     // Always returns BufferType::ConstantBuffer
     virtual BufferType GetType() const;
     // Constant buffers only have 1 element.
-    virtual unsigned int GetElementCount() const;
+    virtual uint32_t GetElementCount() const;
 
-    virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
+    virtual bool Bind(uint32_t id, Shader::ShaderType shaderType,
                       ShaderParameter::Type parameterType);
-    virtual void UnBind(unsigned int id, Shader::ShaderType shaderType,
+    virtual void UnBind(uint32_t id, Shader::ShaderType shaderType,
                         ShaderParameter::Type parameterType);
 
     // Copy the contents of a buffer to this one.
@@ -415,6 +415,81 @@ class ConstantBuffer : public Buffer
 };
 
 
+class VertexBuffer : public Buffer
+{
+    typedef Buffer base;
+
+  public:
+    VertexBuffer(const void* data, uint32_t count, uint32_t stride,
+                CPUAccess cpuAccess = CPUAccess::None, bool bUAV = false);
+
+
+    virtual ~VertexBuffer();
+
+    // The contents of a constant buffer can also be updated.
+    template <typename T>
+    void Set(const T& data)
+    {
+        Set(&data, sizeof(T));
+    }
+
+    // Always returns BufferType::IndexBuffer
+    virtual BufferType GetType() const;
+    // Constant buffers only have 1 element.
+    virtual uint32_t GetElementCount() const;
+
+    virtual bool Bind(uint32_t id, Shader::ShaderType shaderType,
+                      ShaderParameter::Type parameterType);
+    virtual void UnBind(uint32_t id, Shader::ShaderType shaderType,
+                        ShaderParameter::Type parameterType);
+
+    // Copy the contents of a buffer to this one.
+    // Buffers must be the same size.
+    virtual void Copy(std::shared_ptr<VertexBuffer> other);
+
+    // Implementations must provide this method.
+    virtual void Set(const void* data, size_t size);
+
+  protected:
+};
+
+class IndexBuffer : public Buffer
+{
+    typedef Buffer base;
+
+  public:
+    IndexBuffer(const void* data, uint32_t count, uint32_t stride,
+                     CPUAccess cpuAccess = CPUAccess::None, bool bUAV = false);
+
+    virtual ~IndexBuffer();
+
+    // The contents of a constant buffer can also be updated.
+    template <typename T>
+    void Set(const T& data)
+    {
+        Set(&data, sizeof(T));
+    }
+
+    // Always returns BufferType::IndexBuffer
+    virtual BufferType GetType() const;
+    // Constant buffers only have 1 element.
+    virtual uint32_t GetElementCount() const;
+
+    virtual bool Bind(uint32_t id, Shader::ShaderType shaderType,
+                      ShaderParameter::Type parameterType);
+    virtual void UnBind(uint32_t id, Shader::ShaderType shaderType,
+                        ShaderParameter::Type parameterType);
+
+    // Copy the contents of a buffer to this one.
+    // Buffers must be the same size.
+    virtual void Copy(std::shared_ptr<IndexBuffer> other);
+
+    // Implementations must provide this method.
+    virtual void Set(const void* data, size_t size);
+
+  protected:
+};
+
 class StructuredBuffer : public Buffer
 {
     typedef Buffer base;
@@ -425,16 +500,16 @@ class StructuredBuffer : public Buffer
     virtual ~StructuredBuffer();
 
     // Bind the buffer for rendering.
-    virtual bool Bind(unsigned int id, Shader::ShaderType shaderType,
+    virtual bool Bind(uint32_t id, Shader::ShaderType shaderType,
                       ShaderParameter::Type parameterType);
     // Unbind the buffer for rendering.
-    virtual void UnBind(unsigned int id, Shader::ShaderType shaderType,
+    virtual void UnBind(uint32_t id, Shader::ShaderType shaderType,
                         ShaderParameter::Type parameterType);
 
     // Is this an index buffer or an attribute/vertex buffer?
     virtual BufferType GetType() const;
     // How many elements does this buffer contain?
-    virtual unsigned int GetElementCount() const;
+    virtual uint32_t GetElementCount() const;
 
     // Copy the contents of another buffer to this one.
     // Buffers must be the same size.
