@@ -3,30 +3,38 @@
 namespace ade
 {
 
-VertexBuffer::VertexBuffer(const void* data, uint32_t count, uint32_t stride,
-                                   CPUAccess cpuAccess, bool bUAV)
+VertexBuffer::VertexBuffer(const void* data, uint32_t count, uint32_t stride, bool bSRV,
+                           Diligent::VALUE_TYPE ValueType, CPUAccess cpuAccess, bool bUAV)
     : base(stride, count, nullptr)
 {
     Diligent::BufferDesc BuffDesc;
     BuffDesc.Name = "VertexBuffer";
 
-    BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    if (bSRV || bUAV || cpuAccess != CPUAccess::None) {
+        BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 
-    if ((cpuAccess & CPUAccess::Read) != 0) {
-        BuffDesc.Usage = Diligent::USAGE_STAGING;
-        BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE | Diligent::CPU_ACCESS_READ;
-    } else if ((cpuAccess & CPUAccess::Write) != 0) {
-        BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
-        BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-        BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
-    } else {
-        BuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+        if ((cpuAccess & CPUAccess::Read) != 0) {
+            BuffDesc.Usage = Diligent::USAGE_STAGING;
+            BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE | Diligent::CPU_ACCESS_READ;
+        } else if ((cpuAccess & CPUAccess::Write) != 0) {
+            BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+            BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+            BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+        } else {
+            BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+            BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
-        if (bUAV) {
-            BuffDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
+            if (bUAV) {
+                BuffDesc.BindFlags |= Diligent::BIND_UNORDERED_ACCESS;
+            }
         }
+
+		CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_FLOAT32, "only float is supported");
+        uint8_t componentsCount = (uint8_t)stride / sizeof(float);
+        SetBufferFormat(ValueType, componentsCount);
     }
+
+    BuffDesc.BindFlags |= Diligent::BIND_VERTEX_BUFFER;
 
     BuffDesc.ElementByteStride = stride;
     BuffDesc.uiSizeInBytes = stride * count;
@@ -44,13 +52,13 @@ VertexBuffer::~VertexBuffer()
 }
 
 bool VertexBuffer::Bind(uint32_t ID, Shader::ShaderType shaderType,
-                            ShaderParameter::Type parameterType)
+                        ShaderParameter::Type parameterType)
 {
     return true;
 }
 
 void VertexBuffer::UnBind(uint32_t ID, Shader::ShaderType shaderType,
-                              ShaderParameter::Type parameterType)
+                          ShaderParameter::Type parameterType)
 {
 }
 

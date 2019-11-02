@@ -420,7 +420,8 @@ class VertexBuffer : public Buffer
     typedef Buffer base;
 
   public:
-    VertexBuffer(const void* data, uint32_t count, uint32_t stride,
+    VertexBuffer(const void* data, uint32_t count, uint32_t stride, bool bSRV = false, 
+                 Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_FLOAT32, 
                 CPUAccess cpuAccess = CPUAccess::None, bool bUAV = false);
 
 
@@ -458,7 +459,8 @@ class IndexBuffer : public Buffer
     typedef Buffer base;
 
   public:
-    IndexBuffer(const void* data, uint32_t count, uint32_t stride,
+    IndexBuffer(const void* data, uint32_t count, uint32_t stride, bool bSRV = false, 
+                Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_UINT32, 
                      CPUAccess cpuAccess = CPUAccess::None, bool bUAV = false);
 
     virtual ~IndexBuffer();
