@@ -235,49 +235,49 @@ std::shared_ptr<Buffer> Scene::CreateVertexBufferFloat(Diligent::IRenderDevice* 
                                                        uint32_t count, uint32_t stride,
                                                        uint8_t componentsCount)
 {
-    bool bSRV = componentsCount > 0;
-    bool bDynamic = !data;
-    // Create a vertex buffer that stores cube vertices
-    Diligent::BufferDesc VertBuffDesc;
-    VertBuffDesc.Name = "Float vertex buffer";
-
-    VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-
-    if (bSRV) {
-        CHECK_ERR(stride == sizeof(float) * componentsCount, "invalid components count");
-
-        VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
-        VertBuffDesc.ElementByteStride = stride;
-        VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        VertBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    } else {
-        VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
-    }
-
-    VertBuffDesc.uiSizeInBytes = stride * count;
-
-    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
-
-    if (bDynamic) {
-        VertBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-        device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
-    } else {
-        Diligent::BufferData VBData;
-        VBData.pData = data;
-        VBData.DataSize = stride * count;
-
-        device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
-    }
-
-    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
-    if (bSRV) {
-        Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_FLOAT32;
-        buffer->SetBufferFormat(ValueType, componentsCount);
-    }
     // bool bSRV = componentsCount > 0;
-    // std::shared_ptr<Buffer> buffer = std::make_shared<VertexBuffer>(
-    //    data, count, stride, bSRV, Diligent::VALUE_TYPE::VT_FLOAT32, CPUAccess::None, false);
+    // bool bDynamic = !data;
+    //// Create a vertex buffer that stores cube vertices
+    // Diligent::BufferDesc VertBuffDesc;
+    // VertBuffDesc.Name = "Float vertex buffer";
+
+    // VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+
+    // if (bSRV) {
+    //    CHECK_ERR(stride == sizeof(float) * componentsCount, "invalid components count");
+
+    //    VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    //    VertBuffDesc.ElementByteStride = stride;
+    //    VertBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+    //    VertBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    //} else {
+    //    VertBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
+    //}
+
+    // VertBuffDesc.uiSizeInBytes = stride * count;
+
+    // Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+
+    // if (bDynamic) {
+    //    VertBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+    //    device->CreateBuffer(VertBuffDesc, nullptr, &pBuffer);
+    //} else {
+    //    Diligent::BufferData VBData;
+    //    VBData.pData = data;
+    //    VBData.DataSize = stride * count;
+
+    //    device->CreateBuffer(VertBuffDesc, &VBData, &pBuffer);
+    //}
+
+    // std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(stride, count, pBuffer);
+    // if (bSRV) {
+    //    Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_FLOAT32;
+    //    buffer->SetBufferFormat(ValueType, componentsCount);
+    //}
+    bool bSRV = componentsCount > 0;
+    std::shared_ptr<Buffer> buffer = std::make_shared<VertexBuffer>(
+        data, count, stride, bSRV, Diligent::VALUE_TYPE::VT_FLOAT32, CPUAccess::None, false);
 
     return buffer;
 }
@@ -285,45 +285,48 @@ std::shared_ptr<Buffer> Scene::CreateVertexBufferFloat(Diligent::IRenderDevice* 
 std::shared_ptr<Buffer> Scene::CreateIndexBufferUInt(Diligent::IRenderDevice* device,
                                                      uint32_t* data, uint32_t count, bool bSRV)
 {
-    bool bDynamic = !data;
+    // bool bDynamic = !data;
 
-    Diligent::BufferDesc IndBuffDesc;
-    IndBuffDesc.Name = "UInt index buffer";
+    // Diligent::BufferDesc IndBuffDesc;
+    // IndBuffDesc.Name = "UInt index buffer";
 
-    IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
+    // IndBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
 
-    if (bSRV) {
-        IndBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
-        IndBuffDesc.ElementByteStride = sizeof(uint32_t);
-        IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-        IndBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
-    } else {
-        IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
-    }
+    // if (bSRV) {
+    //    IndBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+    //    IndBuffDesc.ElementByteStride = sizeof(uint32_t);
+    //    IndBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+    //    IndBuffDesc.BindFlags |= Diligent::BIND_SHADER_RESOURCE;
+    //} else {
+    //    IndBuffDesc.Usage = bDynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_STATIC;
+    //}
 
-    IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
+    // IndBuffDesc.uiSizeInBytes = sizeof(uint32_t) * count;
 
-    Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
+    // Diligent::RefCntAutoPtr<Diligent::IBuffer> pBuffer;
 
-    if (bDynamic) {
-        IndBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+    // if (bDynamic) {
+    //    IndBuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-        device->CreateBuffer(IndBuffDesc, nullptr, &pBuffer);
-    } else {
-        Diligent::BufferData IBData;
-        IBData.pData = data;
-        IBData.DataSize = sizeof(uint32_t) * count;
+    //    device->CreateBuffer(IndBuffDesc, nullptr, &pBuffer);
+    //} else {
+    //    Diligent::BufferData IBData;
+    //    IBData.pData = data;
+    //    IBData.DataSize = sizeof(uint32_t) * count;
 
-        device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
-    }
+    //    device->CreateBuffer(IndBuffDesc, &IBData, &pBuffer);
+    //}
 
-    std::shared_ptr<Buffer> buffer =
-        std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
+    // std::shared_ptr<Buffer> buffer =
+    //    std::make_shared<Buffer>((uint32_t)sizeof(uint32_t), count, pBuffer);
 
-    if (bSRV) {
-        Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_UINT32;
-        buffer->SetBufferFormat(ValueType, 1);
-    }
+    // if (bSRV) {
+    //    Diligent::VALUE_TYPE ValueType = Diligent::VALUE_TYPE::VT_UINT32;
+    //    buffer->SetBufferFormat(ValueType, 1);
+    //}
+    uint32_t stride = sizeof(uint32_t);
+    std::shared_ptr<Buffer> buffer = std::make_shared<IndexBuffer>(
+        data, count, stride, bSRV, Diligent::VALUE_TYPE::VT_UINT32, CPUAccess::None, false);
 
     return buffer;
 }

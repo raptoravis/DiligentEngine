@@ -61,15 +61,26 @@ VertexBuffer::~VertexBuffer()
     //
 }
 
-bool VertexBuffer::Bind(uint32_t ID, Shader::ShaderType shaderType,
+bool VertexBuffer::Bind(uint32_t slot, Shader::ShaderType shaderType,
                         ShaderParameter::Type parameterType)
 {
-    return true;
+    auto buffer = m_pBuffer;
+
+    Diligent::Uint32 offset[] = { 0 };
+    Diligent::IBuffer* pBuffs[] = { buffer };
+    const uint32_t buffs = 1;
+
+    App::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset,
+                                 Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+                                 Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
+
+    return base::Bind(slot, shaderType, parameterType);
 }
 
-void VertexBuffer::UnBind(uint32_t ID, Shader::ShaderType shaderType,
+void VertexBuffer::UnBind(uint32_t slot, Shader::ShaderType shaderType,
                           ShaderParameter::Type parameterType)
 {
+    base::UnBind(slot, shaderType, parameterType);
 }
 
 void VertexBuffer::Copy(std::shared_ptr<VertexBuffer> other) {}

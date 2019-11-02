@@ -92,16 +92,6 @@ Diligent::IBufferView* Buffer::GetShaderResourceView()
 bool Buffer::Bind(uint32_t slot, Shader::ShaderType shaderType,
                   ShaderParameter::Type parameterType)
 {
-    auto buffer = m_pBuffer;
-
-    Diligent::Uint32 offset[] = { 0 };
-    Diligent::IBuffer* pBuffs[] = { buffer };
-    const uint32_t buffs = 1;
-
-    App::s_ctx->SetVertexBuffers(slot, buffs, pBuffs, offset,
-                                 Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
-                                 Diligent::SET_VERTEX_BUFFERS_FLAG_NONE);
-
     return true;
 }
 

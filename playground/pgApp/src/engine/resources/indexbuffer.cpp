@@ -63,12 +63,13 @@ IndexBuffer::~IndexBuffer()
 bool IndexBuffer::Bind(uint32_t ID, Shader::ShaderType shaderType,
                        ShaderParameter::Type parameterType)
 {
-    return true;
+    return base::Bind(ID, shaderType, parameterType);
 }
 
 void IndexBuffer::UnBind(uint32_t ID, Shader::ShaderType shaderType,
                          ShaderParameter::Type parameterType)
 {
+    base::UnBind(ID, shaderType, parameterType);
 }
 
 void IndexBuffer::Copy(std::shared_ptr<IndexBuffer> other) {}
