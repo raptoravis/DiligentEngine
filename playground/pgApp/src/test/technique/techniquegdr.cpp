@@ -404,7 +404,7 @@ void TechniqueGdr::createHiZBuffers()
         Prop& prop = m_pSceneGdr->m_props[i];
 
         ade::memCopy(propVerticesData, prop.m_vertices, prop.m_noofVertices * sizeof(PosVertex));
-        ade::memCopy(propIndicesData, prop.m_indices, prop.m_noofIndices * sizeof(uint16_t));
+        ade::memCopy(propIndicesData, prop.m_indices, prop.m_noofIndices * sizeof(uint32_t));
 
         propVerticesData += prop.m_noofVertices;
         propIndicesData += prop.m_noofIndices;
@@ -419,11 +419,11 @@ void TechniqueGdr::createHiZBuffers()
 
     // Create master vertex buffer
     m_allPropsVertexbufferHandle = Scene::CreateVertexBufferFloat(
-        App::s_device, (float*)m_allPropVerticesDataCPU, totalNoofVertices, 3 * sizeof(PosVertex));
+        App::s_device, (float*)m_allPropVerticesDataCPU, totalNoofVertices, sizeof(PosVertex));
 
     // Create master index buffer.
     m_allPropsIndexbufferHandle = Scene::CreateIndexBufferUInt(
-        App::s_device, m_allPropIndicesDataCPU, totalNoofIndices * sizeof(uint32_t));
+        App::s_device, m_allPropIndicesDataCPU, totalNoofIndices);
 
     // Create buffer with const drawcall data which will be copied to the indirect buffer later.
     m_indirectBufferData = Scene::CreateIndexBufferUInt(App::s_device, m_indirectBufferDataCPU,
@@ -765,12 +765,12 @@ void TechniqueGdr::renderOccludePropsPass()
         m_programOccludeProps->GetShaderParameterByName("t_texOcclusionDepth").Set(hiZBuffer);
 
         {
-            SamplerDesc linearClampSampler{ FILTER_TYPE_LINEAR,    FILTER_TYPE_LINEAR,
-                                            FILTER_TYPE_LINEAR,    TEXTURE_ADDRESS_CLAMP,
-                                            TEXTURE_ADDRESS_CLAMP, TEXTURE_ADDRESS_CLAMP };
+            SamplerDesc linearRepeatSampler{ FILTER_TYPE_LINEAR,   FILTER_TYPE_LINEAR,
+                                             FILTER_TYPE_LINEAR,   TEXTURE_ADDRESS_WRAP,
+                                             TEXTURE_ADDRESS_WRAP, TEXTURE_ADDRESS_WRAP };
 
             StaticSamplerDesc linearRepeatSamplerDesc{ SHADER_TYPE_COMPUTE, "t_texOcclusionDepth",
-                                                       linearClampSampler };
+                                                       linearRepeatSampler };
             t_texOcclusionDepth_sampler =
                 std::make_shared<ade::SamplerState>(linearRepeatSamplerDesc);
             m_programOccludeProps->GetShaderParameterByName("t_texOcclusionDepth_sampler")
