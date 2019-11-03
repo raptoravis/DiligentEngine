@@ -422,8 +422,8 @@ void TechniqueGdr::createHiZBuffers()
         App::s_device, (float*)m_allPropVerticesDataCPU, totalNoofVertices, sizeof(PosVertex));
 
     // Create master index buffer.
-    m_allPropsIndexbufferHandle = Scene::CreateIndexBufferUInt(
-        App::s_device, m_allPropIndicesDataCPU, totalNoofIndices);
+    m_allPropsIndexbufferHandle =
+        Scene::CreateIndexBufferUInt(App::s_device, m_allPropIndicesDataCPU, totalNoofIndices);
 
     // Create buffer with const drawcall data which will be copied to the indirect buffer later.
     m_indirectBufferData = Scene::CreateIndexBufferUInt(App::s_device, m_indirectBufferDataCPU,
@@ -502,19 +502,27 @@ void TechniqueGdr::Submit(std::shared_ptr<Buffer> pIndexBuffer, uint32_t instanc
 
         const uint32_t kINDIRECT_ARGS_LENGTH = CONFIG_DRAW_INDIRECT_STRIDE / sizeof(uint32_t);
 
-        // std::shared_ptr<Buffer> dstBuffer = std::make_shared<StructuredBuffer>(
-        //    nullptr, m_pSceneGdr->m_noofProps * kINDIRECT_ARGS_LENGTH, (uint32_t)sizeof(uint32_t),
-        //    CPUAccess::Read, false);
+        //{
+        //    std::shared_ptr<Buffer> dstBuffer = std::make_shared<StructuredBuffer>(
+        //        nullptr, m_pSceneGdr->m_noofProps * kINDIRECT_ARGS_LENGTH,
+        //        (uint32_t)sizeof(uint32_t), CPUAccess::Read, false);
 
-        // App::s_ctx->CopyBuffer(pIndBuffer, 0,
-        //                       Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
-        //                       dstBuffer->GetBuffer(), 0, bufferSize,
-        //                       Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+        //    std::shared_ptr<Buffer> dstBufferTemp = std::make_shared<IndexBuffer>(
+        //        nullptr, m_pSceneGdr->m_noofProps * kINDIRECT_ARGS_LENGTH,
+        //        (uint32_t)sizeof(uint32_t), true, Diligent::VALUE_TYPE::VT_UINT32, CPUAccess::Read,
+        //        false);
 
-        // PVoid CpuAddress = nullptr;
-        // App::s_ctx->MapBuffer(dstBuffer->GetBuffer(), MAP_READ, MAP_FLAG_NONE, CpuAddress);
-        // uint32_t* pMultiDrawArgs = (uint32_t*)CpuAddress;
-        // App::s_ctx->UnmapBuffer(dstBuffer->GetBuffer(), MAP_READ);
+        //    App::s_ctx->CopyBuffer(pIndBuffer, 0,
+        //                           Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
+        //                           dstBufferTemp->GetBuffer(), 0, bufferSize,
+        //                           Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+        //    PVoid CpuAddress = nullptr;
+        //    App::s_ctx->MapBuffer(dstBuffer->GetBuffer(), MAP_READ, MAP_FLAG_NONE, CpuAddress);
+        //    uint32_t* pMultiDrawArgs = (uint32_t*)CpuAddress;
+        //    App::s_ctx->UnmapBuffer(dstBuffer->GetBuffer(), MAP_READ);
+        //}
+
         uint32_t numOfUints = bufferSize / sizeof(uint32_t);
 
         for (uint32_t i = 0; i < numOfUints; i += kINDIRECT_ARGS_LENGTH) {

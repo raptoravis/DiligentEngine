@@ -45,7 +45,11 @@ VertexBuffer::VertexBuffer(const void* data, uint32_t count, uint32_t stride, bo
         }
     }
 
-    BuffDesc.BindFlags |= Diligent::BIND_VERTEX_BUFFER;
+	if ((cpuAccess & CPUAccess::Read) != 0) {
+        // bind nothing when staging
+    } else {
+        BuffDesc.BindFlags |= Diligent::BIND_VERTEX_BUFFER;
+    }
 
     BuffDesc.uiSizeInBytes = stride * count;
 

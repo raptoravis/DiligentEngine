@@ -32,6 +32,8 @@ IndexBuffer::IndexBuffer(const void* data, uint32_t count, uint32_t stride, bool
         CHECK_ERR(ValueType == Diligent::VALUE_TYPE::VT_UINT32, "only uint32 is supported");
         uint8_t componentsCount = (uint8_t)stride / sizeof(uint32_t);
         SetBufferFormat(ValueType, componentsCount);
+
+        BuffDesc.ElementByteStride = stride;
     } else {
         bool bDynamic = !data;
         if (bDynamic) {
@@ -39,13 +41,16 @@ IndexBuffer::IndexBuffer(const void* data, uint32_t count, uint32_t stride, bool
             BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
         } else {
             BuffDesc.Usage = Diligent::USAGE_STATIC;
-            //BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
+            // BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
         }
     }
 
-    BuffDesc.BindFlags |= Diligent::BIND_INDEX_BUFFER;
+	if ((cpuAccess & CPUAccess::Read) != 0) {
+		// bind nothing when staging
+    } else {
+        BuffDesc.BindFlags |= Diligent::BIND_INDEX_BUFFER;
+    }
 
-    BuffDesc.ElementByteStride = stride;
     BuffDesc.uiSizeInBytes = stride * count;
 
     Diligent::BufferData VBData;
