@@ -242,7 +242,7 @@ void Pipeline::Bind()
         Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION;
 
     bool bCheckUAVSRV = m_bCheckSRVUAV;
-    //if (m_Shaders.size() == 1) {
+    // if (m_Shaders.size() == 1) {
     //    auto it = m_Shaders.begin();
     //    auto shader = it->second;
     //    if (shader->GetType() == Shader::ComputeShader) {
@@ -298,30 +298,6 @@ void Pipeline::SetStaticVariables()
 
                             m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
                                 ->Set(cb->GetBuffer());
-                        } else if (p->GetType() == ShaderParameter::Type::Buffer) {
-                            std::shared_ptr<StructuredBuffer> res =
-                                std::dynamic_pointer_cast<StructuredBuffer>(pResource);
-
-                            m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
-                                ->Set(res->GetShaderResourceView());
-                        } else if (p->GetType() == ShaderParameter::Type::RWBuffer) {
-                            std::shared_ptr<StructuredBuffer> res =
-                                std::dynamic_pointer_cast<StructuredBuffer>(pResource);
-
-                            m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
-                                ->Set(res->GetUnorderedAccessView());
-                        } else if (p->GetType() == ShaderParameter::Type::Texture) {
-                            std::shared_ptr<Texture> res =
-                                std::dynamic_pointer_cast<Texture>(pResource);
-
-                            m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
-                                ->Set(res->GetShaderResourceView());
-                        } else if (p->GetType() == ShaderParameter::Type::RWTexture) {
-                            std::shared_ptr<Texture> res =
-                                std::dynamic_pointer_cast<Texture>(pResource);
-
-                            m_pPSO->GetStaticVariableByName(st, p->GetName().c_str())
-                                ->Set(res->GetUnorderedAccessView());
                         } else {
                             CHECK_ERR(false, "unsupported variable in SetStaticVariables");
                         }
